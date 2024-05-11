@@ -1,0 +1,22 @@
+{
+  "name": "ygo-new",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rimraf node_modules && rimraf apps/*/node_modules && rimraf libs/*/node_modules",
+    "deps": "yarn install",
+    "build:workspaces": "yarn workspaces run build",
+    "setup": "yarn clean && yarn deps && yarn build:workspaces"
+  },
+  "workspaces": [
+    "libs/schemas/",
+    "libs/mongo-server/",
+    "apps/*"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
