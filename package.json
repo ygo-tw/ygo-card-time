@@ -9,14 +9,25 @@
     "clean": "rimraf node_modules && rimraf apps/*/node_modules && rimraf libs/*/node_modules",
     "deps": "yarn install",
     "build:workspaces": "yarn workspaces run build",
-    "setup": "yarn clean && yarn deps && yarn build:workspaces"
+    "setup": "yarn clean && yarn deps && yarn build:workspaces",
+    "prepare": "node .husky/prepare-husky.js"
   },
   "workspaces": [
     "libs/schemas/",
     "libs/mongo-server/",
     "apps/*"
   ],
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1"
+  },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,scss,md,vue}": [
+      "prettier --write"
+    ]
+  }
 }
