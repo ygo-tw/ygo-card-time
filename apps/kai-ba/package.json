@@ -1,0 +1,15 @@
+{
+  "name": "kai-ba",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "build": "yarn clean && tsc"
+  },
+  "dependencies": {
+    "@ygo/schemas": "file:../../libs/schemas",
+    "@ygo/mongo-server": "file:../../libs/mongo-server",
+    "fastify": "^4.27.0"
+  }
+}
