@@ -24,10 +24,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,css,scss,md,vue}": [
-      "prettier --write"
-    ]
-  }
+  "license": "ISC"
 }
