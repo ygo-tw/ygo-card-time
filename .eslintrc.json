@@ -12,10 +12,10 @@
   "rules": {
     "prettier/prettier": ["error"],
     "@typescript-eslint/no-unused-vars": [
-      "warn",
+      "error",
       { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }
     ],
-    "@typescript-eslint/no-unused-expressions": "warn"
+    "@typescript-eslint/no-unused-expressions": "error"
   },
   "env": {
     "node": true
