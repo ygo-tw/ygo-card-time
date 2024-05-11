@@ -1,5 +1,10 @@
 import 'dotenv/config';
-import mongoose, { FilterQuery, ProjectionType, QueryOptions, Document } from 'mongoose';
+import mongoose, {
+  FilterQuery,
+  ProjectionType,
+  QueryOptions,
+  Document,
+} from 'mongoose';
 import { ModelNames } from '@ygo/schemas';
 import { ModelRegistry } from './model-registry';
 
@@ -30,7 +35,7 @@ export class DataAccessService {
     modelName: ModelNames,
     filter: FilterQuery<T> = {},
     projection: ProjectionType<T> = {},
-    options: QueryOptions = {},
+    options: QueryOptions = {}
   ) {
     const model = this.registry.getModel(modelName);
     return model.find(filter, projection, options).exec();

@@ -1,8 +1,7 @@
 import { ModelRegistry } from './model-registry';
-import mongoose, { Schema, Model, Document } from 'mongoose';
-import { modelSchemas } from './model-schemas';
+import mongoose from 'mongoose';
 
-// Mock modelSchema
+// Mock modelSchemas
 jest.mock('./model-schemas', () => ({
   modelSchemas: {
     admin: { name: String, age: Number },

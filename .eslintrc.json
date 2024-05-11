@@ -15,7 +15,8 @@
       "error",
       { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }
     ],
-    "@typescript-eslint/no-unused-expressions": "error"
+    "@typescript-eslint/no-unused-expressions": "error",
+    "@typescript-eslint/no-explicit-any": "warn"
   },
   "env": {
     "node": true

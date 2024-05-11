@@ -2,4 +2,4 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 echo "Start pre-commit"
-npx lint-staged
+npx lint-staged --verbose
