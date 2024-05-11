@@ -16,10 +16,14 @@ export class ModelRegistry {
     return ModelRegistry.instance;
   }
 
-  getModel(modelName: ModelNames): Model<Document> {
+  public getModel(modelName: ModelNames): Model<Document> {
     if (!this.models[modelName]) {
       const schema = new Schema(this.schemaDef[modelName]);
-      this.models[modelName] = mongoose.model<Document>(modelName, schema, modelName);
+      this.models[modelName] = mongoose.model<Document>(
+        modelName,
+        schema,
+        modelName
+      );
     }
     return this.models[modelName];
   }
