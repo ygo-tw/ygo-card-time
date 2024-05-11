@@ -16,6 +16,10 @@ export class ModelRegistry {
     return ModelRegistry.instance;
   }
 
+  /**
+   * @param modelName: collection name in MongoDB
+   * @returns: Model<modelName>
+   */
   public getModel(modelName: ModelNames): Model<Document> {
     if (!this.models[modelName]) {
       const schema = new Schema(this.schemaDef[modelName]);
