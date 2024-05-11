@@ -15,6 +15,8 @@
     "resolveJsonModule": true, // 允許導入 JSON 文件
     "declaration": true, // 生成對應的 '.d.ts' 文件
     "sourceMap": true, // 生成源碼 map 文件
+    "noUnusedLocals": true, // 檢查未使用的局部變量
+    "noUnusedParameters": true, // 檢查未使用的函數參數
     "forceConsistentCasingInFileNames": true // 強制文件名大小寫一致
   },
   "include": [
