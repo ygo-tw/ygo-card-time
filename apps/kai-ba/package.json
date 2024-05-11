@@ -10,6 +10,7 @@
   "dependencies": {
     "@ygo/schemas": "file:../../libs/schemas",
     "@ygo/mongo-server": "file:../../libs/mongo-server",
+    "@ygo/mailer": "file:../../libs/mailer",
     "fastify": "^4.27.0"
   }
 }
