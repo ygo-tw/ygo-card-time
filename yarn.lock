@@ -1038,7 +1038,7 @@
   version "1.0.0"
   dependencies:
     "@types/node" "^20.12.11"
-    "@ygo/schemas" "file:../.cache/yarn/v6/npm-@ygo-mongo-server-1.0.0-9f51a842-b019-4cba-9751-0868f2d11be3-1715447319571/node_modules/@ygo/schemas"
+    "@ygo/schemas" "file:../.cache/yarn/v6/npm-@ygo-mongo-server-1.0.0-1331e06c-f666-49cf-9cbd-6af8529faa19-1715477853446/node_modules/@ygo/schemas"
     dotenv "^16.4.5"
     mongoose "^8.3.4"
     typescript "^5.4.5"
