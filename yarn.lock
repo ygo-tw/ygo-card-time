@@ -1025,6 +1025,17 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
+"@ygo/google-apis@file:libs/google-apis":
+  version "1.0.0"
+  dependencies:
+    dotenv "^16.4.5"
+    googleapis "^137.1.0"
+
+"@ygo/line@file:libs/line":
+  version "1.0.0"
+  dependencies:
+    axios "^1.6.8"
+
 "@ygo/mailer@file:libs/mailer":
   version "1.0.0"
   dependencies:
@@ -1038,7 +1049,7 @@
   version "1.0.0"
   dependencies:
     "@types/node" "^20.12.11"
-    "@ygo/schemas" "file:../.cache/yarn/v6/npm-@ygo-mongo-server-1.0.0-1331e06c-f666-49cf-9cbd-6af8529faa19-1715477853446/node_modules/@ygo/schemas"
+    "@ygo/schemas" "file:../.cache/yarn/v6/npm-@ygo-mongo-server-1.0.0-9161d72c-fb93-4123-994a-b4922bb59ed1-1715480944133/node_modules/@ygo/schemas"
     dotenv "^16.4.5"
     mongoose "^8.3.4"
     typescript "^5.4.5"

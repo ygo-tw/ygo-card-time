@@ -15,7 +15,7 @@ export class YGOMailer {
       secure: false, // 如果端口为 465 则为 true，其他端口一般为 false
       auth: {
         user: process.env.EMAIL, // 你的邮箱账户
-        pass: process.env.PASSWORD, // 你的邮箱密码
+        pass: process.env.EPASSWORD, // 你的邮箱密码
       },
     });
   }
@@ -39,7 +39,7 @@ export class YGOMailer {
       return true;
     } catch (error) {
       console.error('Failed to send email:', error);
-      return false;
+      throw error;
     }
   }
 }

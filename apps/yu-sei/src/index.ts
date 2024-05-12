@@ -1,5 +1,5 @@
 import figlet from 'figlet';
-import { DataAccessService } from '@ygo/mongo-server';
+import { LineBotService } from '@ygo/line';
 
 const main = async () => {
   console.log(
@@ -8,11 +8,10 @@ const main = async () => {
     })
   );
 
-  const daService = new DataAccessService();
-  await daService.init();
+  const lineBotService = new LineBotService();
 
-  const da = await daService.find('admin', { type: 0 });
-  console.log(da);
+  const res = await lineBotService.sendNotify('Hello, world!');
+  console.log(res);
 };
 
 main();
