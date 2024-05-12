@@ -13,9 +13,7 @@
     "prepare": "node .husky/prepare-husky.js"
   },
   "workspaces": [
-    "libs/schemas/",
-    "libs/mailer/",
-    "libs/mongo-server/",
+    "libs/*",
     "apps/*"
   ],
   "devDependencies": {
