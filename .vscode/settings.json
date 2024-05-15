@@ -67,13 +67,10 @@
   "vscodeGitCommit.variables": {
     "prefix": "keke"
   },
+  "explorer.fileNesting.expand": false,
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
-    "Cargo.toml": "Cargo.lock",
-    "*.ts": "${capture}.typegen.ts",
-    "*.tsx": "${capture}.typegen.ts",
-    "*.mts": "${capture}.typegen.ts",
-    "*.cts": "${capture}.typegen.ts"
+    "*.json": "${capture}.ts, ${capture}.type.ts, ${capture}.const.ts"
   },
   "patternlinks.rules": [
     {
