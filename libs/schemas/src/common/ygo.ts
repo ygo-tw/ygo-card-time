@@ -1,4 +1,4 @@
-export const ygoOptions: {
+export const YGO_OPTIONS: {
   type: string[];
   star: string[];
   attribute: string[];
@@ -173,16 +173,16 @@ export const ygoOptions: {
   ],
 };
 
-export const extraType: string[] = [
+export const EXTRA_MONSTER_TYPES: string[] = [
   '融合怪獸',
   '同步怪獸',
   '超量怪獸',
   '連結怪獸',
 ];
 
-export const ceremony: string = '儀式怪獸';
+export const CEREMONY: string = '儀式怪獸';
 
-export const manaType: string[] = [
+export const MANA_TYPES: string[] = [
   '通常魔法',
   '速攻魔法',
   '裝備魔法',
