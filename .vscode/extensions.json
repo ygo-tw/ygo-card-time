@@ -1,0 +1,18 @@
+{
+  "recommendations": [
+    "statelyai.stately-vscode",
+    "jamesmaj.easy-icons",
+    "donjayamanne.githistory",
+    "yechunan.json-color-token",
+    "bradlc.vscode-tailwindcss",
+    "infeng.vscode-react-typescript",
+    "yzhang.markdown-all-in-one",
+    "rioukkevin.vscode-git-commit",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "danlevett.pattern-links",
+    "aaron-bond.better-comments",
+    "eliostruyf.vscode-typescript-exportallmodules",
+    "mongodb.mongodb-vscode"
+  ]
+}

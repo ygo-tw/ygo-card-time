@@ -1,0 +1,90 @@
+{
+  "editor.fontSize": 15,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "workbench.iconTheme": "vscode-icons",
+  "editor.fontFamily": "'Fira Code', 'Source Code Pro', Consolas, 'Microsoft JhengHei'",
+  "explorer.confirmDelete": false,
+  "prettier.singleQuote": true,
+  "prettier.semi": true,
+  "prettier.printWidth": 100,
+  "prettier.bracketSpacing": true,
+  "prettier.trailingComma": "all",
+  "prettier.tabWidth": 2,
+  "editor.formatOnSave": true,
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "workbench.colorTheme": "GitHub Dark Colorblind (Beta)",
+  "prettier.arrowParens": "avoid",
+  "editor.tabSize": 2,
+  "editor.fontLigatures": true,
+  "[vue]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "path-intellisense.extensionOnImport": true,
+  "path-intellisense.mappings": {
+    "@": "${workspaceRoot}/src"
+  },
+  "cSpell.userWords": [
+    "Axios",
+    "fastify",
+    "intlify",
+    "Nuxt",
+    "pinia",
+    "Ruten",
+    "unflatten",
+    "unplugin",
+    "Vite",
+    "yuyu"
+  ],
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "explorer.confirmDragAndDrop": false,
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false,
+  "vscodeGitCommit.variables": {
+    "prefix": "keke"
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "Cargo.toml": "Cargo.lock",
+    "*.ts": "${capture}.typegen.ts",
+    "*.tsx": "${capture}.typegen.ts",
+    "*.mts": "${capture}.typegen.ts",
+    "*.cts": "${capture}.typegen.ts"
+  },
+  "patternlinks.rules": [
+    {
+      "linkPattern": "https://card.time.com/schema/([^\"'`#\\s]+)",
+      "linkPatternFlags": "i", // Case insensitive
+      "linkTarget": "file:///Users/ygo-card-time/libs/schemas/src/$1.json"
+      // Mac: sudo ln -s /Users/timothyliu/code/cms/matrix /Users/matrix
+    }
+  ],
+  "files.eol": "\n",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
