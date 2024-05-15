@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "clean": "rimraf ./dist",
-    "build": "yarn clean && tsc"
+    "gen:schema": "node ./src/generate.js",
+    "build": "yarn clean && yarn gen:schema && tsc"
   },
   "dependencies": {
     "json-schema-to-ts": "^3.1.0",

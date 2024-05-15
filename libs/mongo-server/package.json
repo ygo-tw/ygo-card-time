@@ -9,10 +9,10 @@
   },
   "dependencies": {
     "@types/node": "^20.12.11",
+    "@ygo/schemas": "file:../schemas",
     "dotenv": "^16.4.5",
     "mongoose": "^8.3.4",
-    "typescript": "^5.4.5",
-    "@ygo/schemas": "file:../schemas"
+    "typescript": "^5.4.5"
   },
   "engines": {
     "node": ">=14.0.0"
