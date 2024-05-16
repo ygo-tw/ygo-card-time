@@ -1,0 +1,56 @@
+{
+  "/home/erichong/ygo-card-time/libs/schemas/src/useful/database/cards-data.const.ts": {
+    "path": "/home/erichong/ygo-card-time/libs/schemas/src/useful/database/cards-data.const.ts",
+    "statementMap": {
+      "0": {
+        "start": { "line": 4, "column": 45 },
+        "end": { "line": 273, "column": 10 }
+      }
+    },
+    "fnMap": {},
+    "branchMap": {},
+    "s": { "0": 1 },
+    "f": {},
+    "b": {},
+    "_coverageSchema": "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    "hash": "d0b703b611386fb13ee4c01117650d3b4ba25af0"
+  },
+  "/home/erichong/ygo-card-time/libs/schemas/src/useful/value-object/index.ts": {
+    "path": "/home/erichong/ygo-card-time/libs/schemas/src/useful/value-object/index.ts",
+    "statementMap": {},
+    "fnMap": {},
+    "branchMap": {},
+    "s": {},
+    "f": {},
+    "b": {},
+    "_coverageSchema": "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    "hash": "2b3ca5aeb6f7094df5d4b420e60ca424a5f357d6"
+  },
+  "/home/erichong/ygo-card-time/libs/schemas/src/useful/value-object/meta.const.ts": {
+    "path": "/home/erichong/ygo-card-time/libs/schemas/src/useful/value-object/meta.const.ts",
+    "statementMap": {
+      "0": {
+        "start": { "line": 4, "column": 43 },
+        "end": { "line": 51, "column": 10 }
+      }
+    },
+    "fnMap": {},
+    "branchMap": {},
+    "s": { "0": 1 },
+    "f": {},
+    "b": {},
+    "_coverageSchema": "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    "hash": "cd64dd5fc72d29eef6c6e20f5e85e5b007c81c8a"
+  },
+  "/home/erichong/ygo-card-time/libs/schemas/src/useful/value-object/meta.ts": {
+    "path": "/home/erichong/ygo-card-time/libs/schemas/src/useful/value-object/meta.ts",
+    "statementMap": {},
+    "fnMap": {},
+    "branchMap": {},
+    "s": {},
+    "f": {},
+    "b": {},
+    "_coverageSchema": "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    "hash": "9d4cf3ef4053a13d052c2a438fdc245dab444980"
+  }
+}

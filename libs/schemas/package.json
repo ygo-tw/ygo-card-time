@@ -4,6 +4,7 @@
   "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
+    "test": "jest --coverage",
     "clean": "rimraf ./dist",
     "gen:schema": "node ./src/generate.js",
     "build": "yarn clean && yarn gen:schema && tsc"
@@ -15,6 +16,10 @@
     "mongoose": "^8.3.4"
   },
   "devDependencies": {
-    "@types/mongoose": "^5.11.97"
+    "@babel/preset-env": "^7.24.5",
+    "@babel/preset-typescript": "^7.24.1",
+    "@types/mongoose": "^5.11.97",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1"
   }
 }
