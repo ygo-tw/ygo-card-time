@@ -4,10 +4,13 @@
   "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
+    "test": "jest --coverage",
     "clean": "rimraf ./dist",
     "build": "yarn clean && tsc"
   },
   "dependencies": {
+    "@babel/preset-env": "^7.24.5",
+    "@babel/preset-typescript": "^7.24.1",
     "googleapis": "^137.1.0"
   },
   "devDependencies": {
