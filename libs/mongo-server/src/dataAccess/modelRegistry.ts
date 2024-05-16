@@ -17,6 +17,7 @@ export class ModelRegistry {
   }
 
   /**
+   * Get Model by name
    * @param modelName: collection name in MongoDB
    * @returns: Model<modelName>
    */

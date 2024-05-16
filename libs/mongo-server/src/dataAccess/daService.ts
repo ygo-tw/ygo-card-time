@@ -36,6 +36,14 @@ export class DataAccessService {
     }
   }
 
+  /**
+   * Insert a document into the specified model.
+   * @param modelName collection name
+   * @param filter filter query
+   * @param projection projection query
+   * @param options query options
+   * @returns query result
+   */
   public async find<T extends Document>(
     modelName: ModelNames,
     filter: FilterQuery<T> = {},
