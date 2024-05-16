@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
+    "test": "jest",
     "clean": "rimraf ./dist",
     "build": "yarn clean && tsc"
   },
@@ -16,6 +17,8 @@
     "node": ">=14.0.0"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.24.5",
+    "@babel/preset-typescript": "^7.24.1",
     "@types/dotenv": "^8.2.0",
     "@types/nodemailer": "^6.4.15"
   },
