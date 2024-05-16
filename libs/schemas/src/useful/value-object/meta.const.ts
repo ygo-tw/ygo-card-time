@@ -26,6 +26,12 @@ export const usefulValueObjectMetaSchema = {
       maximum: 20000,
       minimum: 0,
     },
+    number: {
+      title: '密碼',
+      description: '卡片密碼',
+      type: 'string',
+      pattern: '^[0-9]{8}$',
+    },
     price_object: {
       type: 'object',
       properties: {

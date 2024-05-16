@@ -1,4 +1,4 @@
-import { SchemaDefinition } from 'mongoose';
+import { Schema } from 'mongoose';
 export type ModelNames =
   | 'admin'
   | 'backend_token'
@@ -19,4 +19,10 @@ export type ModelNames =
   | 'tag'
   | 'useful_card_introduction';
 
-export type ModelSchema = { [key in ModelNames]?: SchemaDefinition };
+export type SchemaObject = {
+  hasGetterSetter?: Schema;
+  hasPopulate?: Schema;
+  originSchema: Schema;
+};
+
+export type ModelSchema = { [key in ModelNames]?: SchemaObject };

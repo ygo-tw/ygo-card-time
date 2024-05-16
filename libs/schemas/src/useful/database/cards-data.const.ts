@@ -21,6 +21,9 @@ export const usefulDatabaseCardsDataSchema = {
     _id: {
       $ref: 'https://card.time.com/schema/useful/value-object/meta#/$defs/_id',
     },
+    number: {
+      $ref: 'https://card.time.com/schema/useful/value-object/meta#/$defs/number',
+    },
     name: {
       title: '名稱',
       description: '卡片名稱',
@@ -56,7 +59,7 @@ export const usefulDatabaseCardsDataSchema = {
       title: '號碼',
       description: '卡片號碼',
       type: 'string',
-      pattern: '^[A-Z0-9]{2,4}-[A-Z0-9]{2,4}$',
+      pattern: '^[A-Z0-9]{2,4}[- ][A-Za-z0-9]{1,15}$',
     },
     type: {
       title: '種類',
@@ -259,12 +262,6 @@ export const usefulDatabaseCardsDataSchema = {
       description: '補充包代號',
       type: 'string',
       pattern: '^[A-Z0-9]{2,4}$',
-    },
-    number: {
-      title: '密碼',
-      description: '卡片密碼',
-      type: 'string',
-      pattern: '^[0-9]{8}$',
     },
     effect: {
       title: '效果',
