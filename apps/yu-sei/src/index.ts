@@ -1,5 +1,6 @@
 import figlet from 'figlet';
-import { LineBotService } from '@ygo/line';
+import { DataAccessService } from '@ygo/mongo-server';
+import { CardsDataType } from '@ygo/schemas';
 
 const main = async () => {
   console.log(
@@ -8,10 +9,14 @@ const main = async () => {
     })
   );
 
-  const lineBotService = new LineBotService();
+  const dataAccessService = new DataAccessService();
+  const cards = await dataAccessService.find<CardsDataType>(
+    'cards',
+    { name: { $regex: '黑暗' } },
+    {}
+  );
 
-  const res = await lineBotService.sendNotify('Hello, world!');
-  console.log(res);
+  console.log(cards);
 };
 
 main();
