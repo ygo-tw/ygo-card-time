@@ -21,8 +21,11 @@ describe('DataAccessService', () => {
   const mockUri = 'mongodb+srv://yourMongoDBUri';
   let service: DataAccessService;
   let mockModel: any;
+  let originalConsoleError: (...data: any[]) => void;
 
   beforeEach(() => {
+    originalConsoleError = console.error;
+    console.error = jest.fn();
     jest.clearAllMocks();
     (mongoose.connect as jest.Mock).mockResolvedValue(undefined);
 
@@ -37,6 +40,10 @@ describe('DataAccessService', () => {
         getModel: jest.fn(() => mockModel),
       };
     });
+  });
+
+  afterEach(() => {
+    console.error = originalConsoleError; // 恢复 console.error
   });
 
   describe('init', () => {
