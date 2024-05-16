@@ -1,5 +1,4 @@
 import axios from 'axios';
-import 'dotenv/config';
 
 export class LineBotService {
   private token = process.env.LINENOTIFY;

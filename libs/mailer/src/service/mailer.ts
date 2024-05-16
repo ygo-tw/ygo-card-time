@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import nodemailer, { Transporter, SendMailOptions } from 'nodemailer';
 
 export class YGOMailer {

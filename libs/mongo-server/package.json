@@ -4,13 +4,13 @@
   "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
+    "test": "jest",
     "clean": "rimraf ./dist",
     "build": "yarn clean && tsc"
   },
   "dependencies": {
     "@types/node": "^20.12.11",
     "@ygo/schemas": "file:../schemas",
-    "dotenv": "^16.4.5",
     "mongoose": "^8.3.4",
     "typescript": "^5.4.5"
   },

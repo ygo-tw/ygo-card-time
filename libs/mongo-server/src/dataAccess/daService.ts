@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import mongoose, {
   FilterQuery,
   ProjectionType,

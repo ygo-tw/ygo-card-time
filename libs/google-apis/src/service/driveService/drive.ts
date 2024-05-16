@@ -1,7 +1,6 @@
 import { google, drive_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import fs from 'fs';
-import 'dotenv/config';
 
 export class DriveService {
   private oAuth2Client?: OAuth2Client;
