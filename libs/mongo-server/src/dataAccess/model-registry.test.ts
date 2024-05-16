@@ -4,10 +4,10 @@ import mongoose from 'mongoose';
 // Mock modelSchemas
 jest.mock('./model-schemas', () => ({
   modelSchemas: {
-    admin: { name: String, age: Number },
-    banner: { name: String, price: Number },
-    cards: { name: String, age: Number },
-    decks: { name: String, price: Number },
+    admin: { originSchema: { name: String, age: Number } },
+    banner: { originSchema: { name: String, price: Number } },
+    cards: { originSchema: { name: String, age: Number } },
+    decks: { originSchema: { name: String, price: Number } },
   },
 }));
 
@@ -30,7 +30,6 @@ describe('ModelRegistry', () => {
       (ModelRegistry as any).instance = null;
       registry = ModelRegistry.getInstance();
       (registry as any).models = {};
-      (registry as any).schemaDef = {};
     });
 
     afterEach(() => {

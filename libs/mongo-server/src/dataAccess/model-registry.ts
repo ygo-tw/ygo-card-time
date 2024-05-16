@@ -1,5 +1,5 @@
 import { ModelNames, ModelSchema } from '@ygo/schemas';
-import mongoose, { Document, Model, Schema } from 'mongoose';
+import mongoose, { Document, Model } from 'mongoose';
 import { modelSchemas } from './model-schemas';
 
 export class ModelRegistry {
@@ -22,7 +22,7 @@ export class ModelRegistry {
    */
   public getModel(modelName: ModelNames): Model<Document> {
     if (!this.models[modelName]) {
-      const schema = new Schema(this.schemaDef[modelName]);
+      const schema = this.schemaDef[modelName]?.originSchema;
       this.models[modelName] = mongoose.model<Document>(
         modelName,
         schema,
