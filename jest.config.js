@@ -4,4 +4,7 @@ module.exports = {
   roots: ['<rootDir>/libs', '<rootDir>/apps'],
   testMatch: ['**/**/src/**/*.test.ts'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'node'],
+  transform: {
+    '^.+\\.tsx?$': 'babel-jest',
+  },
 };
