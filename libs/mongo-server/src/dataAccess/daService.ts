@@ -7,12 +7,13 @@ import mongoose, {
 import { ModelNames } from '@ygo/schemas';
 import { ModelRegistry } from './modelRegistry';
 
-const uri = `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
-
+// const uri = `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
 export class DataAccessService {
   private registry: ModelRegistry;
+  private uri: string;
 
-  constructor() {
+  constructor(uri: string) {
+    this.uri = uri;
     this.registry = ModelRegistry.getInstance();
   }
 
@@ -22,7 +23,7 @@ export class DataAccessService {
 
   private async connectDB() {
     try {
-      await mongoose.connect(uri);
+      await mongoose.connect(this.uri);
       console.log('MongoDB connected successfully.');
     } catch (err) {
       console.error('MongoDB connection error:', err);

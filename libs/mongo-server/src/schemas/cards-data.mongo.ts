@@ -1,7 +1,5 @@
 import { Schema } from 'mongoose';
-import { YGO_OPTIONS } from '../../common/ygo';
-import { CardsDataType } from './cards-data';
-
+import { CardsDataType, YGO_OPTIONS } from '@ygo/schemas';
 export const CardsMongoSchema = new Schema<CardsDataType>(
   {
     _id: { type: String, required: true, match: /^[0-9a-f]{24}$/ },

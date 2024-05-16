@@ -10,8 +10,10 @@ const main = async () => {
       font: 'Ghost',
     })
   );
+  const uri = `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
 
-  const dataAccessService = new DataAccessService();
+  const dataAccessService = new DataAccessService(uri);
+  await dataAccessService.init();
   const cards = await dataAccessService.find<CardsDataType>(
     'cards',
     { name: { $regex: '黑暗' } },
