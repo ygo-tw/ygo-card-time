@@ -1,6 +1,6 @@
 import { ModelNames, ModelSchema } from '@ygo/schemas';
 import mongoose, { Document, Model } from 'mongoose';
-import { modelSchemas } from './model-schemas';
+import { modelSchemas } from './modelSchemas';
 
 export class ModelRegistry {
   private static instance: ModelRegistry;

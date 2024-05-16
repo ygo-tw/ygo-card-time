@@ -6,7 +6,7 @@ import mongoose, {
   Document,
 } from 'mongoose';
 import { ModelNames } from '@ygo/schemas';
-import { ModelRegistry } from './model-registry';
+import { ModelRegistry } from './modelRegistry';
 
 const uri = `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
 

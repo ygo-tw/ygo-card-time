@@ -1,4 +1,4 @@
-import { DataAccessService } from './dataAccess/da-service';
-import { modelSchemas } from './dataAccess/model-schemas';
+import { DataAccessService } from './dataAccess/daService';
+import { modelSchemas } from './dataAccess/modelSchemas';
 
 export { DataAccessService, modelSchemas };

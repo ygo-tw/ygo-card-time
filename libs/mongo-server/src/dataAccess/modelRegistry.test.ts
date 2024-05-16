@@ -1,8 +1,8 @@
-import { ModelRegistry } from './model-registry';
+import { ModelRegistry } from './modelRegistry';
 import mongoose from 'mongoose';
 
 // Mock modelSchemas
-jest.mock('./model-schemas', () => ({
+jest.mock('./modelSchemas', () => ({
   modelSchemas: {
     admin: { originSchema: { name: String, age: Number } },
     banner: { originSchema: { name: String, price: Number } },
