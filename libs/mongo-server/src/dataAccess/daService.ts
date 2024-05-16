@@ -11,19 +11,18 @@ import { ModelRegistry } from './modelRegistry';
 export class DataAccessService {
   private registry: ModelRegistry;
   private uri: string;
+  private isInit: boolean = false;
 
   constructor(uri: string) {
     this.uri = uri;
     this.registry = ModelRegistry.getInstance();
   }
 
-  async init() {
-    await this.connectDB();
-  }
-
-  private async connectDB() {
+  private async init() {
     try {
+      console.log('Initializing MongoDB...');
       await mongoose.connect(this.uri);
+      this.isInit = true;
       console.log('MongoDB connected successfully.');
     } catch (err) {
       console.error('MongoDB connection error:', err);
@@ -31,13 +30,20 @@ export class DataAccessService {
     }
   }
 
-  public find<T extends Document>(
+  private async ensureInitialized() {
+    if (!this.isInit) {
+      await this.init();
+    }
+  }
+
+  public async find<T extends Document>(
     modelName: ModelNames,
     filter: FilterQuery<T> = {},
     projection: ProjectionType<T> = {},
     options: QueryOptions = {}
-  ) {
+  ): Promise<T[]> {
+    await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
-    return model.find(filter, projection, options).exec();
+    return model.find(filter, projection, options).exec() as Promise<T[]>;
   }
 }
