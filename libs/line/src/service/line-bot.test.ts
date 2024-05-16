@@ -7,17 +7,24 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('LineBotService', () => {
   let service: LineBotService;
+  let originalConsoleError: (...data: any[]) => void;
 
   beforeEach(() => {
-    // 清理模拟并重新设置
+    originalConsoleError = console.error;
+    console.error = jest.fn();
+
     jest.clearAllMocks();
     service = new LineBotService();
+  });
+
+  afterEach(() => {
+    console.error = originalConsoleError; // 恢复 console.error
   });
 
   describe('sendNotify', () => {
     it('should return true when message is sent successfully', async () => {
       const message = 'Hello, LINE!';
-      mockedAxios.post.mockResolvedValue({}); // 模拟 axios.post 成功返回
+      mockedAxios.post.mockResolvedValue({});
 
       const result = await service.sendNotify(message);
       expect(result).toBe(true);
@@ -36,7 +43,7 @@ describe('LineBotService', () => {
     it('should throw an error when sending message fails', async () => {
       const message = 'Hello, LINE!';
       const errorMessage = 'Failed to send line notify';
-      mockedAxios.post.mockRejectedValue(new Error(errorMessage)); // 模拟 axios.post 失败
+      mockedAxios.post.mockRejectedValue(new Error(errorMessage));
 
       await expect(service.sendNotify(message)).rejects.toThrow(errorMessage);
     });
@@ -44,7 +51,7 @@ describe('LineBotService', () => {
     it('should allow custom content types', async () => {
       const message = 'Hello, LINE!';
       const contentType = 'application/json';
-      mockedAxios.post.mockResolvedValue({}); // 模拟 axios.post 成功返回
+      mockedAxios.post.mockResolvedValue({});
 
       const result = await service.sendNotify(message, contentType);
       expect(result).toBe(true);
