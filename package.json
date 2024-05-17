@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "test": "jest --coverage",
+    "preclean": "bash ./preclean.sh",
     "clean": "rimraf **/node_modules **/dist",
     "deps": "yarn install",
     "build:workspaces": "yarn workspaces run build",
