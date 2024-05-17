@@ -1,7 +1,6 @@
 import { envRunner } from './app';
 import figlet from 'figlet';
-import { DataAccessService } from '@ygo/mongo-server';
-import { CardsDataType } from '@ygo/schemas';
+import { CheerioCrawler, CheerioRoot } from '@ygo/crawler';
 
 const main = async () => {
   envRunner();
@@ -10,16 +9,19 @@ const main = async () => {
       font: 'Ghost',
     })
   );
-  const uri = `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
 
-  const dataAccessService = new DataAccessService(uri);
-  const cards = await dataAccessService.find<CardsDataType>(
-    'cards',
-    { name: { $regex: '黑暗' } },
-    {}
+  const crawler = new CheerioCrawler('https://www.db.yugioh-card.com');
+
+  const $: CheerioRoot = await crawler.crawl(
+    '/yugiohdb/faq_search.action?ope=4&cid=4555&request_locale=ja',
+    'utf-8'
   );
 
-  console.log(cards.length);
+  console.log(
+    $('#card_text')
+      .map((_, elem) => $(elem).text().trim())
+      .get()
+  );
 };
 
 main();
