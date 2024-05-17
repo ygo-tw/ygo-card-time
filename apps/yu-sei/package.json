@@ -29,7 +29,6 @@
     "dayjs": "^1.11.11",
     "dotenv": "^16.4.5",
     "figlet": "^1.7.0",
-    "googleapis": "^137.1.0",
     "gradient-string": "^2.0.2",
     "iconv": "^3.0.1",
     "iconv-lite": "^0.6.3",
@@ -39,12 +38,7 @@
     "mongoose": "^8.3.4",
     "nanospinner": "^1.1.0",
     "node-schedule": "^2.1.1",
-    "nodemailer": "^6.9.13",
     "nodemon": "^3.1.0",
-    "qs-stringify": "^1.2.1",
-    "readline-sync": "^1.4.10",
-    "request": "^2.88.2",
-    "request-promise": "^4.2.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "webp-converter": "^2.3.3"
@@ -62,8 +56,6 @@
     "@types/inquirer": "^9.0.7",
     "@types/jquery": "^3.5.30",
     "@types/mongoose": "^5.11.97",
-    "@types/node-schedule": "^2.1.7",
-    "@types/nodemailer": "^6.4.15",
-    "@types/readline-sync": "^1.4.8"
+    "@types/node-schedule": "^2.1.7"
   }
 }
