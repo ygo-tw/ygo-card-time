@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1715956668582" clover="3.2.0">
+  <project timestamp="1715956668582" name="All files">
+    <metrics statements="14" coveredstatements="13" conditionals="4" coveredconditionals="3" methods="6" coveredmethods="6" elements="24" coveredelements="22" complexity="0" loc="14" ncloc="14" packages="1" files="1" classes="1"/>
+    <file name="cheerioService.ts" path="/home/erichong/ygo-card-time/libs/crawler/src/services/cheerioService.ts">
+      <metrics statements="14" coveredstatements="13" conditionals="4" coveredconditionals="3" methods="6" coveredmethods="6"/>
+      <line num="13" count="7" type="stmt"/>
+      <line num="21" count="1" type="stmt"/>
+      <line num="34" count="1" type="stmt"/>
+      <line num="35" count="1" type="stmt"/>
+      <line num="36" count="1" type="stmt"/>
+      <line num="50" count="2" type="stmt"/>
+      <line num="51" count="2" type="stmt"/>
+      <line num="52" count="1" type="stmt"/>
+      <line num="53" count="1" type="stmt"/>
+      <line num="55" count="1" type="cond" truecount="1" falsecount="1"/>
+      <line num="56" count="1" type="stmt"/>
+      <line num="58" count="0" type="stmt"/>
+      <line num="69" count="2" type="stmt"/>
+      <line num="78" count="1" type="stmt"/>
+    </file>
+  </project>
+</coverage>
