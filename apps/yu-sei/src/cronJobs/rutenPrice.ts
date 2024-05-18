@@ -83,10 +83,10 @@ export class RutenService {
   }
 
   /**
-   * Checks if the price information contains any anomalies.
-   * Anomalies include price_lowest or price_avg being null, 0, or Infinite.
-   * @param priceInfo - The price information object to check.
-   * @returns True if the price information is valid, otherwise false.
+   * 檢查價格資訊是否包含任何異常。
+   * 異常包括 price_lowest 或 price_avg 為 null、0 或無限。
+   * @param priceInfo - 要檢查的價格資訊物件。
+   * @returns 如果價格資訊有效，則返回 true，否則返回 false。
    */
   private isPriceInfoValid(priceInfo: PriceInfo) {
     const { price_lowest, price_avg } = priceInfo;
@@ -108,11 +108,12 @@ export class RutenService {
   }
 
   /**
-   * Fetches price information for a given rarity and search name.
-   * @param rarity - The rarity of the card.
-   * @param searchName - The search name for the card.
-   * @param rarityLength - The length of the rarity array.
-   * @param cardId - The ID of the card.
+   * 根據稀有度和搜尋名稱獲取價格資訊。
+   * @param rarity - 卡片的稀有度。
+   * @param searchName - 卡片的搜尋名稱。
+   * @param rarityLength - 稀有度陣列的長度。
+   * @param cardId - 卡片的ID。
+   * @returns PriceInfo object containing the lowest and average price.
    */
   private async getPriceByRarity(
     rarity: string,
@@ -185,13 +186,13 @@ export class RutenService {
   }
 
   /**
-   * Filters the given list of prices based on various criteria such as currency, stock availability,
-   * product name keywords, and price validity. Returns a list of valid prices.
-   * @param prices - An array of RutenPriceDetailResponse objects containing price details.
-   * @param number - The card number to be checked in the product name.
-   * @param rarity - The rarity of the card.
-   * @param searchName - The search name for the card.
-   * @returns An array of valid prices.
+   * 根據各種標準過濾價格清單，例如貨幣、庫存可用性、產品名稱關鍵字和價格有效性。
+   * 返回有效價格列表。
+   * @param prices - 包含價格詳情的 RutenPriceDetailResponse 物件陣列。
+   * @param number - 要在產品名稱中檢查的卡片編號。
+   * @param rarity - 卡片的稀有度。
+   * @param searchName - 卡片的搜尋名稱。
+   * @returns 有效價格的陣列。
    */
   private extractValidPrices(
     prices: RutenPriceDetailResponse[],
@@ -252,10 +253,10 @@ export class RutenService {
   }
 
   /**
-   * Generates keywords for the search based on rarity.
-   * @param rarity - The rarity of the card.
-   * @param rarityLength - The length of the rarity array.
-   * @returns A keyword string.
+   * 根據稀有度生成搜索關鍵字。
+   * @param rarity - 卡片的稀有度。
+   * @param rarityLength - 稀有度陣列的長度。
+   * @returns 關鍵字字串。
    */
   private keyWordsFactory(rarity: string, rarityLength: number) {
     if (rarity === '普卡' && rarityLength === 1) return '';
@@ -302,15 +303,14 @@ export class RutenService {
       }
     }
 
-    // 默认处理
     return '+' + rarity;
   }
 
   /**
-   * Pre-processes card information to generate search names and unique rarities.
-   * @param cardInfo - The card information.
-   * @param idx - The index of the card.
-   * @returns An object containing the search name and rarity array.
+   * 對卡片資訊進行預處理以生成搜尋名稱和唯一稀有度。
+   * @param cardInfo - 卡片資訊。
+   * @param idx - 卡片的索引。
+   * @returns 包含搜尋名稱和稀有度陣列的物件。
    */
   private async preProcessing(cardInfo: CardsDataType, idx: number) {
     if (idx && !(idx % 300)) await delay(800);
