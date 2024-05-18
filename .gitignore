@@ -2,6 +2,4 @@ node_modules
 config/*
 !config/.gitkeep
 !config/*.example
-log/*
-!log/.gitkeep
-!log/**/.gitkeep
+log/**/*.log
