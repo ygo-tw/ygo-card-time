@@ -4,8 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --coverage",
     "clean": "rimraf ./dist",
+    "rebuild": "rimraf ./node_modules && yarn install",
     "build": "yarn clean && tsc",
     "watch:ts": "tsc --watch",
     "start": "yarn build && node dist/index.js",
@@ -18,12 +19,12 @@
   "description": "",
   "dependencies": {
     "@types/node": "^20.12.11",
+    "@ygo/crawler": "file:../../libs/crawler",
+    "@ygo/google-apis": "file:../../libs/google-apis",
+    "@ygo/line": "file:../../libs/line",
     "@ygo/mailer": "file:../../libs/mailer",
     "@ygo/mongo-server": "file:../../libs/mongo-server",
     "@ygo/schemas": "file:../../libs/schemas",
-    "@ygo/google-apis": "file:../../libs/google-apis",
-    "@ygo/line": "file:../../libs/line",
-    "@ygo/crawler": "file:../../libs/crawler",
     "axios": "^1.6.8",
     "chalk": "^4.1.2",
     "dayjs": "^1.11.11",
@@ -32,6 +33,7 @@
     "gradient-string": "^2.0.2",
     "image-to-base64": "^2.2.0",
     "inquirer": "^9.2.20",
+    "lodash": "^4.17.21",
     "mongoose": "^8.3.4",
     "nanospinner": "^1.1.0",
     "node-schedule": "^2.1.1",
@@ -44,12 +46,15 @@
     "node": ">=14.0.0"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.24.5",
+    "@babel/preset-typescript": "^7.24.1",
     "@types/axios": "^0.14.0",
     "@types/chalk": "^2.2.0",
     "@types/dotenv": "^8.2.0",
     "@types/figlet": "^1.5.8",
     "@types/gradient-string": "^1.1.6",
     "@types/inquirer": "^9.0.7",
+    "@types/lodash": "^4.17.4",
     "@types/mongoose": "^5.11.97",
     "@types/node-schedule": "^2.1.7"
   }

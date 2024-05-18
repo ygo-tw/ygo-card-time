@@ -1,6 +1,6 @@
 import { envRunner } from './app';
 import figlet from 'figlet';
-import { CheerioCrawler, CheerioRoot } from '@ygo/crawler';
+import { PriceCalculator } from './utils/priceCalculator';
 
 const main = async () => {
   envRunner();
@@ -10,17 +10,10 @@ const main = async () => {
     })
   );
 
-  const crawler = new CheerioCrawler('https://www.db.yugioh-card.com');
-
-  const $: CheerioRoot = await crawler.crawl(
-    '/yugiohdb/faq_search.action?ope=4&cid=4555&request_locale=ja',
-    'utf-8'
-  );
+  const priceCalculator = new PriceCalculator();
 
   console.log(
-    $('#card_text')
-      .map((_, elem) => $(elem).text().trim())
-      .get()
+    priceCalculator.calculatePrices([100, 200, 300, 400, 500, 10000])
   );
 };
 
