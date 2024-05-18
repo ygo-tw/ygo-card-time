@@ -11,6 +11,7 @@ import {
 } from '@ygo/schemas';
 import lodash from 'lodash';
 import axios from 'axios';
+import { createLogger, format, transports, Logger } from 'winston';
 
 export type PriceInfo = {
   time: string;
@@ -22,6 +23,7 @@ export type PriceInfo = {
 export class RutenService {
   private dataAccessService: DataAccessService;
   private priceCalculator: PriceCalculator;
+  private logger: Logger;
   private startTime: Date;
   private priceTemplate = {
     time: null,
@@ -32,17 +34,41 @@ export class RutenService {
 
   constructor(
     dataAccessService: DataAccessService,
-    priceCalculator: PriceCalculator
+    priceCalculator: PriceCalculator,
+    logger?: Logger
   ) {
-    console.log(gradient.rainbow('Start Runten Service'));
     this.dataAccessService = dataAccessService;
     this.priceCalculator = priceCalculator;
     this.startTime = new Date();
-    console.log(this.startTime);
+    this.logger =
+      logger ||
+      createLogger({
+        level: 'info',
+        format: format.combine(
+          format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+          format.printf(info => {
+            const message = `${info.timestamp} [${info.level}]: ${info.message}`;
+            return info.level === 'info' ? gradient.rainbow(message) : message;
+          })
+        ),
+        transports: [
+          new transports.Console(),
+          new transports.File({
+            filename: `../../log/rutenCrawlerPrice/combined_${this.startTime.toDateString()}.log`,
+          }),
+        ],
+        exceptionHandlers: [
+          new transports.File({
+            filename: `../../log/rutenCrawlerPrice/exceptions_${this.startTime.toDateString()}.log`,
+          }),
+        ],
+        exitOnError: false, // 設置為 false 以防止例外退出
+      });
+    this.logger.info('Start Runten Service');
   }
 
   public async getRutenPrice() {
-    console.log(gradient.rainbow('Start Reptile Cards Information'));
+    this.logger.info('Start Reptile Cards Information');
     const cardsInfo = await this.dataAccessService.find<CardsDataType>(
       'cards',
       {
@@ -77,7 +103,7 @@ export class RutenService {
         );
 
         if (!this.isPriceInfoValid(priceInfo)) allCardPrices.push(priceInfo);
-        else console.warn(`Invalid price information for ${cardInfo.id}`);
+        else this.logger.warn(`Invalid price information for ${cardInfo.id}`);
       }
     }
   }
@@ -135,7 +161,7 @@ export class RutenService {
     ).Rows.map(el => el.Id);
 
     if (!targets.length) {
-      console.warn(number, ': No product found');
+      this.logger.warn(number, ': No product found');
       return {
         ...price,
         price_lowest: null,
@@ -151,7 +177,7 @@ export class RutenService {
     try {
       prices = (await axios.get(searchURL)).data;
     } catch (error) {
-      console.warn(number, ': Error fetching product data:', error);
+      this.logger.warn(number, ': Error fetching product data:', error);
       return {
         ...price,
         price_lowest: null,
@@ -167,7 +193,7 @@ export class RutenService {
     );
 
     if (!priceList.length) {
-      console.warn(number, ': No price found');
+      this.logger.warn(number, ': No price found');
       return {
         ...price,
         price_lowest: null,
@@ -246,8 +272,6 @@ export class RutenService {
       .filter(isFixedPrice)
       .map(product => product.PriceRange[1])
       .filter(isValidPrice);
-
-    console.log(priceList);
 
     return priceList;
   }

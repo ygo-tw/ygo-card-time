@@ -4,10 +4,18 @@ import { RutenPriceDetailResponse } from '@ygo/schemas';
 import { PriceCalculator } from '../utils/priceCalculator';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import { createLogger } from 'winston';
 
 jest.mock('../utils/priceCalculator');
 jest.mock('@ygo/mongo-server');
 jest.mock('axios');
+jest.mock('winston', () => {
+  const actualWinston = jest.requireActual('winston');
+
+  return {
+    ...actualWinston,
+  };
+});
 
 describe('RutenService', () => {
   let rutenService: RutenService;
@@ -23,7 +31,15 @@ describe('RutenService', () => {
       minPrice: 100,
       averagePrice: 125,
     });
-    rutenService = new RutenService(mockDataAccessService, mockPriceCalculator);
+    const logger = createLogger({
+      level: 'info',
+      silent: true,
+    });
+    rutenService = new RutenService(
+      mockDataAccessService,
+      mockPriceCalculator,
+      logger
+    );
   });
 
   afterEach(() => {
