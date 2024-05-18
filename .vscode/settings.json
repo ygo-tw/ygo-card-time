@@ -83,5 +83,6 @@
   "files.eol": "\n",
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "cSpell.words": ["Runten"]
 }
