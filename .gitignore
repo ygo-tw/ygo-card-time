@@ -3,3 +3,4 @@ config/*
 !config/.gitkeep
 !config/*.example
 log/**/*.log
+coverage/**/*
