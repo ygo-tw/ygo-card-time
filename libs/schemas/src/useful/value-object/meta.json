@@ -27,7 +27,7 @@
       "title": "密碼",
       "description": "卡片密碼",
       "type": "string",
-      "pattern": "^[0-9]{8}$"
+      "pattern": "^[0-9]{8}[A-Z]?$"
     },
     "price_object": {
       "type": "object",

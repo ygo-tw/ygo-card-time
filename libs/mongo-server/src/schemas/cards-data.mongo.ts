@@ -3,7 +3,7 @@ import { CardsDataType, YGO_OPTIONS } from '@ygo/schemas';
 export const CardsMongoSchema = new Schema<CardsDataType>(
   {
     _id: { type: String, required: true, match: /^[0-9a-f]{24}$/ },
-    number: { type: String, match: /^[0-9]{8}$/ },
+    number: { type: String, match: /^[0-9]{8}[A-Z]?$/ },
     name: { type: String, required: true, maxLength: 50 },
     atk: { type: Number, min: 0, max: 20000, default: null },
     def: { type: Number, min: 0, max: 20000, default: null },
