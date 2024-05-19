@@ -90,7 +90,6 @@ export class RutenService {
         {},
         { id: 1, rarity: 1, _id: 0, number: 1 }
       ));
-
     const noPriceId = [];
     const updateFailedId = [];
 
