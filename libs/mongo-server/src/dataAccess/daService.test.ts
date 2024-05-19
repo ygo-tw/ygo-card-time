@@ -33,6 +33,7 @@ describe('DataAccessService', () => {
     mockModel = {
       find: jest.fn().mockReturnThis(),
       exec: jest.fn().mockResolvedValue([]),
+      findOneAndUpdate: jest.fn().mockReturnThis(),
     };
 
     (ModelRegistry.getInstance as jest.Mock).mockImplementation(() => {
@@ -78,6 +79,61 @@ describe('DataAccessService', () => {
       const res = await service.find(modelName, filter, projection, options);
       expect(mockModel.find).toHaveBeenCalledWith(filter, projection, options);
       expect(res).toEqual([]);
+    });
+  });
+
+  describe('findAndUpdate', () => {
+    it('should ensure the database is initialized', async () => {
+      const spyInit = jest
+        .spyOn(service as any, 'init')
+        .mockResolvedValue(undefined);
+      await service.findAndUpdate(
+        'admin',
+        { name: 'test' },
+        { $set: { name: 'updatedName' } }
+      );
+      expect(spyInit).toHaveBeenCalled();
+    });
+
+    it('should find and update a document', async () => {
+      const modelName = 'admin';
+      const filter = { name: 'test' };
+      const update = { $set: { name: 'updatedName' } };
+      const options = { new: true };
+
+      const mockUpdatedDocument = { name: 'updatedName' };
+      mockModel.exec = jest.fn().mockResolvedValue(mockUpdatedDocument);
+
+      const res = await service.findAndUpdate(
+        modelName,
+        filter,
+        update,
+        options
+      );
+      expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(filter, update, {
+        ...options,
+      });
+      expect(res).toEqual(mockUpdatedDocument);
+    });
+
+    it('should return null if no document is found', async () => {
+      const modelName = 'admin';
+      const filter = { name: 'test' };
+      const update = { $set: { name: 'updatedName' } };
+      const options = { new: true };
+
+      mockModel.exec = jest.fn().mockResolvedValue(null);
+
+      const res = await service.findAndUpdate(
+        modelName,
+        filter,
+        update,
+        options
+      );
+      expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(filter, update, {
+        ...options,
+      });
+      expect(res).toBeNull();
     });
   });
 });

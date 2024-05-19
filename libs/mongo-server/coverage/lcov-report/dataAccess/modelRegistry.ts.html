@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/9</span>
+                <span class='fraction'>0/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>0/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>3/3</span>
+                <span class='fraction'>0/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/9</span>
+                <span class='fraction'>0/9</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -104,33 +104,33 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { ModelNames, ModelSchema } from '@ygo/schemas';
@@ -139,16 +139,16 @@ import { modelSchemas } from './modelSchemas';
 &nbsp;
 export class ModelRegistry {
   private static instance: ModelRegistry;
-  private models: { [key: string]: Model&lt;Document&gt; } = {};
-  private schemaDef: ModelSchema = modelSchemas;
+  private models: { [key: string]: Model&lt;Document&gt; } = <span class="cstat-no" title="statement not covered" >{};</span>
+  private schemaDef: ModelSchema = <span class="cstat-no" title="statement not covered" >modelSchemas;</span>
 &nbsp;
-  private constructor() {}
+<span class="fstat-no" title="function not covered" >  pr</span>ivate constructor() {}
 &nbsp;
-  public static getInstance(): ModelRegistry {
-    if (!ModelRegistry.instance) {
-      ModelRegistry.instance = new ModelRegistry();
+<span class="fstat-no" title="function not covered" >  pu</span>blic static getInstance(): ModelRegistry {
+<span class="cstat-no" title="statement not covered" >    if (!ModelRegistry.instance) {</span>
+<span class="cstat-no" title="statement not covered" >      ModelRegistry.instance = new ModelRegistry();</span>
     }
-    return ModelRegistry.instance;
+<span class="cstat-no" title="statement not covered" >    return ModelRegistry.instance;</span>
   }
 &nbsp;
   /**
@@ -156,16 +156,16 @@ export class ModelRegistry {
    * @param modelName: collection name in MongoDB
    * @returns: Model&lt;modelName&gt;
    */
-  public getModel(modelName: ModelNames): Model&lt;Document&gt; {
-    if (!this.models[modelName]) {
-      const schema = this.schemaDef[modelName]?.originSchema;
-      this.models[modelName] = mongoose.model&lt;Document&gt;(
+<span class="fstat-no" title="function not covered" >  pu</span>blic getModel(modelName: ModelNames): Model&lt;Document&gt; {
+<span class="cstat-no" title="statement not covered" >    if (!this.models[modelName]) {</span>
+      const schema = <span class="cstat-no" title="statement not covered" >this.schemaDef[modelName]?.originSchema;</span>
+<span class="cstat-no" title="statement not covered" >      this.models[modelName] = mongoose.model&lt;Document&gt;(</span>
         modelName,
         schema,
         modelName
       );
     }
-    return this.models[modelName];
+<span class="cstat-no" title="statement not covered" >    return this.models[modelName];</span>
   }
 }
 &nbsp;</pre></td></tr></table></pre>
@@ -175,7 +175,7 @@ export class ModelRegistry {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-05-16T15:04:47.790Z
+                at 2024-05-19T05:04:36.835Z
             </div>
         <script src="../prettify.js"></script>
         <script>

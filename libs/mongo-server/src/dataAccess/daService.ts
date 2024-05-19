@@ -3,6 +3,7 @@ import mongoose, {
   ProjectionType,
   QueryOptions,
   Document,
+  UpdateQuery,
 } from 'mongoose';
 import { ModelNames } from '@ygo/schemas';
 import { ModelRegistry } from './modelRegistry';
@@ -53,5 +54,26 @@ export class DataAccessService {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
     return model.find(filter, projection, options).exec() as Promise<T[]>;
+  }
+
+  /**
+   * Find a document by filter and update it.
+   * @param modelName collection name
+   * @param filter filter query
+   * @param update update query
+   * @param options query options
+   * @returns updated document
+   */
+  public async findAndUpdate<T extends Document>(
+    modelName: ModelNames,
+    filter: FilterQuery<T>,
+    update: UpdateQuery<T>,
+    options: QueryOptions = {}
+  ): Promise<T | null> {
+    await this.ensureInitialized();
+    const model = this.registry.getModel(modelName);
+    return model
+      .findOneAndUpdate(filter, update, { new: true, ...options })
+      .exec() as Promise<T | null>;
   }
 }
