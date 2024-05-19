@@ -73,7 +73,9 @@ export class RutenService {
    * @param {CardsDataType[]} [cards] - 可選的卡片資料陣列，若未提供，將從資料庫中查詢符合條件的卡片資料
    * @returns {Promise<{ updateFailedId: string[], noPriceId: string[] }>} 包含更新失敗和沒有價格資料的卡片ID陣列
    */
-  public async getRutenPrice(cards?: CardsDataType[]) {
+  public async getRutenPrice(
+    cards?: CardsDataType[]
+  ): Promise<{ updateFailedId: string[]; noPriceId: string[] }> {
     this.logger.info('Start Reptile Cards Information');
     const cardsInfo =
       cards ??
