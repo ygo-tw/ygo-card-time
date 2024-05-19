@@ -8,6 +8,7 @@ import {
   CardsDataType,
   RutenShipListResponse,
   RutenPriceDetailResponse,
+  DataAccessEnum,
 } from '@ygo/schemas';
 import lodash from 'lodash';
 import axios from 'axios';
@@ -80,7 +81,7 @@ export class RutenService {
     const cardsInfo =
       cards ??
       (await this.dataAccessService.find<CardsDataType>(
-        'cards',
+        DataAccessEnum.CARDS,
         {
           'price_info.time': {
             $not: new RegExp(dayjs().format('YYYY-MM-DD')),
@@ -137,7 +138,7 @@ export class RutenService {
 
       try {
         await this.dataAccessService.findAndUpdate<CardsDataType>(
-          'cards',
+          DataAccessEnum.CARDS,
           { id: cardInfo.id },
           { $push: { price: { $each: [100, 200, 300] } } }
         );
