@@ -67,19 +67,27 @@ export class RutenService {
     this.logger.info('Start Runten Service');
   }
 
-  public async getRutenPrice() {
+  /**
+   * 爬取露天拍賣卡片價格的異步方法
+   *
+   * @param {CardsDataType[]} [cards] - 可選的卡片資料陣列，若未提供，將從資料庫中查詢符合條件的卡片資料
+   * @returns {Promise<{ updateFailedId: string[], noPriceId: string[] }>} 包含更新失敗和沒有價格資料的卡片ID陣列
+   */
+  public async getRutenPrice(cards?: CardsDataType[]) {
     this.logger.info('Start Reptile Cards Information');
-    const cardsInfo = await this.dataAccessService.find<CardsDataType>(
-      'cards',
-      {
-        'price_info.time': {
-          $not: new RegExp(dayjs().format('YYYY-MM-DD')),
+    const cardsInfo =
+      cards ??
+      (await this.dataAccessService.find<CardsDataType>(
+        'cards',
+        {
+          'price_info.time': {
+            $not: new RegExp(dayjs().format('YYYY-MM-DD')),
+          },
+          // id: "PAC1-JP004",
         },
-        // id: "PAC1-JP004",
-      },
-      {},
-      { id: 1, rarity: 1, _id: 0, number: 1 }
-    );
+        {},
+        { id: 1, rarity: 1, _id: 0, number: 1 }
+      ));
 
     const noPriceId = [];
     const updateFailedId = [];
