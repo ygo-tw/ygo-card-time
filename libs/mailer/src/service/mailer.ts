@@ -7,6 +7,10 @@ export class YGOMailer {
     this.init();
   }
 
+  /**
+   * 初始化邮箱传输器
+   * @private
+   */
   private init() {
     this.transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com', // SMTP 服务器
@@ -19,6 +23,11 @@ export class YGOMailer {
     });
   }
 
+  /**
+   * 重新初始化邮箱传输器
+   * @param {string} email - 新的邮箱账户
+   * @param {string} password - 新的邮箱密码
+   */
   public reInit(email: string, password: string) {
     this.transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
@@ -31,6 +40,12 @@ export class YGOMailer {
     });
   }
 
+  /**
+   * 发送邮件
+   * @param {SendMailOptions} options - 邮件发送选项
+   * @returns {Promise<boolean>} 是否成功发送邮件
+   * @throws {Error} 发送邮件失败时抛出错误
+   */
   public async sendMail(options: SendMailOptions) {
     if (!this.transporter) return false;
     try {

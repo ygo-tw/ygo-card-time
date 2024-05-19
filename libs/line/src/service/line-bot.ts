@@ -6,6 +6,13 @@ export class LineBotService {
 
   constructor() {}
 
+  /**
+   * 發送 LINE Notify 訊息
+   * @param {string} message - 要發送的訊息
+   * @param {string} [contentType='application/x-www-form-urlencoded'] - 內容類型
+   * @returns {Promise<boolean>} 是否成功發送訊息
+   * @throws {Error} 發送訊息失敗時拋出錯誤
+   */
   public async sendNotify(
     message: string,
     contentType: string = 'application/x-www-form-urlencoded'
