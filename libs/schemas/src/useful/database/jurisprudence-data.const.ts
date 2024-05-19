@@ -28,25 +28,7 @@ export const usefulDatabaseJurisprudenceDataSchema = {
     qa: {
       type: 'array',
       items: {
-        type: 'object',
-        properties: {
-          title: {
-            type: 'string',
-            description: 'Title of the question answer',
-          },
-          tag: { type: 'string', description: 'Tag of the question tag' },
-          date: {
-            type: 'string',
-            format: 'date',
-            description: 'Date of the question answer',
-          },
-          q: { type: 'string', description: 'Question' },
-          a: { type: 'string', description: 'Answer' },
-          _id: {
-            $ref: 'https://card.time.com/schema/useful/value-object/meta#/$defs/_id',
-          },
-        },
-        required: ['title', 'tag', 'date', 'q', 'a'],
+        $ref: 'https://card.time.com/schema/useful/value-object/meta#/$defs/qaItem',
       },
     },
   },

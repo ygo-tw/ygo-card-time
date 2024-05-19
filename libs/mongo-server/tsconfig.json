@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2018", // 編譯到的目標 JavaScript 版本
+    "target": "ES2021", // 編譯到的目標 JavaScript 版本
     "module": "CommonJS", // 使用最新的模塊系統
     "strict": true, // 啟用嚴格模式
     "esModuleInterop": true, // 允許進口CommonJS模塊

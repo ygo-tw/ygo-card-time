@@ -47,5 +47,26 @@ export const usefulValueObjectMetaSchema = {
       },
       required: ['time', 'rarity'],
     },
+    qaItem: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: 'Title of the question answer' },
+        tag: { type: 'string', description: 'Tag of the question tag' },
+        date: {
+          type: 'string',
+          format: 'date',
+          description: 'Date of the question answer',
+        },
+        q: { type: 'string', description: 'Question' },
+        a: { type: 'string', description: 'Answer' },
+        _id: {
+          title: '識別編號',
+          description: '此筆資料的唯一識別值',
+          type: 'string',
+          pattern: '^[0-9a-f]{24}$',
+        },
+      },
+      required: ['title', 'tag', 'date', 'q', 'a'],
+    },
   },
 } as const;

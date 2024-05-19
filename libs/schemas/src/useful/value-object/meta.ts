@@ -28,3 +28,10 @@ export type MetaPriceObjectType = FromSchema<
     keepDefaultedPropertiesOptional: true;
   }
 >;
+
+export type MetaQAIemType = FromSchema<
+  typeof usefulValueObjectMetaSchema.$defs.qaItem,
+  {
+    keepDefaultedPropertiesOptional: true;
+  }
+>;
