@@ -1,3 +1,4 @@
-export * from './dataAccess.type';
-export * from './ygo';
-export * from './ruten.type';
+export * from './type/dataAccess.type';
+export * from './format/ygo';
+export * from './type/ruten.type';
+export * from './enums/dataAcess';

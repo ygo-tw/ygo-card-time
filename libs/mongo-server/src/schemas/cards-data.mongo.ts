@@ -1,5 +1,5 @@
 import { Schema } from 'mongoose';
-import { CardsDataType, YGO_OPTIONS } from '@ygo/schemas';
+import { CardsDataType, YGO_OPTIONS, DataAccessEnum } from '@ygo/schemas';
 export const CardsMongoSchema = new Schema<CardsDataType>(
   {
     _id: { type: String, required: true, match: /^[0-9a-f]{24}$/ },
@@ -62,5 +62,5 @@ export const CardsMongoSchema = new Schema<CardsDataType>(
     },
     effect: { type: String, maxLength: 800 },
   },
-  { collection: 'cards' }
+  { collection: DataAccessEnum.CARDS }
 );

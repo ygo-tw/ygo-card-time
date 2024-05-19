@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest --coverage",
     "clean": "rimraf ./dist",
+    "rebuild": "rimraf ./noed_modules && yarn install",
     "build": "yarn clean && tsc"
   },
   "dependencies": {
