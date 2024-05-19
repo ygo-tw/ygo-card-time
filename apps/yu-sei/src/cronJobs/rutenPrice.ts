@@ -81,6 +81,9 @@ export class RutenService {
       { id: 1, rarity: 1, _id: 0, number: 1 }
     );
 
+    const noPriceId = [];
+    const updateFailedId = [];
+
     for (const [idx, cardInfo] of cardsInfo.entries()) {
       if (!cardInfo.id) continue;
       const { searchName, rarity } = await this.preProcessing(cardInfo, idx);
@@ -105,7 +108,64 @@ export class RutenService {
         if (!this.isPriceInfoValid(priceInfo)) allCardPrices.push(priceInfo);
         else this.logger.warn(`Invalid price information for ${cardInfo.id}`);
       }
+
+      const totalSpendTime = `Total Spend ${chalk.bgGray((new Date().getTime() - this.startTime.getTime()) / 1000)} sec`;
+
+      const progressBar = ` ${(((idx + 1) / cardsInfo.length) * 1000000) / 10000}% `;
+
+      if (!allCardPrices.length) {
+        spinner
+          .error({
+            text: `Card Number : ${chalk.white.bgRed(
+              `${cardInfo.id} no price information! Current progress [${idx + 1}/${
+                cardsInfo.length
+              }] ${chalk.blue(progressBar)} ${totalSpendTime} `
+            )}`,
+          })
+          .clear();
+        noPriceId.push(cardInfo.id);
+      }
+
+      try {
+        await this.dataAccessService.findAndUpdate<CardsDataType>(
+          'cards',
+          { id: cardInfo.id },
+          { $push: { price: { $each: [100, 200, 300] } } }
+        );
+      } catch (error) {
+        spinner
+          .error({
+            text: `Card Number : ${chalk.white.bgCyanBright(
+              `${cardInfo.id} upload Failed!`
+            )} Current progress [${idx + 1}/${cardsInfo.length}] ${chalk.blue(
+              progressBar
+            )} ${totalSpendTime}`,
+          })
+          .clear();
+
+        updateFailedId.push(cardInfo.id);
+      }
+
+      const successWords = allCardPrices
+        .slice(allCardPrices.length - rarity.length, allCardPrices.length)
+        .map(el => `${el.rarity}-${el.price_lowest}-${el.price_avg}`)
+        .join(' / ');
+
+      spinner
+        .success({
+          text: `Get Card ${chalk.whiteBright.bgGreen(
+            ` ${cardInfo.id}`
+          )} Price Success! (${successWords}) Current progress [${idx + 1}/${
+            cardsInfo.length
+          }] ${chalk.blue(progressBar)} ${totalSpendTime} `,
+        })
+        .clear();
     }
+
+    return {
+      updateFailedId,
+      noPriceId,
+    };
   }
 
   /**

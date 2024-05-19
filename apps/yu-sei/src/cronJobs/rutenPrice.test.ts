@@ -5,6 +5,7 @@ import { PriceCalculator } from '../utils/priceCalculator';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { createLogger } from 'winston';
+import { Document } from 'mongoose';
 
 jest.mock('../utils/priceCalculator');
 jest.mock('@ygo/mongo-server');
@@ -16,34 +17,134 @@ jest.mock('winston', () => {
     ...actualWinston,
   };
 });
+jest.mock('nanospinner', () => {
+  const actualNanoSpinner = jest.requireActual('nanospinner');
+  return {
+    ...actualNanoSpinner,
+  };
+});
+
+interface MockCard extends Document {
+  id: string;
+  rarity: string[];
+  number: number;
+}
 
 describe('RutenService', () => {
   let rutenService: RutenService;
   let mockPriceCalculator: jest.Mocked<PriceCalculator>;
+  let mockDataAccessService: jest.Mocked<DataAccessService>;
+  let mockLogger: any;
 
   beforeEach(() => {
     jest.resetAllMocks();
-    const mockDataAccessService = new DataAccessService(
-      'mongodb://localhost:27017/ygo'
-    );
+    mockDataAccessService = {
+      find: jest.fn(),
+      findAndUpdate: jest.fn(),
+    } as unknown as jest.Mocked<DataAccessService>;
     mockPriceCalculator = new PriceCalculator() as jest.Mocked<PriceCalculator>;
     mockPriceCalculator.calculatePrices.mockReturnValue({
       minPrice: 100,
       averagePrice: 125,
     });
-    const logger = createLogger({
+    mockLogger = createLogger({
       level: 'info',
       silent: true,
     });
+
     rutenService = new RutenService(
       mockDataAccessService,
       mockPriceCalculator,
-      logger
+      mockLogger
     );
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('getRutenPrice', () => {
+    it('should get card prices and update the database', async () => {
+      const mockCards: MockCard[] = [
+        { id: 'CARD1', rarity: ['普通', '白鑽'], number: 1 } as MockCard,
+        { id: 'CARD2', rarity: ['普通'], number: 2 } as MockCard,
+      ];
+      mockDataAccessService.find.mockResolvedValue(mockCards);
+      (rutenService as any).preProcessing = jest
+        .fn()
+        .mockResolvedValue({ searchName: 'Test', rarity: ['普通', '白鑽'] });
+      (rutenService as any).getPriceByRarity = jest.fn().mockResolvedValue({
+        rarity: '普通',
+        price_lowest: 100,
+        price_avg: 125,
+      });
+      (rutenService as any).isPriceInfoValid = jest.fn().mockReturnValue(false);
+
+      const result = await rutenService.getRutenPrice();
+
+      expect(mockDataAccessService.find).toHaveBeenCalledWith(
+        'cards',
+        {
+          'price_info.time': { $not: new RegExp(dayjs().format('YYYY-MM-DD')) },
+        },
+        {},
+        { id: 1, rarity: 1, _id: 0, number: 1 }
+      );
+      expect((rutenService as any).preProcessing).toHaveBeenCalledTimes(
+        mockCards.length
+      );
+      expect((rutenService as any).getPriceByRarity).toHaveBeenCalledTimes(4);
+      expect((rutenService as any).isPriceInfoValid).toHaveBeenCalledTimes(4);
+      expect(mockDataAccessService.findAndUpdate).toHaveBeenCalledTimes(
+        mockCards.length
+      );
+
+      expect(result.updateFailedId).toEqual([]);
+      expect(result.noPriceId).toEqual([]);
+    });
+
+    it('should handle cards with no price information', async () => {
+      const mockCards: MockCard[] = [
+        { id: 'CARD1', rarity: ['普通'], number: 1 } as MockCard,
+      ];
+      mockDataAccessService.find.mockResolvedValue(mockCards);
+      (rutenService as any).preProcessing = jest
+        .fn()
+        .mockResolvedValue({ searchName: 'Test', rarity: ['普通'] });
+      (rutenService as any).getPriceByRarity = jest
+        .fn()
+        .mockResolvedValue(null); // Simulate no price information
+      (rutenService as any).isPriceInfoValid = jest.fn().mockReturnValue(true);
+
+      const result = await rutenService.getRutenPrice();
+
+      expect(result.noPriceId).toEqual(['CARD1']);
+      expect(result.updateFailedId).toEqual([]);
+    });
+
+    it('should handle update failures', async () => {
+      const mockCards: MockCard[] = [
+        { id: 'CARD1', rarity: ['普通'], number: 1 } as MockCard,
+      ];
+      mockDataAccessService.find.mockResolvedValue(mockCards);
+      (rutenService as any).preProcessing = jest
+        .fn()
+        .mockResolvedValue({ searchName: 'Test', rarity: ['普通'] });
+      (rutenService as any).getPriceByRarity = jest.fn().mockResolvedValue({
+        rarity: '普通',
+        price_lowest: 100,
+        price_avg: 125,
+      });
+      (rutenService as any).isPriceInfoValid = jest.fn().mockReturnValue(false);
+      mockDataAccessService.findAndUpdate.mockRejectedValue(
+        new Error('Update failed')
+      );
+
+      const result = await rutenService.getRutenPrice();
+
+      expect(result.updateFailedId).toEqual(['CARD1']);
+      expect(result.noPriceId).toEqual([]);
+    });
   });
 
   describe('isPriceInfoValid', () => {
