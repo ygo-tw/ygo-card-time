@@ -70,14 +70,14 @@
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
-    "*.json": "${capture}.ts, ${capture}.type.ts, ${capture}.const.ts,${capture}.test.ts"
+    "*.json": "${capture}.ts, ${capture}.type.ts, ${capture}.const.ts,${capture}.test.ts",
+    "*.ts": "${capture}.test.ts"
   },
   "patternlinks.rules": [
     {
       "linkPattern": "https://card.time.com/schema/([^\"'`#\\s]+)",
       "linkPatternFlags": "i", // Case insensitive
       "linkTarget": "file:///Users/ygo-card-time/libs/schemas/src/$1.json"
-      // Mac: sudo ln -s /Users/timothyliu/code/cms/matrix /Users/matrix
     }
   ],
   "files.eol": "\n",
