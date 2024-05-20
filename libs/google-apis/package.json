@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest --coverage",
     "clean": "rimraf ./dist",
-    "build": "yarn clean && tsc"
+    "build": "yarn clean && tsc  --build --verbose"
   },
   "dependencies": {
     "@babel/preset-env": "^7.24.5",

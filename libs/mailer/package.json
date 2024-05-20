@@ -5,7 +5,7 @@
   "scripts": {
     "test": "jest --coverage",
     "clean": "rimraf ./dist",
-    "build": "yarn clean && tsc"
+    "build": "yarn clean && tsc  --build --verbose"
   },
   "dependencies": {
     "@types/node": "^20.12.11",
