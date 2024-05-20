@@ -7,7 +7,7 @@
     "test": "jest --coverage",
     "clean": "rimraf ./dist",
     "rebuild": "rimraf ./noed_modules && yarn install",
-    "build": "yarn clean && tsc",
+    "build": "yarn clean && tsc  --build --verbose",
     "bundle": "bash ../../rebuild.sh"
   },
   "dependencies": {

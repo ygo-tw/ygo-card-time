@@ -4,3 +4,4 @@ config/*
 !config/*.example
 log/**/*.log
 coverage/**/*
+**/tsconfig.tsbuildinfo
