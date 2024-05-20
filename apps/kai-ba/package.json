@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "clean": "rimraf ./dist",
-    "build": "yarn clean && tsc"
+    "build": "yarn clean && tsc",
+    "rebuild": "rimraf ./node_modules && yarn install"
   },
   "dependencies": {
     "@ygo/schemas": "file:../../libs/schemas",

@@ -7,7 +7,8 @@
     "test": "jest --coverage",
     "clean": "rimraf ./dist",
     "gen:schema": "node ./src/generate.js && prettier --write ./src/**/*.const.ts",
-    "build": "yarn clean && yarn gen:schema && tsc"
+    "build": "yarn clean && yarn gen:schema && tsc",
+    "bundle": "bash ../../rebuild.sh"
   },
   "dependencies": {
     "json-schema-to-ts": "^3.1.0",
