@@ -2,6 +2,7 @@ import { CheerioCrawler } from '@ygo/crawler';
 import { DataAccessService } from '@ygo/mongo-server';
 import {
   JurisprudenceDataType,
+  CardsDataType,
   DataAccessEnum,
   MetaQAIemType,
 } from '@ygo/schemas';
@@ -9,6 +10,13 @@ import { createLogger, format, transports, Logger } from 'winston';
 import gradient from 'gradient-string';
 import fs from 'fs';
 import { resolve } from 'path';
+
+type AccumulatorType = {
+  [key: string]: {
+    number: string;
+    ids: string[];
+  };
+};
 
 export class YgoJpInfo {
   private crawler: CheerioCrawler;
@@ -88,6 +96,98 @@ export class YgoJpInfo {
         fs.writeFileSync(path, JSON.stringify(failedJpInfo, null, 2));
       }
     }
+  }
+
+  public async getNewCardsJPInfo(cardNumbers: string[]) {
+    let filterCards;
+    try {
+      filterCards = (
+        await this.dataAccessService.find<CardsDataType>(
+          DataAccessEnum.CARDS,
+          { number: { $in: cardNumbers } },
+          {},
+          { id: 1, number: 1, _id: 0 }
+        )
+      ).reduce((accumulator: AccumulatorType, card) => {
+        if (card.number) {
+          if (accumulator[card.number]) {
+            accumulator[card.number].ids.push(card.id);
+          } else {
+            accumulator[card.number] = { number: card.number, ids: [card.id] };
+          }
+        }
+        return accumulator;
+      }, {});
+    } catch (error) {
+      this.logger.error(`Error : getNewCardsJPInfo failed! find cards failed!`);
+      return false;
+    }
+
+    for (const card in filterCards) {
+      let info;
+      for (const id of filterCards[card].ids) {
+        if ((info = await this.getCardsJPInfo(id, filterCards[card].number)))
+          break;
+      }
+
+      try {
+        if (info?.name_jp_h) {
+          this.dataAccessService.createOne<JurisprudenceDataType>(
+            DataAccessEnum.JURISPRUDENCE,
+            info as JurisprudenceDataType
+          );
+          this.logger.info(`${card}  : create success!`);
+        } else {
+          this.logger.info(`${card}  : no info!`);
+        }
+      } catch (error) {
+        this.logger.error(
+          `Error : getNewCardsJPInfo failed! cards ${card} create failed!`
+        );
+      }
+    }
+  }
+
+  private async getCardsJPInfo(id: string, number: string) {
+    const path = `/yugiohdb/card_search.action?ope=1&sess=1&rp=10&mode=&sort=1&keyword=${id}&stype=4&ctype=&othercon=2&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&request_locale=ja`;
+    let $ = await this.crawler.crawl(path);
+    let info: Partial<JurisprudenceDataType> = {
+      number,
+      name_jp_h: '',
+      name_jp_k: '',
+      name_en: '',
+      effect_jp: '',
+      jud_link: '',
+      info: '',
+      qa: [] as MetaQAIemType[],
+    };
+
+    if (!$('.link_value').attr('value')) return info;
+
+    const oldLink = `${$('.link_value').attr('value')}&request_locale=ja`;
+
+    $ = await this.crawler.crawl(oldLink);
+    const card_name = $('#cardname')
+      .children('h1')
+      .text()
+      .split('\n\t\n\t\t\t')
+      .filter(t => t);
+
+    info = {
+      ...info,
+      name_jp_h: this.removeTN(card_name[0]),
+      name_jp_k: this.removeTN(card_name[1]),
+      name_en: this.removeTN(card_name[2]),
+      effect_jp: this.removeTN(
+        $('.item_box_text').text().split('\n\t\t\t\t\t\n\t\t\t\t\t')[2]
+      ),
+      jud_link: oldLink.replace(
+        'card_search.action?ope=2',
+        'faq_search.action?ope=4'
+      ),
+    };
+
+    return info;
   }
 
   private async getJPRulesAndInf(jpInfo: JurisprudenceDataType) {
