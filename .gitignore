@@ -3,5 +3,5 @@ config/*
 !config/.gitkeep
 !config/*.example
 log/**/*.log
-coverage/**/*
+coverage
 **/tsconfig.tsbuildinfo

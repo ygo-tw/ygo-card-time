@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "clean": "rimraf ./dist",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "build": "yarn clean && tsc  --build --verbose",
     "rebuild": "rimraf ./node_modules && yarn install"
   },

@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "jest --coverage",
-    "clean": "rimraf ./dist",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "build": "yarn clean && tsc  --build --verbose"
   },
   "dependencies": {

@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "test": "jest --coverage",
-    "clean": "rimraf ./dist",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "gen:schema": "node ./src/generate.js && prettier --write ./src/**/*.const.ts",
     "build": "yarn clean && yarn gen:schema && tsc --build --verbose"
   },
