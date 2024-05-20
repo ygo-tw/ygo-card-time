@@ -76,4 +76,21 @@ export class DataAccessService {
       .findOneAndUpdate(filter, update, { new: true, ...options })
       .exec() as Promise<T | null>;
   }
+
+  /**
+   * Create a new document in the specified model.
+   * @param modelName Collection name
+   * @param doc Document to create
+   * @returns Created document
+   */
+  public async createOne<T extends Document>(
+    modelName: ModelNames,
+    doc: T
+  ): Promise<T> {
+    await this.ensureInitialized();
+    const model = this.registry.getModel(modelName);
+    await model.syncIndexes();
+    const createdDoc = new model(doc);
+    return createdDoc.save() as Promise<T>;
+  }
 }
