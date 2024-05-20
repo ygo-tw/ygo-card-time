@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "test": "jest --coverage",
-    "clean": "rimraf ./dist",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "rebuild": "rimraf ./noed_modules && yarn install",
     "build": "yarn clean && tsc  --build --verbose",
     "bundle": "bash ../../rebuild.sh"
