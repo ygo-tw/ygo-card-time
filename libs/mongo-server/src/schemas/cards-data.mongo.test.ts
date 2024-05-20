@@ -25,19 +25,10 @@ describe('CardsMongoSchema', () => {
 
     const err: MongooseError.ValidationError =
       card.validateSync() as MongooseError.ValidationError;
-    expect(err.errors._id).toBeDefined();
     expect(err.errors.name).toBeDefined();
     expect(err.errors.id).toBeDefined();
     expect(err.errors.type).toBeDefined();
     expect(err.errors.product_information_type).toBeDefined();
-  });
-
-  it('should be invalid if _id format is incorrect', () => {
-    const card = new CardsModel({ _id: '12345' });
-
-    const err: MongooseError.ValidationError =
-      card.validateSync() as MongooseError.ValidationError;
-    expect(err.errors._id).toBeDefined();
   });
 
   it('should be invalid if name is too long', () => {
@@ -50,7 +41,6 @@ describe('CardsMongoSchema', () => {
 
   it('should save a card with correct data', async () => {
     const card = new CardsModel({
-      _id: '60b8d295f1d2a2c2e4b6d1c5',
       name: 'Blue-Eyes White Dragon',
       id: 'LOB-001',
       type: '通常怪獸',

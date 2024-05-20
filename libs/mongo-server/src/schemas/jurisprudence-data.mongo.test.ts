@@ -25,7 +25,6 @@ describe('JurisprudenceMongoSchema', () => {
 
   it('should be valid if all required fields are present and correct', async () => {
     const validData = {
-      _id: '60b8d295f1d2a2c2e4b6d1c5',
       number: '12345',
       name_jp_h: '名誉の名前',
       name_jp_k: 'ナメエ',
@@ -52,7 +51,6 @@ describe('JurisprudenceMongoSchema', () => {
 
   it('should be invalid if required fields are missing', async () => {
     const invalidData = {
-      _id: '60b8d295f1d2a2c2e4b6d1c5',
       number: '12345',
       name_jp_h: '名誉の名前',
       name_jp_k: 'ナメエ',
@@ -80,7 +78,6 @@ describe('JurisprudenceMongoSchema', () => {
 
   it('should be invalid if date format is incorrect', async () => {
     const invalidData = {
-      _id: '60b8d295f1d2a2c2e4b6d1c5',
       number: '12345',
       name_jp_h: '名誉の名前',
       name_jp_k: 'ナメエ',
@@ -108,7 +105,6 @@ describe('JurisprudenceMongoSchema', () => {
 
   it('should be invalid if jud_link format is incorrect', async () => {
     const invalidData = {
-      _id: '60b8d295f1d2a2c2e4b6d1c5',
       number: '12345',
       name_jp_h: '名誉の名前',
       name_jp_k: 'ナメエ',
