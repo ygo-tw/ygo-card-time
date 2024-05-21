@@ -21,6 +21,7 @@ export type PriceInfo = {
   price_avg: number | null;
 };
 
+// 對於露天相關爬蟲
 export class RutenService {
   private dataAccessService: DataAccessService;
   private priceCalculator: PriceCalculator;
