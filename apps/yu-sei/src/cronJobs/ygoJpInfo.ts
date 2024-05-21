@@ -69,36 +69,41 @@ export class YgoJpInfo {
     for (const jpInfo of allJpInfo) {
       this.logger.info(`${jpInfo.number}  : start!`);
       const { qa, info, failed } = await this.getJPRulesAndInf(jpInfo);
-      if (qa.length || info) {
-        this.dataAccessService.findAndUpdate<JurisprudenceDataType>(
-          DataAccessEnum.JURISPRUDENCE,
-          { number: jpInfo.number },
-          {
-            $push: {
-              number: {
-                $each: qa,
+      if (!failed) {
+        try {
+          this.dataAccessService.findAndUpdate<JurisprudenceDataType>(
+            DataAccessEnum.JURISPRUDENCE,
+            { number: jpInfo.number },
+            {
+              $push: {
+                number: {
+                  $each: qa,
+                },
               },
-            },
-            $set: {
-              info,
-            },
-          }
-        );
-        this.logger.info(
-          `${jpInfo.number}  : update success! ${info ?? ''} / ${qa.length}`
-        );
+              $set: {
+                info,
+              },
+            }
+          );
+          this.logger.info(
+            `${jpInfo.number}  : update success! ${info ?? ''} / ${qa.length}`
+          );
+        } catch (error) {
+          this.logger.error(
+            `Error : updateCardsJPInfo failed! cards ${jpInfo.number} update failed!`
+          );
+        }
       } else {
-        if (failed) failedJpInfo.push(jpInfo.number);
-        const path = resolve(
-          __dirname,
-          `../../../../log/jpInfoCrawler/failedInfo_${new Date().toDateString()}.json`
-        );
-        fs.writeFileSync(path, JSON.stringify(failedJpInfo, null, 2));
+        failedJpInfo.push(jpInfo.number);
       }
     }
+    this.writeLog('failedJpInfo', failedJpInfo);
+
+    return { failedJpInfo };
   }
 
   public async getNewCardsJPInfo(cardNumbers: string[]) {
+    const noJpInfo: string[] = [];
     let filterCards;
     try {
       filterCards = (
@@ -120,14 +125,14 @@ export class YgoJpInfo {
       }, {});
     } catch (error) {
       this.logger.error(`Error : getNewCardsJPInfo failed! find cards failed!`);
-      return false;
+      return { notSearchJpInfo: noJpInfo };
     }
 
     for (const card in filterCards) {
       let info;
       for (const id of filterCards[card].ids) {
-        if ((info = await this.getCardsJPInfo(id, filterCards[card].number)))
-          break;
+        info = await this.getCardsJPInfo(id, filterCards[card].number);
+        if (info?.name_jp_h) break;
       }
 
       try {
@@ -139,6 +144,7 @@ export class YgoJpInfo {
           this.logger.info(`${card}  : create success!`);
         } else {
           this.logger.info(`${card}  : no info!`);
+          noJpInfo.push(card);
         }
       } catch (error) {
         this.logger.error(
@@ -146,6 +152,17 @@ export class YgoJpInfo {
         );
       }
     }
+    this.writeLog('noJpInfo', noJpInfo);
+
+    return { notSearchJpInfo: noJpInfo };
+  }
+
+  private writeLog(name: string, data: object) {
+    const path = resolve(
+      __dirname,
+      `../../../../log/jpInfoCrawler/${name}_${new Date().toDateString()}.json`
+    );
+    fs.writeFileSync(path, JSON.stringify(data, null, 2));
   }
 
   private async getCardsJPInfo(id: string, number: string) {

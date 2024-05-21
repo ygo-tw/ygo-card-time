@@ -12,7 +12,8 @@
     "start": "yarn build && node dist/index.js",
     "q:start": "ts-node src/index.ts",
     "d:start": "node dist/index.js",
-    "s:start": "yarn build && pm2 start --name yu-sei dist/index.js"
+    "s:start": "yarn build && pm2 start --name yu-sei dist/index.js",
+    "tss": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
