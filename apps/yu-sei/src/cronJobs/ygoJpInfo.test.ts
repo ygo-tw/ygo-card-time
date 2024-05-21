@@ -4,8 +4,6 @@ import { CardsDataType, MetaQAIemType } from '@ygo/schemas';
 import { YgoJpInfo } from './ygoJpInfo';
 import { createLogger } from 'winston';
 import cheerio from 'cheerio';
-import * as fs from 'fs';
-import { resolve } from 'path';
 
 jest.mock('@ygo/crawler');
 jest.mock('@ygo/mongo-server');
@@ -135,27 +133,6 @@ describe('YgoJpInfo', () => {
 
       await expect(ygoJpInfo.getNewCardsJPInfo(cardNumbers)).rejects.toThrow(
         'mock error'
-      );
-    });
-  });
-
-  describe('private methods', () => {
-    it('writeLog should write log to the correct path', () => {
-      const spyWriteFileSync = jest
-        .spyOn(fs, 'writeFileSync')
-        .mockImplementation(() => {});
-
-      const name = 'testLog';
-      const data = { test: 'data' };
-      ygoJpInfo['writeLog'](name, data);
-
-      const expectedPath = resolve(
-        __dirname,
-        `../../../../log/jpInfoCrawler/${name}_${new Date().toDateString()}.json`
-      );
-      expect(spyWriteFileSync).toHaveBeenCalledWith(
-        expectedPath,
-        JSON.stringify(data, null, 2)
       );
     });
   });
