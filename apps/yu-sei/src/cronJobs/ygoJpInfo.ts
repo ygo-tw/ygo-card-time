@@ -92,6 +92,8 @@ export class YgoJpInfo {
           this.logger.error(
             `Error : updateCardsJPInfo failed! cards ${jpInfo.number} update failed!`
           );
+
+          return { failedJpInfo };
         }
       } else {
         failedJpInfo.push(jpInfo.number);
