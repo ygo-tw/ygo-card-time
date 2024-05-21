@@ -11,6 +11,7 @@ import gradient from 'gradient-string';
 import fs from 'fs';
 import { resolve } from 'path';
 
+//
 type AccumulatorType = {
   [key: string]: {
     number: string;
