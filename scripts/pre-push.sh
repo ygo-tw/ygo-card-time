@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # 取得異動的檔案列表
-CHANGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|ts|tsx)$')
+CHANGED_FILES=$(git diff origin/$(git branch --show-current) --name-only --diff-filter=ACM | grep -E '\.(js|ts|tsx)$')
 
 echo "Changed files: $CHANGED_FILES"
 
