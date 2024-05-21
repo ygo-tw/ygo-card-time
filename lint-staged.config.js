@@ -4,5 +4,5 @@ module.exports = {
     'eslint --fix',
     'jest --findRelatedTests --passWithNoTests',
   ],
-  '*.{ts,tsx}': ['node ./.husky/check-tsc.js'],
+  '*.{ts,tsx}': ['tsc --noEmit'],
 };
