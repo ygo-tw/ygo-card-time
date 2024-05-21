@@ -1770,7 +1770,7 @@
   version "1.0.0"
   dependencies:
     "@types/node" "^20.12.11"
-    "@ygo/schemas" "file:../.cache/yarn/v6/npm-@ygo-mongo-server-1.0.0-f6311d78-a68a-4f63-a385-f1569ac14025-1716051384589/node_modules/@ygo/schemas"
+    "@ygo/schemas" "file:../.cache/yarn/v6/npm-@ygo-mongo-server-1.0.0-afb4e74e-8da1-4709-8c10-57a3d3a62a9b-1716287743565/node_modules/@ygo/schemas"
     mongoose "^8.3.4"
     typescript "^5.4.5"
 
@@ -5892,6 +5892,11 @@ ts-node@^10.9.2:
     make-error "^1.1.1"
     v8-compile-cache-lib "^3.0.1"
     yn "3.1.1"
+
+tsc-files@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/tsc-files/-/tsc-files-1.1.4.tgz#e0b2042a9494500f528769f52a0d0105a48457dd"
+  integrity sha512-RePsRsOLru3BPpnf237y1Xe1oCGta8rmSYzM76kYo5tLGsv5R2r3s64yapYorGTPuuLyfS9NVbh9ydzmvNie2w==
 
 tslib@^2.1.0, tslib@^2.6.2:
   version "2.6.2"

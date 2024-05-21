@@ -1,18 +1,11 @@
 {
   "compilerOptions": {
-    "composite": true,
     "target": "ES2021", // 編譯到的目標 JavaScript 版本
     "module": "CommonJS", // 使用最新的模塊系統
     "strict": true, // 啟用嚴格模式
     "esModuleInterop": true, // 允許進口CommonJS模塊
     "moduleResolution": "node", // 模塊解析策略
-    "outDir": "./dist", // 指定輸出目錄
-    "rootDir": "./src", // 指定輸入目錄
-    "baseUrl": "./", // 基本目錄路徑
-    "paths": {
-      // 設置路徑映射
-      "*": ["node_modules/*", "src/types/*"]
-    },
+
     "resolveJsonModule": true, // 允許導入 JSON 文件
     "declaration": true, // 生成對應的 '.d.ts' 文件
     "sourceMap": true, // 生成源碼 map 文件
@@ -20,11 +13,30 @@
     "noUnusedParameters": true, // 檢查未使用的函數參數
     "forceConsistentCasingInFileNames": true // 強制文件名大小寫一致
   },
-  "include": [
-    "src/**/*" // 包括的文件
-  ],
-  "exclude": [
-    "node_modules", // 排除的目錄
-    "**/*.spec.ts"
+  "references": [
+    {
+      "path": "./apps/yu-sei"
+    },
+    {
+      "path": "./apps/kai-ba"
+    },
+    {
+      "path": "./libs/crawler"
+    },
+    {
+      "path": "./libs/google-apis"
+    },
+    {
+      "path": "./libs/line"
+    },
+    {
+      "path": "./libs/mailer"
+    },
+    {
+      "path": "./libs/mongo-server"
+    },
+    {
+      "path": "./libs/schemas"
+    }
   ]
 }

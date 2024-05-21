@@ -4,5 +4,5 @@ module.exports = {
     'eslint --fix',
     'jest --findRelatedTests --passWithNoTests',
   ],
-  '*.{ts,tsx}': ['tsc --noEmit'],
+  '*.{ts,tsx}': ['tsc-files --noEmit'],
 };
