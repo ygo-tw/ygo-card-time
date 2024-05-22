@@ -53,7 +53,12 @@ export class DataAccessService {
   ): Promise<T[]> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
-    return model.find(filter, projection, options).exec() as Promise<T[]>;
+    try {
+      return model.find(filter, projection, options).exec() as Promise<T[]>;
+    } catch (error) {
+      console.error(`Error finding documents in model ${modelName}:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -72,9 +77,17 @@ export class DataAccessService {
   ): Promise<T | null> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
-    return model
-      .findOneAndUpdate(filter, update, { new: true, ...options })
-      .exec() as Promise<T | null>;
+    try {
+      return model
+        .findOneAndUpdate(filter, update, { new: true, ...options })
+        .exec() as Promise<T | null>;
+    } catch (error) {
+      console.error(
+        `Error finding and updating document in model ${modelName}:`,
+        error
+      );
+      throw error;
+    }
   }
 
   /**
@@ -91,6 +104,11 @@ export class DataAccessService {
     const model = this.registry.getModel(modelName);
     await model.syncIndexes();
     const createdDoc = new model(doc);
-    return createdDoc.save() as Promise<T>;
+    try {
+      return createdDoc.save() as Promise<T>;
+    } catch (error) {
+      console.error(`Error creating document in model ${modelName}:`, error);
+      throw error;
+    }
   }
 }
