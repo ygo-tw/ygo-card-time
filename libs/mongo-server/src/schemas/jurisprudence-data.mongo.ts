@@ -36,11 +36,11 @@ const QASchema = new Schema(
 
 export const JurisprudenceMongoSchema = new Schema<JurisprudenceDataType>(
   {
-    _id: { type: String, required: true, match: /^[0-9a-f]{24}$/ },
     number: {
       type: String,
       required: true,
       description: 'Number',
+      unique: true,
     },
     name_jp_h: {
       type: String,

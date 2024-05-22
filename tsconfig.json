@@ -1,0 +1,29 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "apps/yu-sei"
+    },
+    {
+      "path": "apps/kai-ba"
+    },
+    {
+      "path": "libs/crawler"
+    },
+    {
+      "path": "libs/google-apis"
+    },
+    {
+      "path": "libs/line"
+    },
+    {
+      "path": "libs/mailer"
+    },
+    {
+      "path": "libs/mongo-server"
+    },
+    {
+      "path": "libs/schemas"
+    }
+  ]
+}
