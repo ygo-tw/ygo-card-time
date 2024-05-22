@@ -4,6 +4,7 @@ import mongoose, {
   QueryOptions,
   Document,
   UpdateQuery,
+  ObjectId,
 } from 'mongoose';
 import { ModelNames } from '@ygo/schemas';
 import { ModelRegistry } from './modelRegistry';
@@ -99,13 +100,13 @@ export class DataAccessService {
   public async createOne<T extends Document>(
     modelName: ModelNames,
     doc: T
-  ): Promise<T> {
+  ): Promise<ObjectId> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
     await model.syncIndexes();
-    const createdDoc = new model(doc);
     try {
-      return createdDoc.save() as Promise<T>;
+      const result = await model.collection.insertOne(doc);
+      return result.insertedId as unknown as ObjectId;
     } catch (error) {
       console.error(`Error creating document in model ${modelName}:`, error);
       throw error;

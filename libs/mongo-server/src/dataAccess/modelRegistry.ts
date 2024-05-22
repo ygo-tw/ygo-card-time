@@ -22,14 +22,22 @@ export class ModelRegistry {
    * @returns: Model<modelName>
    */
   public getModel(modelName: ModelNames): Model<Document> {
-    if (!this.models[modelName]) {
-      const schema = this.schemaDef[modelName]?.originSchema;
-      this.models[modelName] = mongoose.model<Document>(
-        modelName,
-        schema,
-        modelName
-      );
+    try {
+      if (!this.models[modelName]) {
+        const schema = this.schemaDef[modelName]?.originSchema;
+        if (!schema) {
+          throw new Error(`Schema not found for model: ${modelName}`);
+        }
+        this.models[modelName] = mongoose.model<Document>(
+          modelName,
+          schema,
+          modelName
+        );
+      }
+      return this.models[modelName];
+    } catch (error) {
+      console.error(`Error creating model for ${modelName}:`, error);
+      throw error;
     }
-    return this.models[modelName];
   }
 }

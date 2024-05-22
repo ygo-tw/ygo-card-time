@@ -65,5 +65,28 @@ describe('ModelRegistry', () => {
       expect(registry.getModel('cards')).toBe(userModel);
       expect(registry.getModel('decks')).toBe(productModel);
     });
+
+    it('should throw an error if schema is not found', () => {
+      expect(() => registry.getModel('meta_deck')).toThrow(
+        'Schema not found for model: meta_deck'
+      );
+    });
+
+    it('should log an error if there is an issue creating the model', () => {
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      const faultySchemaMock = {
+        modelSchemas: { faulty: { originSchema: null } },
+      };
+
+      jest.doMock('./modelSchemas', () => faultySchemaMock);
+
+      expect(() => registry.getModel('admin')).toThrow();
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Error creating model for admin:',
+        expect.any(Error)
+      );
+    });
   });
 });
