@@ -1,7 +1,19 @@
 #!/bin/sh
 
-# 取得異動的檔案列表
-CHANGED_FILES=$(git diff origin/$(git branch --show-current) --name-only --diff-filter=ACM | grep -E '\.(js|ts|tsx)$')
+# 同步遠端分支
+git fetch origin
+
+# 取得本地分支名稱
+CURRENT_BRANCH=$(git branch --show-current)
+
+# 檢查遠端分支是否存在，如果不存在則創建
+if ! git show-ref --quiet refs/remotes/origin/$CURRENT_BRANCH; then
+  echo "Remote branch origin/$CURRENT_BRANCH does not exist. Creating it now..."
+  git push origin $CURRENT_BRANCH
+fi
+
+# 取得本地分支與遠端分支的差異檔案列表
+CHANGED_FILES=$(git diff origin/$CURRENT_BRANCH --name-only --diff-filter=ACM | grep -E '\.(js|ts|tsx)$')
 
 echo "Changed files: $CHANGED_FILES"
 
