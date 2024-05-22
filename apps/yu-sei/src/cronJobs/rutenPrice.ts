@@ -21,6 +21,7 @@ export type PriceInfo = {
   price_avg: number | null;
 };
 
+//
 export class RutenService {
   private dataAccessService: DataAccessService;
   private priceCalculator: PriceCalculator;
