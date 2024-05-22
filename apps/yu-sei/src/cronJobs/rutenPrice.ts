@@ -34,6 +34,7 @@ export class RutenService {
     price_avg: 0,
   };
 
+  //
   constructor(
     dataAccessService: DataAccessService,
     priceCalculator: PriceCalculator,
