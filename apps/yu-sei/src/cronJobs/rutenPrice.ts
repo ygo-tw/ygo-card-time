@@ -1,8 +1,7 @@
-import gradient from 'gradient-string';
 import { DataAccessService } from '@ygo/mongo-server';
 import { createSpinner } from 'nanospinner';
 import chalk from 'chalk';
-import { delay, PriceCalculator } from '../utils';
+import { delay, PriceCalculator, CustomLogger } from '../utils';
 import dayjs from 'dayjs';
 import {
   CardsDataType,
@@ -12,8 +11,6 @@ import {
 } from '@ygo/schemas';
 import lodash from 'lodash';
 import axios from 'axios';
-import { createLogger, format, transports, Logger } from 'winston';
-import stripAnsi from 'strip-ansi';
 
 export type PriceInfo = {
   time: string;
@@ -26,7 +23,7 @@ export type PriceInfo = {
 export class RutenService {
   private dataAccessService: DataAccessService;
   private priceCalculator: PriceCalculator;
-  private logger: Logger;
+  private logger: CustomLogger;
   private startTime: Date;
   private priceTemplate = {
     time: null,
@@ -38,59 +35,13 @@ export class RutenService {
   constructor(
     dataAccessService: DataAccessService,
     priceCalculator: PriceCalculator,
-    logger?: Logger
+    logger: CustomLogger
   ) {
     this.dataAccessService = dataAccessService;
     this.priceCalculator = priceCalculator;
     this.startTime = new Date();
 
-    const { combine, timestamp, printf } = format;
-
-    // 定義控制台輸出的格式
-    const consoleFormat = printf(info => {
-      const message = `${info.timestamp} [${info.level}]: ${info.message}`;
-      return info.level === 'info' ? gradient.rainbow(message) : message;
-    });
-
-    // 定義文件輸出的格式
-    const fileFormat = printf(info => {
-      const cleanMessage = stripAnsi(
-        `${info.timestamp} [${info.level}]: ${info.message}`
-      );
-      return cleanMessage;
-    });
-
-    this.logger =
-      logger ||
-      createLogger({
-        level: 'info',
-        format: timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), // 基本格式
-        transports: [
-          new transports.Console({
-            format: combine(
-              timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-              consoleFormat
-            ),
-          }),
-          new transports.File({
-            filename: `../../log/rutenCrawlerPrice/combined_${new Date().toDateString()}.log`,
-            format: combine(
-              timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-              fileFormat
-            ),
-          }),
-        ],
-        exceptionHandlers: [
-          new transports.File({
-            filename: `../../log/rutenCrawlerPrice/exceptions_${new Date().toDateString()}.log`,
-            format: combine(
-              timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-              fileFormat
-            ),
-          }),
-        ],
-        exitOnError: false, // 設置為 false 以防止例外退出
-      });
+    this.logger = logger;
     this.logger.info('Start Runten Service');
   }
 
@@ -273,7 +224,11 @@ export class RutenService {
     try {
       prices = (await axios.get(searchURL)).data;
     } catch (error) {
-      this.logger.warn(number, ': Error fetching product data:', error);
+      this.logger.warn(
+        number,
+        ': Error fetching product data:',
+        error as unknown as string
+      );
       return {
         ...price,
         price_lowest: null,

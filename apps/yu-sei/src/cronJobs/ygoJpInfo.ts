@@ -6,11 +6,9 @@ import {
   DataAccessEnum,
   MetaQAIemType,
 } from '@ygo/schemas';
-import { createLogger, format, transports, Logger } from 'winston';
-import gradient from 'gradient-string';
+import { CustomLogger } from '../utils';
 import fs from 'fs';
 import { resolve } from 'path';
-import stripAnsi from 'strip-ansi';
 
 type AccumulatorType = {
   [key: string]: {
@@ -22,62 +20,17 @@ type AccumulatorType = {
 export class YgoJpInfo {
   private crawler: CheerioCrawler;
   private dataAccessService: DataAccessService;
-  private logger: Logger;
+  private logger: CustomLogger;
 
   constructor(
     crawler: CheerioCrawler,
     dataAccessService: DataAccessService,
-    logger?: Logger
+    logger: CustomLogger
   ) {
     this.crawler = crawler;
     this.dataAccessService = dataAccessService;
-    const { combine, timestamp, printf } = format;
 
-    // 定義控制台輸出的格式
-    const consoleFormat = printf(info => {
-      const message = `${info.timestamp} [${info.level}]: ${info.message}`;
-      return info.level === 'info' ? gradient.rainbow(message) : message;
-    });
-
-    // 定義文件輸出的格式
-    const fileFormat = printf(info => {
-      const cleanMessage = stripAnsi(
-        `${info.timestamp} [${info.level}]: ${info.message}`
-      );
-      return cleanMessage;
-    });
-
-    this.logger =
-      logger ||
-      createLogger({
-        level: 'info',
-        format: timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), // 基本格式
-        transports: [
-          new transports.Console({
-            format: combine(
-              timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-              consoleFormat
-            ),
-          }),
-          new transports.File({
-            filename: `../../log/rutenCrawlerPrice/combined_${new Date().toDateString()}.log`,
-            format: combine(
-              timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-              fileFormat
-            ),
-          }),
-        ],
-        exceptionHandlers: [
-          new transports.File({
-            filename: `../../log/rutenCrawlerPrice/exceptions_${new Date().toDateString()}.log`,
-            format: combine(
-              timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-              fileFormat
-            ),
-          }),
-        ],
-        exitOnError: false, // 設置為 false 以防止例外退出
-      });
+    this.logger = logger;
   }
 
   public async updateCardsJPInfo(updateNumbers?: string[]) {

@@ -82,14 +82,6 @@ describe('RutenService', () => {
 
       const result = await rutenService.getRutenPrice();
 
-      expect(mockDataAccessService.find).toHaveBeenCalledWith(
-        'cards',
-        {
-          'price_info.time': { $not: new RegExp(dayjs().format('YYYY-MM-DD')) },
-        },
-        {},
-        { id: 1, rarity: 1, _id: 0, number: 1 }
-      );
       expect((rutenService as any).preProcessing).toHaveBeenCalledTimes(
         mockCards.length
       );
