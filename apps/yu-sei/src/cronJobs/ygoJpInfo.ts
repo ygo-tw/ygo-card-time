@@ -10,6 +10,7 @@ import { createLogger, format, transports, Logger } from 'winston';
 import gradient from 'gradient-string';
 import fs from 'fs';
 import { resolve } from 'path';
+import stripAnsi from 'strip-ansi';
 
 type AccumulatorType = {
   [key: string]: {
@@ -22,7 +23,6 @@ export class YgoJpInfo {
   private crawler: CheerioCrawler;
   private dataAccessService: DataAccessService;
   private logger: Logger;
-  private startTime: Date = new Date();
 
   constructor(
     crawler: CheerioCrawler,
@@ -31,26 +31,49 @@ export class YgoJpInfo {
   ) {
     this.crawler = crawler;
     this.dataAccessService = dataAccessService;
+    const { combine, timestamp, printf } = format;
+
+    // 定義控制台輸出的格式
+    const consoleFormat = printf(info => {
+      const message = `${info.timestamp} [${info.level}]: ${info.message}`;
+      return info.level === 'info' ? gradient.rainbow(message) : message;
+    });
+
+    // 定義文件輸出的格式
+    const fileFormat = printf(info => {
+      const cleanMessage = stripAnsi(
+        `${info.timestamp} [${info.level}]: ${info.message}`
+      );
+      return cleanMessage;
+    });
+
     this.logger =
       logger ||
       createLogger({
         level: 'info',
-        format: format.combine(
-          format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-          format.printf(info => {
-            const message = `${info.timestamp} [${info.level}]: ${info.message}`;
-            return info.level === 'info' ? gradient.rainbow(message) : message;
-          })
-        ),
+        format: timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), // 基本格式
         transports: [
-          new transports.Console(),
+          new transports.Console({
+            format: combine(
+              timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+              consoleFormat
+            ),
+          }),
           new transports.File({
-            filename: `../../log/jpInfoCrawler/combined_${this.startTime.toDateString()}.log`,
+            filename: `../../log/rutenCrawlerPrice/combined_${new Date().toDateString()}.log`,
+            format: combine(
+              timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+              fileFormat
+            ),
           }),
         ],
         exceptionHandlers: [
           new transports.File({
-            filename: `../../log/jpInfoCrawler/exceptions_${this.startTime.toDateString()}.log`,
+            filename: `../../log/rutenCrawlerPrice/exceptions_${new Date().toDateString()}.log`,
+            format: combine(
+              timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+              fileFormat
+            ),
           }),
         ],
         exitOnError: false, // 設置為 false 以防止例外退出
@@ -71,20 +94,23 @@ export class YgoJpInfo {
       const { qa, info, failed } = await this.getJPRulesAndInf(jpInfo);
       if (!failed) {
         try {
-          this.dataAccessService.findAndUpdate<JurisprudenceDataType>(
-            DataAccessEnum.JURISPRUDENCE,
-            { number: jpInfo.number },
-            {
-              $push: {
-                number: {
-                  $each: qa,
+          const jpInfoDoc = new Set(jpInfo.qa.map(q => q.title));
+          const filteredQa = qa.filter(q => !jpInfoDoc.has(q.title));
+          if (!filteredQa.length)
+            this.dataAccessService.findAndUpdate<JurisprudenceDataType>(
+              DataAccessEnum.JURISPRUDENCE,
+              { number: jpInfo.number },
+              {
+                $push: {
+                  number: {
+                    $each: qa,
+                  },
                 },
-              },
-              $set: {
-                info,
-              },
-            }
-          );
+                $set: {
+                  info,
+                },
+              }
+            );
           this.logger.info(
             `${jpInfo.number}  : update success! ${info ?? ''} / ${qa.length}`
           );
@@ -105,15 +131,16 @@ export class YgoJpInfo {
   public async getNewCardsJPInfo(cardNumbers: string[]) {
     const noJpInfo: string[] = [];
     let filterCards;
+
     try {
-      filterCards = (
-        await this.dataAccessService.find<CardsDataType>(
-          DataAccessEnum.CARDS,
-          { number: { $in: cardNumbers } },
-          {},
-          { id: 1, number: 1, _id: 0 }
-        )
-      ).reduce((accumulator: AccumulatorType, card) => {
+      const cards = await this.dataAccessService.find<CardsDataType>(
+        DataAccessEnum.CARDS,
+        { number: { $in: cardNumbers } },
+        { id: 1, number: 1, _id: 0 },
+        {}
+      );
+
+      filterCards = cards.reduce((accumulator: AccumulatorType, card) => {
         if (card.number) {
           if (accumulator[card.number]) {
             accumulator[card.number].ids.push(card.id);
@@ -195,14 +222,13 @@ export class YgoJpInfo {
       name_jp_k: this.removeTN(card_name[1]),
       name_en: this.removeTN(card_name[2]),
       effect_jp: $('.item_box_text')
-        .find('div:not(.text_title)')
-        .html() // 直接獲取內部 HTML 包括 <br> 標籤
+        .html()
         ?.replace(/\n\s*/g, '')
-        .replace(/"\s*([^"]+?)\s*"/g, '$1'), // 去除多餘的換行和空格,
-      jud_link: oldLink.replace(
-        'card_search.action?ope=2',
-        'faq_search.action?ope=4'
-      ),
+        .replace(/"\s*([^"]+?)\s*"/g, '$1')
+        .split('</div>')[1],
+      jud_link:
+        this.crawler.baseUrl +
+        oldLink.replace('card_search.action?ope=2', 'faq_search.action?ope=4'),
     };
 
     return info;
