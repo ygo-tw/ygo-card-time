@@ -380,9 +380,9 @@ describe('RutenService', () => {
       expect(result).toBe('+紅鑽');
     });
 
-    it('should return "+異圖" for "異圖+其他"', () => {
-      const result = (rutenService as any).keyWordsFactory('異圖+其他', 2);
-      expect(result).toBe('+異圖');
+    it('should return "異圖-其他" for "異圖+其他"', () => {
+      const result = (rutenService as any).keyWordsFactory('異圖-其他', 2);
+      expect(result).toBe('異圖+其他');
     });
 
     it('should return empty string for "碎鑽銀字"', () => {

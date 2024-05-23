@@ -13,6 +13,7 @@ import {
 import lodash from 'lodash';
 import axios from 'axios';
 import { createLogger, format, transports, Logger } from 'winston';
+import stripAnsi from 'strip-ansi';
 
 export type PriceInfo = {
   time: string;
@@ -42,26 +43,50 @@ export class RutenService {
     this.dataAccessService = dataAccessService;
     this.priceCalculator = priceCalculator;
     this.startTime = new Date();
+
+    const { combine, timestamp, printf } = format;
+
+    // 定義控制台輸出的格式
+    const consoleFormat = printf(info => {
+      const message = `${info.timestamp} [${info.level}]: ${info.message}`;
+      return info.level === 'info' ? gradient.rainbow(message) : message;
+    });
+
+    // 定義文件輸出的格式
+    const fileFormat = printf(info => {
+      const cleanMessage = stripAnsi(
+        `${info.timestamp} [${info.level}]: ${info.message}`
+      );
+      return cleanMessage;
+    });
+
     this.logger =
       logger ||
       createLogger({
         level: 'info',
-        format: format.combine(
-          format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-          format.printf(info => {
-            const message = `${info.timestamp} [${info.level}]: ${info.message}`;
-            return info.level === 'info' ? gradient.rainbow(message) : message;
-          })
-        ),
+        format: timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), // 基本格式
         transports: [
-          new transports.Console(),
+          new transports.Console({
+            format: combine(
+              timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+              consoleFormat
+            ),
+          }),
           new transports.File({
-            filename: `../../log/rutenCrawlerPrice/combined_${this.startTime.toDateString()}.log`,
+            filename: `../../log/rutenCrawlerPrice/combined_${new Date().toDateString()}.log`,
+            format: combine(
+              timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+              fileFormat
+            ),
           }),
         ],
         exceptionHandlers: [
           new transports.File({
-            filename: `../../log/rutenCrawlerPrice/exceptions_${this.startTime.toDateString()}.log`,
+            filename: `../../log/rutenCrawlerPrice/exceptions_${new Date().toDateString()}.log`,
+            format: combine(
+              timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+              fileFormat
+            ),
           }),
         ],
         exitOnError: false, // 設置為 false 以防止例外退出
@@ -87,10 +112,10 @@ export class RutenService {
           'price_info.time': {
             $not: new RegExp(dayjs().format('YYYY-MM-DD')),
           },
-          // id: "PAC1-JP004",
+          // id: 'PAC1-JP004',
         },
-        {},
-        { id: 1, rarity: 1, _id: 0, number: 1 }
+        { id: 1, rarity: 1, _id: 0, number: 1 },
+        {}
       ));
     const noPriceId = [];
     const updateFailedId = [];
@@ -141,7 +166,7 @@ export class RutenService {
         await this.dataAccessService.findAndUpdate<CardsDataType>(
           DataAccessEnum.CARDS,
           { id: cardInfo.id },
-          { $push: { price: { $each: [100, 200, 300] } } }
+          { $push: { price: { $each: allCardPrices } } }
         );
       } catch (error) {
         spinner
@@ -371,7 +396,6 @@ export class RutenService {
     };
 
     const indexReplacements: { [key: string]: string } = {
-      異圖: '+異圖',
       字紋鑽: '+字紋鑽',
       粉鑽: '+粉鑽',
       彩鑽: '+彩鑽',
@@ -387,6 +411,8 @@ export class RutenService {
         return indexReplacements[key];
       }
     }
+
+    if (rarity.indexOf('異圖') !== -1) return rarity.replace('-', '+');
 
     const complexRarities = ['方鑽', '點鑽', '碎鑽'];
     for (const complexRarity of complexRarities) {
