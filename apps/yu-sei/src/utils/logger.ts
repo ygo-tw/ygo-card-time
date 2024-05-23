@@ -42,6 +42,10 @@ export class CustomLogger {
     });
   }
 
+  /**
+   * 自定義控制台格式，用於輸出到控制台的日誌
+   * @returns 格式化函數
+   */
   private consoleFormat() {
     return printf(info => {
       const message = `${info.timestamp} [${info.level}]: ${info.message}`;
@@ -49,6 +53,10 @@ export class CustomLogger {
     });
   }
 
+  /**
+   * 自定義文件格式，用於輸出到文件的日誌
+   * @returns 格式化函數
+   */
   private fileFormat() {
     return printf(info => {
       const cleanMessage = stripAnsi(
@@ -58,22 +66,43 @@ export class CustomLogger {
     });
   }
 
+  /**
+   * 格式化日誌訊息
+   * @param messages 多個訊息參數
+   * @returns 格式化後的單一訊息字串
+   */
   private formatMessage(...messages: string[]): string {
     return messages.join(' ');
   }
 
+  /**
+   * 記錄 info 等級的日誌
+   * @param messages 多個訊息參數
+   */
   public info(...messages: string[]) {
     this.logger.info(this.formatMessage(...messages));
   }
 
+  /**
+   * 記錄 error 等級的日誌
+   * @param messages 多個訊息參數
+   */
   public error(...messages: string[]) {
     this.logger.error(this.formatMessage(...messages));
   }
 
+  /**
+   * 記錄 warn 等級的日誌
+   * @param messages 多個訊息參數
+   */
   public warn(...messages: string[]) {
     this.logger.warn(this.formatMessage(...messages));
   }
 
+  /**
+   * 記錄 debug 等級的日誌
+   * @param messages 多個訊息參數
+   */
   public debug(...messages: string[]) {
     this.logger.debug(this.formatMessage(...messages));
   }
