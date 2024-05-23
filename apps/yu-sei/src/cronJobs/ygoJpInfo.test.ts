@@ -102,6 +102,9 @@ describe('YgoJpInfo', () => {
       await expect(dataAccessService.findAndUpdate).rejects.toThrow(
         'update error'
       );
+
+      const result = await ygoJpInfo.updateCardsJPInfo();
+      expect(result).toEqual({ failedJpInfo: [] });
     });
   });
 
@@ -137,11 +140,139 @@ describe('YgoJpInfo', () => {
     });
   });
 
+  describe('getCardsJPInfo', () => {
+    it('should fetch and parse card information correctly', async () => {
+      const mockId = 'test_id';
+      const mockNumber = '12345';
+      const mockPath = `/yugiohdb/card_search.action?ope=1&sess=1&rp=10&mode=&sort=1&keyword=${mockId}&stype=4&ctype=&othercon=2&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&request_locale=ja`;
+
+      const mockHtmlInitialPage = `
+        <div class="link_value" value="/card_search.action?ope=2"></div>
+      `;
+      const mockHtmlOldLinkPage = `
+        <div id="cardname">
+          <h1>
+            <span class="ruby">オベリスクのきょしんへい</span>
+            "オベリスクの巨神兵"
+            <span>Obelisk the Tormentor</span>
+          </h1>
+        </div>
+        <div class="item_box_text">
+          <div class="text_title">カードテキスト</div>
+          <div>
+            " このカードを通常召喚する場合、３体をリリースして召喚しなければならない。"
+            <br>
+            "①：このカードの召喚は無効化されない。"
+            <br>
+            "②：このカードの召喚成功時にお互いはカードの効果を発動できない。"
+            <br>
+            "③：お互いにフィールドのこのカードを効果の対象にできない。"
+            <br>
+            "④：自分フィールドのモンスター２体をリリースして発動できる（この効果を発動するターン、このカードは攻撃宣言できない）。相手フィールドのモンスターを全て破壊する。"
+            <br>
+            "⑤：このカードが特殊召喚されている場合、エンドフェイズに発動する。このカードを墓地へ送る。"
+          </div>
+        </div>
+      `;
+
+      crawler.crawl
+        .mockResolvedValueOnce(cheerio.load(mockHtmlInitialPage))
+        .mockResolvedValueOnce(cheerio.load(mockHtmlOldLinkPage));
+
+      const result = await ygoJpInfo['getCardsJPInfo'](mockId, mockNumber);
+
+      expect(crawler.crawl).toHaveBeenCalledTimes(2);
+      expect(crawler.crawl).toHaveBeenCalledWith(mockPath);
+      expect(crawler.crawl).toHaveBeenCalledWith(
+        '/card_search.action?ope=2&request_locale=ja'
+      );
+
+      expect(result).toEqual({
+        number: mockNumber,
+        name_jp_h: 'オベリスクのきょしんへい',
+        name_jp_k: 'オベリスクの巨神兵',
+        name_en: 'Obelisk the Tormentor',
+        effect_jp:
+          'このカードを通常召喚する場合、３体をリリースして召喚しなければならない。<br>①：このカードの召喚は無効化されない。<br>②：このカードの召喚成功時にお互いはカードの効果を発動できない。<br>③：お互いにフィールドのこのカードを効果の対象にできない。<br>④：自分フィールドのモンスター２体をリリースして発動できる（この効果を発動するターン、このカードは攻撃宣言できない）。相手フィールドのモンスターを全て破壊する。<br>⑤：このカードが特殊召喚されている場合、エンドフェイズに発動する。このカードを墓地へ送る。',
+        jud_link: '/faq_search.action?ope=4&request_locale=ja',
+        info: '',
+        qa: [],
+      });
+    });
+
+    it('should return initial info if link_value is not present', async () => {
+      const mockId = 'test_id';
+      const mockNumber = '12345';
+      const mockPath = `/yugiohdb/card_search.action?ope=1&sess=1&rp=10&mode=&sort=1&keyword=${mockId}&stype=4&ctype=&othercon=2&starfr=&starto=&pscalefr=&pscaleto=&linkmarkerfr=&linkmarkerto=&link_m=2&atkfr=&atkto=&deffr=&defto=&request_locale=ja`;
+
+      const mockHtmlInitialPage = `
+        <div class="link_value"></div>
+      `;
+
+      crawler.crawl.mockResolvedValueOnce(cheerio.load(mockHtmlInitialPage));
+
+      const result = await ygoJpInfo['getCardsJPInfo'](mockId, mockNumber);
+
+      expect(crawler.crawl).toHaveBeenCalledTimes(1);
+      expect(crawler.crawl).toHaveBeenCalledWith(mockPath);
+
+      expect(result).toEqual({
+        number: mockNumber,
+        name_jp_h: '',
+        name_jp_k: '',
+        name_en: '',
+        effect_jp: '',
+        jud_link: '',
+        info: '',
+        qa: [],
+      });
+    });
+  });
+
   describe('removeTN', () => {
     it('should remove newlines and tabs', () => {
       const text = '\nHello\tWorld\n';
       const result = (ygoJpInfo as any).removeTN(text);
       expect(result).toBe('HelloWorld');
+    });
+
+    it('should handle empty string', () => {
+      const text = '';
+      const result = (ygoJpInfo as any).removeTN(text);
+      expect(result).toBe('');
+    });
+
+    it('should handle string with only newlines and tabs', () => {
+      const text = '\n\t\n\t';
+      const result = (ygoJpInfo as any).removeTN(text);
+      expect(result).toBe('');
+    });
+
+    it('should handle string without newlines and tabs', () => {
+      const text = 'HelloWorld';
+      const result = (ygoJpInfo as any).removeTN(text);
+      expect(result).toBe('HelloWorld');
+    });
+
+    it('should return empty string for null input', () => {
+      const result = (ygoJpInfo as any).removeTN(null);
+      expect(result).toBe('');
+    });
+
+    it('should return empty string for undefined input', () => {
+      const result = (ygoJpInfo as any).removeTN(undefined);
+      expect(result).toBe('');
+    });
+
+    it('should return empty string for non-string input', () => {
+      const result = (ygoJpInfo as any).removeTN(12345);
+      expect(result).toBe('');
+    });
+
+    it('should handle string with mixed content', () => {
+      const text = 'Hello\nWorld\tThis is a\ttest\nstring';
+      const result = (ygoJpInfo as any).removeTN(text);
+      expect(result).toBe('HelloWorldThis is ateststring');
     });
   });
 
@@ -241,5 +372,78 @@ describe('YgoJpInfo', () => {
         failed: true,
       });
     });
+
+    it('should fetch and parse rules correctly', async () => {
+      const mockPageLink = 'http://example.com';
+      const mockRuleLink = '/rule-link';
+      const mockHtmlMainPage = `
+        <div class="t_body">
+          <div class="t_row">
+            <div class="inside">
+              <div class="dack_set">
+                <div class="dack_name">Test Deck</div>
+                <div class="text">Test Tag</div>
+              </div>
+              <div class="div date">更新日:2023-05-22</div>
+            </div>
+            <div class="link_value" value="rule-link"></div>
+          </div>
+        </div>
+      `;
+      const mockHtmlRulePage = `
+        <div id="question_text">Test Question</div>
+        <div id="answer_text">Test Answer</div>
+      `;
+
+      crawler.crawl
+        .mockResolvedValueOnce(cheerio.load(mockHtmlMainPage))
+        .mockResolvedValueOnce(cheerio.load(mockHtmlRulePage));
+
+      const qa: MetaQAIemType[] = [];
+      const result = await ygoJpInfo['getRules'](qa, mockPageLink);
+
+      expect(crawler.crawl).toHaveBeenCalledTimes(2);
+      expect(crawler.crawl).toHaveBeenCalledWith(mockPageLink);
+      expect(crawler.crawl).toHaveBeenCalledWith(
+        mockRuleLink + '&request_locale=ja'
+      );
+
+      expect(result).toEqual({
+        box: [
+          {
+            title: 'Test Deck',
+            tag: 'Test Tag',
+            date: '2023-05-22',
+            q: 'Test Question',
+            a: 'Test Answer',
+          },
+        ],
+        failed: false,
+      });
+
+      expect(logger.info).toHaveBeenCalledWith(
+        `QA Links : /rule-link&request_locale=ja`
+      );
+      expect(logger.info).toHaveBeenCalledWith(`Crawl Rules count : 1`);
+    });
+  });
+
+  it('should handle errors correctly', async () => {
+    const mockPageLink = 'http://example.com';
+
+    crawler.crawl.mockRejectedValueOnce(new Error('Crawl error'));
+
+    const qa: MetaQAIemType[] = [];
+    const result = await ygoJpInfo['getRules'](qa, mockPageLink);
+
+    expect(crawler.crawl).toHaveBeenCalledTimes(1);
+    expect(crawler.crawl).toHaveBeenCalledWith(mockPageLink);
+
+    expect(result).toEqual({
+      box: [],
+      failed: true,
+    });
+
+    expect(logger.error).toHaveBeenCalledWith('Error : getRules failed!');
   });
 });

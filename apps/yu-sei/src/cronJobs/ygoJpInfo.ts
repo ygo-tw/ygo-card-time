@@ -92,8 +92,6 @@ export class YgoJpInfo {
           this.logger.error(
             `Error : updateCardsJPInfo failed! cards ${jpInfo.number} update failed!`
           );
-
-          return { failedJpInfo };
         }
       } else {
         failedJpInfo.push(jpInfo.number);
@@ -187,19 +185,20 @@ export class YgoJpInfo {
 
     $ = await this.crawler.crawl(oldLink);
     const card_name = $('#cardname')
-      .children('h1')
       .text()
-      .split('\n\t\n\t\t\t')
-      .filter(t => t);
+      .split(/\s{2,}|"|\n/)
+      .filter(t => t && t !== '==');
 
     info = {
       ...info,
       name_jp_h: this.removeTN(card_name[0]),
       name_jp_k: this.removeTN(card_name[1]),
       name_en: this.removeTN(card_name[2]),
-      effect_jp: this.removeTN(
-        $('.item_box_text').text().split('\n\t\t\t\t\t\n\t\t\t\t\t')[2]
-      ),
+      effect_jp: $('.item_box_text')
+        .find('div:not(.text_title)')
+        .html() // 直接獲取內部 HTML 包括 <br> 標籤
+        ?.replace(/\n\s*/g, '')
+        .replace(/"\s*([^"]+?)\s*"/g, '$1'), // 去除多餘的換行和空格,
       jud_link: oldLink.replace(
         'card_search.action?ope=2',
         'faq_search.action?ope=4'
@@ -284,7 +283,7 @@ export class YgoJpInfo {
           ) {
             box.push({
               ...newQa,
-              data: this.removeTN(date.text()).split('更新日:')[1],
+              date: this.removeTN(date.text()).split('更新日:')[1],
               title: this.removeTN(deck_set.children('.dack_name').text()),
               tag: this.removeTN(deck_set.children('.text').text()),
             });
@@ -315,7 +314,10 @@ export class YgoJpInfo {
     }
   }
 
-  private removeTN(text: string) {
-    return text.replaceAll(`\n`, '').replaceAll(`\t`, '');
+  private removeTN(text: any): string {
+    if (typeof text !== 'string') {
+      return '';
+    }
+    return text.replace(/[\n\t]/g, '');
   }
 }

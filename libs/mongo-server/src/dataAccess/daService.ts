@@ -4,6 +4,7 @@ import mongoose, {
   QueryOptions,
   Document,
   UpdateQuery,
+  ObjectId,
 } from 'mongoose';
 import { ModelNames } from '@ygo/schemas';
 import { ModelRegistry } from './modelRegistry';
@@ -53,7 +54,12 @@ export class DataAccessService {
   ): Promise<T[]> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
-    return model.find(filter, projection, options).exec() as Promise<T[]>;
+    try {
+      return model.find(filter, projection, options).exec() as Promise<T[]>;
+    } catch (error) {
+      console.error(`Error finding documents in model ${modelName}:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -72,9 +78,17 @@ export class DataAccessService {
   ): Promise<T | null> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
-    return model
-      .findOneAndUpdate(filter, update, { new: true, ...options })
-      .exec() as Promise<T | null>;
+    try {
+      return model
+        .findOneAndUpdate(filter, update, { new: true, ...options })
+        .exec() as Promise<T | null>;
+    } catch (error) {
+      console.error(
+        `Error finding and updating document in model ${modelName}:`,
+        error
+      );
+      throw error;
+    }
   }
 
   /**
@@ -86,11 +100,16 @@ export class DataAccessService {
   public async createOne<T extends Document>(
     modelName: ModelNames,
     doc: T
-  ): Promise<T> {
+  ): Promise<ObjectId> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
     await model.syncIndexes();
-    const createdDoc = new model(doc);
-    return createdDoc.save() as Promise<T>;
+    try {
+      const result = await model.collection.insertOne(doc);
+      return result.insertedId as unknown as ObjectId;
+    } catch (error) {
+      console.error(`Error creating document in model ${modelName}:`, error);
+      throw error;
+    }
   }
 }
