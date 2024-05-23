@@ -40,6 +40,7 @@
     "nanospinner": "^1.1.0",
     "node-schedule": "^2.1.1",
     "nodemon": "^3.1.0",
+    "strip-ansi": "^7.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "webp-converter": "^2.3.3",
