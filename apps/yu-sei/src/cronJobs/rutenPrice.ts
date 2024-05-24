@@ -1,8 +1,7 @@
-import gradient from 'gradient-string';
 import { DataAccessService } from '@ygo/mongo-server';
 import { createSpinner } from 'nanospinner';
 import chalk from 'chalk';
-import { delay, PriceCalculator } from '../utils';
+import { delay, PriceCalculator, CustomLogger } from '../utils';
 import dayjs from 'dayjs';
 import {
   CardsDataType,
@@ -12,7 +11,6 @@ import {
 } from '@ygo/schemas';
 import lodash from 'lodash';
 import axios from 'axios';
-import { createLogger, format, transports, Logger } from 'winston';
 
 export type PriceInfo = {
   time: string;
@@ -25,7 +23,7 @@ export type PriceInfo = {
 export class RutenService {
   private dataAccessService: DataAccessService;
   private priceCalculator: PriceCalculator;
-  private logger: Logger;
+  private logger: CustomLogger;
   private startTime: Date;
   private priceTemplate = {
     time: null,
@@ -37,35 +35,13 @@ export class RutenService {
   constructor(
     dataAccessService: DataAccessService,
     priceCalculator: PriceCalculator,
-    logger?: Logger
+    logger: CustomLogger
   ) {
     this.dataAccessService = dataAccessService;
     this.priceCalculator = priceCalculator;
     this.startTime = new Date();
-    this.logger =
-      logger ||
-      createLogger({
-        level: 'info',
-        format: format.combine(
-          format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-          format.printf(info => {
-            const message = `${info.timestamp} [${info.level}]: ${info.message}`;
-            return info.level === 'info' ? gradient.rainbow(message) : message;
-          })
-        ),
-        transports: [
-          new transports.Console(),
-          new transports.File({
-            filename: `../../log/rutenCrawlerPrice/combined_${this.startTime.toDateString()}.log`,
-          }),
-        ],
-        exceptionHandlers: [
-          new transports.File({
-            filename: `../../log/rutenCrawlerPrice/exceptions_${this.startTime.toDateString()}.log`,
-          }),
-        ],
-        exitOnError: false, // 設置為 false 以防止例外退出
-      });
+
+    this.logger = logger;
     this.logger.info('Start Runten Service');
   }
 
@@ -87,10 +63,10 @@ export class RutenService {
           'price_info.time': {
             $not: new RegExp(dayjs().format('YYYY-MM-DD')),
           },
-          // id: "PAC1-JP004",
+          // id: 'PAC1-JP004',
         },
-        {},
-        { id: 1, rarity: 1, _id: 0, number: 1 }
+        { id: 1, rarity: 1, _id: 0, number: 1 },
+        {}
       ));
     const noPriceId = [];
     const updateFailedId = [];
@@ -141,7 +117,7 @@ export class RutenService {
         await this.dataAccessService.findAndUpdate<CardsDataType>(
           DataAccessEnum.CARDS,
           { id: cardInfo.id },
-          { $push: { price: { $each: [100, 200, 300] } } }
+          { $push: { price: { $each: allCardPrices } } }
         );
       } catch (error) {
         spinner
@@ -248,7 +224,11 @@ export class RutenService {
     try {
       prices = (await axios.get(searchURL)).data;
     } catch (error) {
-      this.logger.warn(number, ': Error fetching product data:', error);
+      this.logger.warn(
+        number,
+        ': Error fetching product data:',
+        error as unknown as string
+      );
       return {
         ...price,
         price_lowest: null,
@@ -371,7 +351,6 @@ export class RutenService {
     };
 
     const indexReplacements: { [key: string]: string } = {
-      異圖: '+異圖',
       字紋鑽: '+字紋鑽',
       粉鑽: '+粉鑽',
       彩鑽: '+彩鑽',
@@ -387,6 +366,8 @@ export class RutenService {
         return indexReplacements[key];
       }
     }
+
+    if (rarity.indexOf('異圖') !== -1) return rarity.replace('-', '+');
 
     const complexRarities = ['方鑽', '點鑽', '碎鑽'];
     for (const complexRarity of complexRarities) {

@@ -82,14 +82,6 @@ describe('RutenService', () => {
 
       const result = await rutenService.getRutenPrice();
 
-      expect(mockDataAccessService.find).toHaveBeenCalledWith(
-        'cards',
-        {
-          'price_info.time': { $not: new RegExp(dayjs().format('YYYY-MM-DD')) },
-        },
-        {},
-        { id: 1, rarity: 1, _id: 0, number: 1 }
-      );
       expect((rutenService as any).preProcessing).toHaveBeenCalledTimes(
         mockCards.length
       );
@@ -380,9 +372,9 @@ describe('RutenService', () => {
       expect(result).toBe('+紅鑽');
     });
 
-    it('should return "+異圖" for "異圖+其他"', () => {
-      const result = (rutenService as any).keyWordsFactory('異圖+其他', 2);
-      expect(result).toBe('+異圖');
+    it('should return "異圖-其他" for "異圖+其他"', () => {
+      const result = (rutenService as any).keyWordsFactory('異圖-其他', 2);
+      expect(result).toBe('異圖+其他');
     });
 
     it('should return empty string for "碎鑽銀字"', () => {

@@ -3,7 +3,7 @@ import cheerio from 'cheerio';
 import iconv from 'iconv-lite';
 
 export class CheerioCrawler {
-  private baseUrl: string;
+  public baseUrl: string;
 
   /**
    * 初始化爬蟲並設置基礎 URL
