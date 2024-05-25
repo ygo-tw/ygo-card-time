@@ -1,5 +1,5 @@
 export class PriceCalculator {
-  public calculatePrices(prices: number[]): {
+  public static calculatePrices(prices: number[]): {
     minPrice: number;
     averagePrice: number;
   } {
@@ -28,7 +28,7 @@ export class PriceCalculator {
     return { minPrice, averagePrice };
   }
 
-  private removeOutliersMAD(prices: number[]): number[] {
+  private static removeOutliersMAD(prices: number[]): number[] {
     const median = this.calculateMedian(prices);
     const mad = this.calculateMAD(prices, median);
     const threshold = 3 * mad;
@@ -36,7 +36,7 @@ export class PriceCalculator {
     return prices.filter(price => Math.abs(price - median) <= threshold);
   }
 
-  private calculateMedian(numbers: number[]): number {
+  private static calculateMedian(numbers: number[]): number {
     const sortedNumbers = [...numbers].sort((a, b) => a - b);
     const mid = Math.floor(sortedNumbers.length / 2);
     return sortedNumbers.length % 2 !== 0
@@ -44,7 +44,7 @@ export class PriceCalculator {
       : (sortedNumbers[mid - 1] + sortedNumbers[mid]) / 2;
   }
 
-  private calculateMAD(numbers: number[], median: number): number {
+  private static calculateMAD(numbers: number[], median: number): number {
     const deviations = numbers.map(num => Math.abs(num - median));
     return this.calculateMedian(deviations);
   }
