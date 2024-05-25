@@ -22,7 +22,6 @@ export type PriceInfo = {
 // 對於露天相關爬蟲
 export class RutenService {
   private dataAccessService: DataAccessService;
-  private priceCalculator: PriceCalculator;
   private logger: CustomLogger;
   private startTime: Date;
   private priceTemplate = {
@@ -32,13 +31,8 @@ export class RutenService {
     price_avg: 0,
   };
 
-  constructor(
-    dataAccessService: DataAccessService,
-    priceCalculator: PriceCalculator,
-    logger: CustomLogger
-  ) {
+  constructor(dataAccessService: DataAccessService, logger: CustomLogger) {
     this.dataAccessService = dataAccessService;
-    this.priceCalculator = priceCalculator;
     this.startTime = new Date();
 
     this.logger = logger;
@@ -253,7 +247,7 @@ export class RutenService {
     }
 
     const { averagePrice, minPrice } =
-      this.priceCalculator.calculatePrices(priceList);
+      PriceCalculator.calculatePrices(priceList);
 
     return {
       ...price,
