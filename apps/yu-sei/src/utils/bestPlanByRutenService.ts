@@ -294,37 +294,47 @@ export class BestPlanByRutenService {
       totalCost: number;
     }[] = [];
 
-    const addCombination = (shopIndices: number[], quantities: number[]) => {
+    const addCombination = (shopQuantities: { [key: string]: number }) => {
       let totalCost = 0;
-      const shopQuantities: { [key: string]: number } = {};
-      for (let i = 0; i < shopIndices.length; i++) {
-        totalCost += this.calculateCost(shops[shopIndices[i]], quantities[i]);
-        shopQuantities[shops[shopIndices[i]].shopId] =
-          (shopQuantities[shops[shopIndices[i]].shopId] || 0) + quantities[i];
+      for (const shopId in shopQuantities) {
+        const shop = shops.find(s => s.shopId === shopId);
+        if (shop) {
+          totalCost += this.calculateCost(shop, shopQuantities[shopId]);
+        }
       }
       combinations.push({ shops: shopQuantities, totalCost });
     };
 
-    // 所有可能的組合
-    for (let i = 0; i < shops.length; i++) {
-      if (totalQuantity === 1) addCombination([i], [1]);
-      for (let j = 0; j < shops.length; j++) {
-        if (totalQuantity === 2 && i !== j) addCombination([i, j], [1, 1]);
-        for (let k = 0; k < shops.length; k++) {
-          if (totalQuantity === 3) {
-            if (i === j && j === k) {
-              addCombination([i], [3]);
-            } else if (i === j) {
-              addCombination([i, k], [2, 1]);
-            } else if (j === k) {
-              addCombination([i, j], [1, 2]);
-            } else {
-              addCombination([i, j, k], [1, 1, 1]);
-            }
-          }
+    const findCombinations = (
+      currentShops: number[],
+      currentQuantities: number[],
+      remainingQuantity: number
+    ) => {
+      if (remainingQuantity === 0) {
+        const shopQuantities: { [key: string]: number } = {};
+        for (let i = 0; i < currentShops.length; i++) {
+          shopQuantities[shops[currentShops[i]].shopId] =
+            (shopQuantities[shops[currentShops[i]].shopId] || 0) +
+            currentQuantities[i];
         }
+        addCombination(shopQuantities);
+        return;
       }
-    }
+
+      for (let i = 0; i < shops.length; i++) {
+        currentShops.push(i);
+        currentQuantities.push(1);
+        findCombinations(
+          currentShops,
+          currentQuantities,
+          remainingQuantity - 1
+        );
+        currentShops.pop();
+        currentQuantities.pop();
+      }
+    };
+
+    findCombinations([], [], totalQuantity);
 
     combinations.sort((a, b) => a.totalCost - b.totalCost);
 
