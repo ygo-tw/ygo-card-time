@@ -61,6 +61,7 @@ interface ShopResult {
  */
 interface RecordShopDetail {
   shopId: string;
+  productName: string;
   productPrice: number;
   productQtl: number;
   isFreeShipping: boolean;
@@ -170,6 +171,7 @@ export class BestPlanByRutenService {
 
           return {
             shopId: shop.id,
+            productName: productName,
             productPrice: productInfo.price,
             productQtl: productInfo.qtl,
             isFreeShipping: compareShop?.freeShipping || false,
@@ -277,8 +279,15 @@ export class BestPlanByRutenService {
    */
   private calculateCost(shop: RecordShopDetail, quantity: number): number {
     const totalProductPrice = shop.productPrice * quantity;
+    // 是否達免運門檻，除了看該商品總價外，也該看已經確定要購買的總價
+    const otherProductsTotalPrice =
+      this.shopResults
+        .find(x => x.shopId === shop.shopId)
+        ?.products.filter(x => x.productName !== shop.productName)
+        .reduce((acc, cur) => acc + cur.totalCost, 0) || 0;
     const shippingCost =
-      shop.isFreeShipping || totalProductPrice >= shop.freeShippingThreshold
+      shop.isFreeShipping ||
+      totalProductPrice + otherProductsTotalPrice >= shop.freeShippingThreshold
         ? 0
         : shop.shippingCost;
     return totalProductPrice + shippingCost;
