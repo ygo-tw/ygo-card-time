@@ -7,7 +7,6 @@ import dayjs from 'dayjs';
 import { createLogger } from 'winston';
 import { Document } from 'mongoose';
 
-jest.mock('../utils/priceCalculator');
 jest.mock('@ygo/mongo-server');
 jest.mock('axios');
 jest.mock('winston', () => {
@@ -32,7 +31,6 @@ interface MockCard extends Document {
 
 describe('RutenService', () => {
   let rutenService: RutenService;
-  let mockPriceCalculator: jest.Mocked<PriceCalculator>;
   let mockDataAccessService: jest.Mocked<DataAccessService>;
   let mockLogger: any;
 
@@ -42,21 +40,18 @@ describe('RutenService', () => {
       find: jest.fn(),
       findAndUpdate: jest.fn(),
     } as unknown as jest.Mocked<DataAccessService>;
-    mockPriceCalculator = new PriceCalculator() as jest.Mocked<PriceCalculator>;
-    mockPriceCalculator.calculatePrices.mockReturnValue({
-      minPrice: 100,
-      averagePrice: 125,
-    });
     mockLogger = createLogger({
       level: 'info',
       silent: true,
     });
 
-    rutenService = new RutenService(
-      mockDataAccessService,
-      mockPriceCalculator,
-      mockLogger
-    );
+    const mockCalculatePrices = jest.spyOn(PriceCalculator, 'calculatePrices');
+    mockCalculatePrices.mockReturnValue({
+      minPrice: 100,
+      averagePrice: 125,
+    });
+
+    rutenService = new RutenService(mockDataAccessService, mockLogger);
   });
 
   afterEach(() => {
@@ -248,7 +243,7 @@ describe('RutenService', () => {
         searchName
       );
 
-      expect(mockPriceCalculator.calculatePrices).toHaveBeenCalledWith(
+      expect(PriceCalculator.calculatePrices).toHaveBeenCalledWith(
         expect.arrayContaining([100, 150])
       );
 
