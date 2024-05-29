@@ -61,6 +61,7 @@ interface ShopResult {
  */
 interface RecordShopDetail {
   shopId: string;
+  productName: string;
   productPrice: number;
   productQtl: number;
   isFreeShipping: boolean;
@@ -158,6 +159,7 @@ export class BestPlanByRutenService {
 
       for (const product of needToCheckProducts.products) {
         const productName = product.productName;
+
         if (processedProducts.has(productName)) {
           continue; // Skip already processed products
         }
@@ -166,10 +168,12 @@ export class BestPlanByRutenService {
         const record = filterShop.map(shop => {
           const productInfo = shop.products[productName];
           const compareShop = this.shopResults.find(x => x.shopId === shop.id);
+
           return {
             shopId: shop.id,
+            productName: productName,
             productPrice: productInfo.price,
-            productQtl: Math.min(productInfo.qtl, product.count),
+            productQtl: productInfo.qtl,
             isFreeShipping: compareShop?.freeShipping || false,
             shippingCost: compareShop?.recommendedShipping.cost || 0,
             freeShippingThreshold: compareShop?.freeShippingThreshold || 0,
@@ -178,7 +182,8 @@ export class BestPlanByRutenService {
 
         const cheapestShop = this.findCheapestCombination(
           record,
-          product.count
+          this.shoppingList.find(x => x.productName === productName)
+            ?.count as number
         );
         this.updateShopResults(productName, cheapestShop);
         processedProducts.add(productName); // Mark product as processed
@@ -254,6 +259,8 @@ export class BestPlanByRutenService {
           (acc, cur) => acc + cur.totalCost,
           0
         );
+        this.shopResults[idx].freeShipping =
+          productsTotalCost >= this.shopResults[idx].freeShippingThreshold;
         const shippingCost = shopResult.freeShipping
           ? 0
           : shopResult.recommendedShipping.cost;
@@ -272,8 +279,15 @@ export class BestPlanByRutenService {
    */
   private calculateCost(shop: RecordShopDetail, quantity: number): number {
     const totalProductPrice = shop.productPrice * quantity;
+    // 是否達免運門檻，除了看該商品總價外，也該看已經確定要購買的總價
+    const otherProductsTotalPrice =
+      this.shopResults
+        .find(x => x.shopId === shop.shopId)
+        ?.products.filter(x => x.productName !== shop.productName)
+        .reduce((acc, cur) => acc + cur.totalCost, 0) || 0;
     const shippingCost =
-      shop.isFreeShipping || totalProductPrice >= shop.freeShippingThreshold
+      shop.isFreeShipping ||
+      totalProductPrice + otherProductsTotalPrice >= shop.freeShippingThreshold
         ? 0
         : shop.shippingCost;
     return totalProductPrice + shippingCost;
@@ -337,6 +351,12 @@ export class BestPlanByRutenService {
     findCombinations([], [], totalQuantity);
 
     combinations.sort((a, b) => a.totalCost - b.totalCost);
+    for (const shop of shops) {
+      const errorIdx = combinations.findIndex(
+        x => x.shops[shop.shopId] > shop.productQtl
+      );
+      if (errorIdx !== -1) combinations.splice(errorIdx, 1);
+    }
 
     return { ...combinations[0].shops };
   }

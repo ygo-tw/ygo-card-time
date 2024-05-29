@@ -26,7 +26,7 @@ const main = async () => {
         banana: { price: 60, id: '2', qtl: 1 },
       },
       shipPrices: { seven: 60, family: 45 },
-      freeShip: { seven: 100, family: 80 },
+      freeShip: { seven: 200, family: 170 },
     },
     {
       id: 'shop2',
@@ -47,7 +47,7 @@ const main = async () => {
         pear: { price: 70, id: '7', qtl: 1 },
       },
       shipPrices: { seven: 50, family: 55 },
-      freeShip: { seven: 150, family: 100 },
+      freeShip: { seven: 220, family: 250 },
     },
   ];
   fs.writeFileSync(
