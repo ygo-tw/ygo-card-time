@@ -1770,9 +1770,14 @@
   version "1.0.0"
   dependencies:
     "@types/node" "^20.12.11"
-    "@ygo/schemas" "file:../.cache/yarn/v6/npm-@ygo-mongo-server-1.0.0-d7061738-d78a-42f8-9574-140ef065517d-1717163802074/node_modules/@ygo/schemas"
+    "@ygo/schemas" "file:../.cache/yarn/v6/npm-@ygo-mongo-server-1.0.0-03c9eaea-9a65-47b3-b9fc-60731d231cd8-1717165589925/node_modules/@ygo/schemas"
     mongoose "^8.3.4"
     typescript "^5.4.5"
+
+"@ygo/ruten-apis@file:libs/ruten-apis":
+  version "1.0.0"
+  dependencies:
+    axios "^1.7.2"
 
 "@ygo/schemas@file:libs/schemas":
   version "1.0.0"
