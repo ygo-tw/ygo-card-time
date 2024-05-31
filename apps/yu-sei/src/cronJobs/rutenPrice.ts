@@ -11,6 +11,11 @@ import {
 } from '@ygo/schemas';
 import lodash from 'lodash';
 import axios from 'axios';
+import {
+  isIllegalProductChar,
+  isFanMode,
+  isUnopenedPackProduct,
+} from '@ygo/ruten-apis';
 
 export type PriceInfo = {
   time: string;
@@ -276,13 +281,11 @@ export class RutenService {
     const hasStock = (prices: RutenPriceDetailResponse) =>
       prices.StockQty > prices.SoldQty;
     const isNotFanMade = (prices: RutenPriceDetailResponse) =>
-      !/同人|DIY/.test(prices.ProdName);
+      isFanMode(prices.ProdName);
     const isNotBagOrMisc = (prices: RutenPriceDetailResponse) =>
-      !/搜(?=[a-zA-Z])|搜:|防雷|請勿下標|福袋|卡磚|壓克力|單螺絲卡夾|全新未拆|參考|非 |非(?=[A-Za-z\s])/.test(
-        prices.ProdName
-      );
+      isIllegalProductChar(prices.ProdName);
     const isNotUnopenedPack = (prices: RutenPriceDetailResponse) =>
-      prices.ProdName.indexOf('未拆包') === -1;
+      isUnopenedPackProduct(prices.ProdName);
     const isFixedPrice = (prices: RutenPriceDetailResponse) =>
       prices.PriceRange[0] === prices.PriceRange[1];
     const containsAllKeywords = (prodName: string, searchName: string) => {
