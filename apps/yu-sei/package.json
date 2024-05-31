@@ -27,6 +27,7 @@
     "@ygo/mailer": "file:../../libs/mailer",
     "@ygo/mongo-server": "file:../../libs/mongo-server",
     "@ygo/schemas": "file:../../libs/schemas",
+    "@ygo/ruten-apis": "file:../../libs/ruten-apis",
     "axios": "^1.6.8",
     "chalk": "^4.1.2",
     "dayjs": "^1.11.11",

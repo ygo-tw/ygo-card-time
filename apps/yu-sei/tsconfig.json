@@ -45,6 +45,9 @@
     },
     {
       "path": "../../libs/schemas"
+    },
+    {
+      "path": "../../libs/ruten-apis"
     }
   ]
 }
