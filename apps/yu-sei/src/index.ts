@@ -1,7 +1,11 @@
 import { envRunner } from './app';
 import figlet from 'figlet';
-import fs from 'fs';
-import { BestPlanByRutenService, Shop } from './utils/bestPlanByRutenService';
+// import fs from 'fs';
+import {
+  BestPlanByRutenService,
+  Shop,
+  GetShopListByRutenService,
+} from '@ygo/ruten-apis';
 
 const main = async () => {
   envRunner();
@@ -50,14 +54,18 @@ const main = async () => {
       freeShip: { seven: 220, family: 250 },
     },
   ];
-  fs.writeFileSync(
-    'result.json',
-    JSON.stringify(
-      BestPlanByRutenService.getBestPlan(shops, shoppingList),
-      null,
-      2
-    )
-  );
+
+  GetShopListByRutenService.getShopList(shoppingList);
+
+  BestPlanByRutenService.getBestPlan(shops, shoppingList);
+  // fs.writeFileSync(
+  //   'result.json',
+  //   JSON.stringify(
+  //     BestPlanByRutenService.getBestPlan(shops, shoppingList),
+  //     null,
+  //     2
+  //   )
+  // );
 };
 
 main();
