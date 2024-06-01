@@ -88,7 +88,8 @@ export class RutenService {
           rar,
           searchName,
           rarity.length,
-          cardInfo.id
+          cardInfo.id,
+          rarity
         );
 
         if (!this.isPriceInfoValid(priceInfo)) allCardPrices.push(priceInfo);
@@ -191,7 +192,8 @@ export class RutenService {
     rarity: string,
     searchName: string,
     rarityLength: number,
-    number: string
+    number: string,
+    rarityList: string[]
   ) {
     const price = {
       ...lodash.cloneDeep(this.priceTemplate),
@@ -239,7 +241,8 @@ export class RutenService {
       prices,
       number,
       rarity,
-      searchName
+      searchName,
+      rarityList
     );
 
     if (!priceList.length) {
@@ -274,7 +277,8 @@ export class RutenService {
     prices: RutenPriceDetailResponse[],
     number: string,
     rarity: string,
-    searchName: string
+    searchName: string,
+    rarityList: string[]
   ) {
     const isTWD = (prices: RutenPriceDetailResponse) =>
       prices.Currency === 'TWD';
@@ -292,6 +296,14 @@ export class RutenService {
       const keywords = searchName.split('+').filter(el => el);
       return keywords.every(keyword => prodName.includes(keyword));
     };
+    const notContainsAnotherRarity = (
+      price: RutenPriceDetailResponse,
+      r: string
+    ) =>
+      price.ProdName.indexOf(
+        this.keyWordsFactory(r, rarityList.length).replace('+', '')
+      ) === -1;
+
     const isValidPrice = (price: number) =>
       Number.isInteger(price) &&
       price < 100000 &&
@@ -309,11 +321,18 @@ export class RutenService {
           ? product.ProdName.indexOf(number) !== -1
           : true
       );
+    prices = prices.filter(price =>
+      containsAllKeywords(price.ProdName, searchName)
+    );
 
-    if (rarity.length > 1) {
-      prices = prices.filter(price =>
-        containsAllKeywords(price.ProdName, searchName)
-      );
+    if (rarityList.length > 1) {
+      rarityList
+        .filter(r => r !== rarity)
+        .reduce(
+          (filteredPrices, r) =>
+            filteredPrices.filter(price => notContainsAnotherRarity(price, r)),
+          prices
+        );
     }
 
     const priceList = prices

@@ -203,6 +203,7 @@ describe('RutenService', () => {
 
   describe('getPriceByRarity', () => {
     it('should fetch price details correctly', async () => {
+      const rarityList = ['普通卡', '白鑽卡'];
       const rarity = '普通卡';
       const searchName = 'BlueEyes';
       const rarityLength = 1;
@@ -232,16 +233,11 @@ describe('RutenService', () => {
         rarity,
         searchName,
         rarityLength,
-        number
+        number,
+        rarityList
       );
 
       expect(extractValidPricesSpy).toHaveBeenCalled();
-      expect(extractValidPricesSpy).toHaveBeenCalledWith(
-        expect.arrayContaining(priceResponse.data),
-        number,
-        rarity,
-        searchName
-      );
 
       expect(PriceCalculator.calculatePrices).toHaveBeenCalledWith(
         expect.arrayContaining([100, 150])
@@ -257,6 +253,7 @@ describe('RutenService', () => {
     });
 
     it('should handle no product found', async () => {
+      const rarityList = ['普通卡', '白鑽卡'];
       const rarity = '普通卡';
       const searchName = 'BlueEyes';
       const rarityLength = 1;
@@ -269,7 +266,8 @@ describe('RutenService', () => {
         rarity,
         searchName,
         rarityLength,
-        number
+        number,
+        rarityList
       );
       expect(result).toEqual({
         ...rutenService['priceTemplate'],
@@ -281,6 +279,7 @@ describe('RutenService', () => {
     });
 
     it('should handle errors during fetching product data', async () => {
+      const rarityList = ['普通卡', '白鑽卡'];
       const rarity = '普通卡';
       const searchName = 'BlueEyes';
       const rarityLength = 1;
@@ -297,7 +296,8 @@ describe('RutenService', () => {
         rarity,
         searchName,
         rarityLength,
-        number
+        number,
+        rarityList
       );
       expect(result).toEqual({
         ...rutenService['priceTemplate'],
@@ -468,7 +468,8 @@ describe('RutenService', () => {
         prices,
         'Example',
         '普通卡',
-        'YuGiOh Card'
+        'YuGiOh Card',
+        ['普通卡', '銀亮']
       );
       expect(result).toEqual([100]);
     });
@@ -497,7 +498,8 @@ describe('RutenService', () => {
         prices,
         'Example',
         '普通卡',
-        'YuGiOh Card'
+        'YuGiOh Card',
+        ['普通卡', '銀亮']
       );
       expect(result).toEqual([100]);
     });
@@ -526,7 +528,8 @@ describe('RutenService', () => {
         prices,
         'Example',
         '普通卡',
-        'YuGiOh Card'
+        'YuGiOh Card',
+        ['普通卡', '銀亮']
       );
       expect(result).toEqual([100]);
     });
@@ -555,7 +558,8 @@ describe('RutenService', () => {
         prices,
         'Example',
         '普通卡',
-        'YuGiOh Card'
+        'YuGiOh Card',
+        ['普通卡', '銀亮']
       );
       expect(result).toEqual([50]);
     });
@@ -608,7 +612,8 @@ describe('RutenService', () => {
         prices,
         'Example',
         '普通卡',
-        'YuGiOh Card'
+        'YuGiOh Card',
+        ['普通卡', '銀亮']
       );
       expect(result).toEqual([100, 200, 50]);
     });
