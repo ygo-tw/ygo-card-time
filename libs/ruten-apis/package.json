@@ -9,6 +9,8 @@
     "build": "yarn clean && tsc  --build --verbose"
   },
   "dependencies": {
+    "@ygo/mongo-server": "file:../../libs/mongo-server",
+    "@ygo/schemas": "file:../../libs/schemas",
     "axios": "^1.7.2"
   },
   "devDependencies": {
