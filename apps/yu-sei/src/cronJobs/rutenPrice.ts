@@ -15,6 +15,9 @@ import {
   isIllegalProductChar,
   isFanMode,
   isUnopenedPackProduct,
+  keyWordsFactory,
+  containsAllKeywords,
+  notContainsAnotherRarity,
 } from '@ygo/ruten-apis';
 
 export type PriceInfo = {
@@ -200,7 +203,7 @@ export class RutenService {
       time: dayjs().format('YYYY-MM-DD HH:mm:ss'),
       rarity,
     };
-    const keyWords = this.keyWordsFactory(rarity, rarityLength);
+    const keyWords = keyWordsFactory(rarity, rarityLength);
 
     let searchURL = `http://rtapi.ruten.com.tw/api/search/v3/index.php/core/prod?q=${searchName}${keyWords}&type=direct&sort=prc%2Fac&offset=1&limit=100`;
 
@@ -292,17 +295,6 @@ export class RutenService {
       isUnopenedPackProduct(prices.ProdName);
     const isFixedPrice = (prices: RutenPriceDetailResponse) =>
       prices.PriceRange[0] === prices.PriceRange[1];
-    const containsAllKeywords = (prodName: string, searchName: string) => {
-      const keywords = searchName.split('+').filter(el => el);
-      return keywords.every(keyword => prodName.includes(keyword));
-    };
-    const notContainsAnotherRarity = (
-      price: RutenPriceDetailResponse,
-      r: string
-    ) =>
-      price.ProdName.indexOf(
-        this.keyWordsFactory(r, rarityList.length).replace('+', '')
-      ) === -1;
 
     const isValidPrice = (price: number) =>
       Number.isInteger(price) &&
@@ -330,7 +322,9 @@ export class RutenService {
         .filter(r => r !== rarity)
         .reduce(
           (filteredPrices, r) =>
-            filteredPrices.filter(price => notContainsAnotherRarity(price, r)),
+            filteredPrices.filter(price =>
+              notContainsAnotherRarity(price.ProdName, r, rarityList.length)
+            ),
           prices
         );
     }
@@ -341,61 +335,6 @@ export class RutenService {
       .filter(isValidPrice);
 
     return priceList;
-  }
-
-  /**
-   * 根據稀有度生成搜索關鍵字。
-   * @param rarity - 卡片的稀有度。
-   * @param rarityLength - 稀有度陣列的長度。
-   * @returns 關鍵字字串。
-   */
-  private keyWordsFactory(rarity: string, rarityLength: number) {
-    if (rarity === '普卡' && rarityLength === 1) return '';
-
-    const exactReplacements: { [key: string]: string } = {
-      方鑽: '+普卡',
-      點鑽: '+普卡',
-      凸版浮雕: '+浮雕',
-      浮雕: '+浮雕',
-      '20th紅鑽': '+紅鑽',
-      紅鑽: '+紅鑽',
-      '25th金鑽': '+金鑽',
-      金鑽: '+金鑽',
-      金亮KC紋: '+KC',
-      KC紋: '+KC',
-      普卡放射鑽: '+普卡放射鑽',
-    };
-
-    const indexReplacements: { [key: string]: string } = {
-      字紋鑽: '+字紋鑽',
-      粉鑽: '+粉鑽',
-      彩鑽: '+彩鑽',
-      古紋鑽: '+古紋鑽',
-    };
-
-    if (exactReplacements[rarity]) {
-      return exactReplacements[rarity];
-    }
-
-    for (const key in indexReplacements) {
-      if (rarity.indexOf(key) !== -1) {
-        return indexReplacements[key];
-      }
-    }
-
-    if (rarity.indexOf('異圖') !== -1) return rarity.replace('-', '+');
-
-    const complexRarities = ['方鑽', '點鑽', '碎鑽'];
-    for (const complexRarity of complexRarities) {
-      if (rarity.indexOf(complexRarity) !== -1) {
-        const replacedRar = rarity.replace(complexRarity, '');
-        return ['普卡', '銀字', '隱普'].includes(replacedRar)
-          ? ''
-          : `+${complexRarity}+${replacedRar}`;
-      }
-    }
-
-    return '+' + rarity;
   }
 
   /**
