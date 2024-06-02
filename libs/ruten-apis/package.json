@@ -1,0 +1,20 @@
+{
+  "name": "@ygo/ruten-apis",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest --coverage",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "build": "yarn clean && tsc  --build --verbose"
+  },
+  "dependencies": {
+    "@ygo/mongo-server": "file:../../libs/mongo-server",
+    "@ygo/schemas": "file:../../libs/schemas",
+    "axios": "^1.7.2"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.24.5",
+    "@babel/preset-typescript": "^7.24.1"
+  }
+}

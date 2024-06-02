@@ -11,6 +11,11 @@ import {
 } from '@ygo/schemas';
 import lodash from 'lodash';
 import axios from 'axios';
+import {
+  isIllegalProductChar,
+  isFanMode,
+  isUnopenedPackProduct,
+} from '@ygo/ruten-apis';
 
 export type PriceInfo = {
   time: string;
@@ -83,7 +88,8 @@ export class RutenService {
           rar,
           searchName,
           rarity.length,
-          cardInfo.id
+          cardInfo.id,
+          rarity
         );
 
         if (!this.isPriceInfoValid(priceInfo)) allCardPrices.push(priceInfo);
@@ -186,7 +192,8 @@ export class RutenService {
     rarity: string,
     searchName: string,
     rarityLength: number,
-    number: string
+    number: string,
+    rarityList: string[]
   ) {
     const price = {
       ...lodash.cloneDeep(this.priceTemplate),
@@ -234,7 +241,8 @@ export class RutenService {
       prices,
       number,
       rarity,
-      searchName
+      searchName,
+      rarityList
     );
 
     if (!priceList.length) {
@@ -269,26 +277,33 @@ export class RutenService {
     prices: RutenPriceDetailResponse[],
     number: string,
     rarity: string,
-    searchName: string
+    searchName: string,
+    rarityList: string[]
   ) {
     const isTWD = (prices: RutenPriceDetailResponse) =>
       prices.Currency === 'TWD';
     const hasStock = (prices: RutenPriceDetailResponse) =>
       prices.StockQty > prices.SoldQty;
     const isNotFanMade = (prices: RutenPriceDetailResponse) =>
-      !/同人|DIY/.test(prices.ProdName);
+      isFanMode(prices.ProdName);
     const isNotBagOrMisc = (prices: RutenPriceDetailResponse) =>
-      !/搜(?=[a-zA-Z])|搜:|防雷|請勿下標|福袋|卡磚|壓克力|單螺絲卡夾|全新未拆|參考|非 |非(?=[A-Za-z\s])/.test(
-        prices.ProdName
-      );
+      isIllegalProductChar(prices.ProdName);
     const isNotUnopenedPack = (prices: RutenPriceDetailResponse) =>
-      prices.ProdName.indexOf('未拆包') === -1;
+      isUnopenedPackProduct(prices.ProdName);
     const isFixedPrice = (prices: RutenPriceDetailResponse) =>
       prices.PriceRange[0] === prices.PriceRange[1];
     const containsAllKeywords = (prodName: string, searchName: string) => {
       const keywords = searchName.split('+').filter(el => el);
       return keywords.every(keyword => prodName.includes(keyword));
     };
+    const notContainsAnotherRarity = (
+      price: RutenPriceDetailResponse,
+      r: string
+    ) =>
+      price.ProdName.indexOf(
+        this.keyWordsFactory(r, rarityList.length).replace('+', '')
+      ) === -1;
+
     const isValidPrice = (price: number) =>
       Number.isInteger(price) &&
       price < 100000 &&
@@ -306,11 +321,18 @@ export class RutenService {
           ? product.ProdName.indexOf(number) !== -1
           : true
       );
+    prices = prices.filter(price =>
+      containsAllKeywords(price.ProdName, searchName)
+    );
 
-    if (rarity.length > 1) {
-      prices = prices.filter(price =>
-        containsAllKeywords(price.ProdName, searchName)
-      );
+    if (rarityList.length > 1) {
+      rarityList
+        .filter(r => r !== rarity)
+        .reduce(
+          (filteredPrices, r) =>
+            filteredPrices.filter(price => notContainsAnotherRarity(price, r)),
+          prices
+        );
     }
 
     const priceList = prices
