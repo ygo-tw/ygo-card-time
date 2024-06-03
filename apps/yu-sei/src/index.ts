@@ -1,9 +1,9 @@
 import { envRunner } from './app';
 import figlet from 'figlet';
-// import fs from 'fs';
+import { DataAccessService } from '@ygo/mongo-server';
+import fs from 'fs';
 import {
   BestPlanByRutenService,
-  Shop,
   GetShopListByRutenService,
 } from '@ygo/ruten-apis';
 
@@ -15,57 +15,32 @@ const main = async () => {
     })
   );
 
-  const shoppingList = [
-    { productName: 'apple', count: 3 },
-    { productName: 'banana', count: 2 },
-    { productName: 'orange', count: 1 },
-    { productName: 'pear', count: 2 },
-    { productName: 'grape', count: 1 },
-  ];
-  const shops: Shop[] = [
+  const dataAccessService = new DataAccessService(
+    `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`
+  );
+
+  const test = [
     {
-      id: 'shop1',
-      products: {
-        apple: { price: 80, id: '1', qtl: 3 },
-        banana: { price: 60, id: '2', qtl: 1 },
-      },
-      shipPrices: { seven: 60, family: 45 },
-      freeShip: { seven: 200, family: 170 },
+      productName: 'RC04-JP001+金鑽',
+      count: 1,
     },
     {
-      id: 'shop2',
-      products: {
-        banana: { price: 50, id: '3', qtl: 2 },
-        orange: { price: 80, id: '4', qtl: 1 },
-        grape: { price: 60, id: '9', qtl: 1 },
-      },
-      shipPrices: { seven: 70, family: 40 },
-      freeShip: { seven: 120, family: 110 },
-    },
-    {
-      id: 'shop3',
-      products: {
-        apple: { price: 70, id: '5', qtl: 1 },
-        banana: { price: 55, id: '8', qtl: 1 },
-        orange: { price: 70, id: '6', qtl: 1 },
-        pear: { price: 70, id: '7', qtl: 1 },
-      },
-      shipPrices: { seven: 50, family: 55 },
-      freeShip: { seven: 220, family: 250 },
+      productName: 'RC04-JP002+金鑽',
+      count: 2,
     },
   ];
+  const start = new Date();
+  const testList = await GetShopListByRutenService.getShopList(
+    test,
+    dataAccessService
+  );
 
-  GetShopListByRutenService.getShopList(shoppingList);
+  fs.writeFileSync(
+    'result.json',
+    JSON.stringify(BestPlanByRutenService.getBestPlan(testList, test), null, 2)
+  );
 
-  BestPlanByRutenService.getBestPlan(shops, shoppingList);
-  // fs.writeFileSync(
-  //   'result.json',
-  //   JSON.stringify(
-  //     BestPlanByRutenService.getBestPlan(shops, shoppingList),
-  //     null,
-  //     2
-  //   )
-  // );
+  console.log('Done!', new Date().getTime() - start.getTime());
 };
 
 main();

@@ -35,6 +35,7 @@
 | [/member/add](#memberadd)                                                 | 會員註冊               |
 | [/member/edit](#memberedit)                                               | 編輯會員帳號           |
 | [/member/verify](#memberverify)                                           | 驗證會員帳號           |
+| [/member/reSend](#memberresend)                                           | 重新取得驗證信         |
 | [/metaDeck/articleList](#metadeckarticlelist)                             | 取得上位卡表文章       |
 | [/seriesIntroduction/articleList](#seriesintroductionarticlelist)         | 取得系列介紹文章       |
 | [/usefulCardIntroduction/articleList](#usefulcardintroductionarticlelist) | 取得泛用卡介紹文章     |

@@ -3,23 +3,23 @@ import nodemailer, { Transporter, SendMailOptions } from 'nodemailer';
 export class YGOMailer {
   private transporter: Transporter | undefined;
 
-  constructor() {
-    this.init();
+  constructor(user?: string, password?: string) {
+    this.init(user, password);
   }
 
   /**
    * 初始化邮箱传输器
    * @private
    */
-  private init() {
+  private init(user?: string, password?: string) {
     try {
       this.transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com', // SMTP 服务器
         port: 587, // SMTP 端口
         secure: false, // 如果端口为 465 则为 true，其他端口一般为 false
         auth: {
-          user: process.env.EMAIL, // 你的邮箱账户
-          pass: process.env.EPASSWORD, // 你的邮箱密码
+          user: user ?? process.env.EMAIL, // 你的邮箱账户
+          pass: password ?? process.env.EPASSWORD, // 你的邮箱密码
         },
       });
     } catch (error) {
