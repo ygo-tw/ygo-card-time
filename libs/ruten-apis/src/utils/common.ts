@@ -101,3 +101,14 @@ export const keyWordsFactory = (rarity: string, rarityLength: number) => {
 
   return '+' + rarity;
 };
+
+/**
+ * 延遲指定時間的函數
+ * @param {number} time - 延遲的時間（毫秒）
+ * @returns {Promise<void>} - 延遲的 Promise
+ */
+export const delay = async (time: number): Promise<void> => {
+  return new Promise(resolve => {
+    setTimeout(resolve, time);
+  });
+};

@@ -30,10 +30,9 @@ const main = async () => {
     },
   ];
   const start = new Date();
-  const testList = await GetShopListByRutenService.getShopList(
-    test,
-    dataAccessService
-  );
+  const shopService = new GetShopListByRutenService(test, dataAccessService);
+
+  const testList = await shopService.getShopList();
 
   fs.writeFileSync(
     'result.json',
