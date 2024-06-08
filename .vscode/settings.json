@@ -84,5 +84,6 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "cSpell.words": ["HILIFE", "Runten"]
+  "cSpell.words": ["HILIFE", "Runten"],
+  "remote.autoForwardPortsFallback": 0
 }
