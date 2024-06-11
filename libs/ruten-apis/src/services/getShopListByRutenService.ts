@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ProductRequest, Shop } from './bestPlanByRutenService';
 import { DataAccessService } from '@ygo/mongo-server';
 import {
@@ -16,68 +17,19 @@ import {
   notContainsAnotherRarity,
   delay,
 } from '../utils';
+import {
+  RutenApisType,
+  ApiKeyWordsMap,
+  SopIdList,
+  ProdDetail,
+  ProdListKeyWords,
+  ShopShipInfoKeyWords,
+  ShopProdListKeyWords,
+  ProdDetailListKeyWords,
+  ProductRequestExtended,
+} from './getShopListByRutenService.type';
 import axios from 'axios';
 import _ from 'lodash';
-
-export enum RutenApisType {
-  PROD_LIST = 'product_list',
-  PROD_DETAIL_LIST = 'product_detail_list',
-  SHOP_SHIP_INFO = 'shop_ship_info',
-  SHOP_PROD_LIST = 'shop_product_list',
-  SHOP_INFO = 'shop_info',
-}
-
-export enum RutenShipsType {
-  SEVEN = 'SEVEN',
-  FAMILY = 'FAMI',
-  HILIFE = 'HILIFE',
-}
-
-type ProdDetail = {
-  price: number;
-  qtl: number;
-  id: string;
-  shopId: string;
-  deliver_way: any;
-};
-
-type SopIdList = {
-  name: string;
-  id: string;
-};
-
-type ProdListKeyWords = {
-  queryString: string;
-};
-
-type ProdDetailListKeyWords = {
-  productId: string;
-};
-
-type ShopShipInfoKeyWords = {
-  shopId: string;
-};
-
-type ShopProdListKeyWords = {
-  shopId: string;
-  limit: number;
-  targetProduct: string;
-};
-
-interface ProductRequestExtended extends ProductRequest {
-  rarities: string[];
-  card_id: string;
-  card_number: string;
-  card_name: string;
-}
-
-export type ApiKeyWordsMap = {
-  [RutenApisType.PROD_LIST]: ProdListKeyWords;
-  [RutenApisType.PROD_DETAIL_LIST]: ProdDetailListKeyWords;
-  [RutenApisType.SHOP_SHIP_INFO]: ShopShipInfoKeyWords;
-  [RutenApisType.SHOP_PROD_LIST]: ShopProdListKeyWords;
-  [RutenApisType.SHOP_INFO]: ShopShipInfoKeyWords;
-};
 
 /**
  * Ruten 購物清單服務類

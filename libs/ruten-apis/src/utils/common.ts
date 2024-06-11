@@ -1,3 +1,12 @@
+import {
+  ProdListKeyWords,
+  ShopShipInfoKeyWords,
+  ShopProdListKeyWords,
+  ProdDetailListKeyWords,
+  RutenApisType,
+  ApiKeyWordsMap,
+} from '../services/getShopListByRutenService.type';
+
 /**
  * 檢查文字是否包含非法商品字符。
  * @param {string} txt - 要檢查的文字。
@@ -111,4 +120,35 @@ export const delay = async (time: number): Promise<void> => {
   return new Promise(resolve => {
     setTimeout(resolve, time);
   });
+};
+
+/**
+ * 獲取 Ruten API 的 URL
+ * @param {RutenApisType} type - API 類型
+ * @param {ApiKeyWordsMap[RutenApisType]} apiKeyWords - API 關鍵字
+ * @returns {string} - API 的 URL
+ */
+export const getRutenApis = <T extends RutenApisType>(
+  type: T,
+  apiKeyWords: ApiKeyWordsMap[T]
+): string => {
+  const baseApiUrl = 'https://rtapi.ruten.com.tw/api';
+  const baseRapiUrl = 'https://rapi.ruten.com.tw/api';
+
+  switch (type) {
+    case RutenApisType.PROD_LIST:
+      return `${baseApiUrl}/search/v3/index.php/core/prod?q=${(apiKeyWords as ProdListKeyWords).queryString}&type=direct&sort=prc%2Fac&offset=1&limit=100`;
+    case RutenApisType.PROD_DETAIL_LIST:
+      return `${baseRapiUrl}/items/v2/list?gno=${(apiKeyWords as ProdDetailListKeyWords).productId}&level=simple`;
+    case RutenApisType.SHOP_SHIP_INFO:
+      return `${baseRapiUrl}/shippingfee/v1/seller/${(apiKeyWords as ShopShipInfoKeyWords).shopId}/event/discount`;
+    case RutenApisType.SHOP_INFO:
+      return `${baseRapiUrl}/users/v1/index.php/${(apiKeyWords as ShopShipInfoKeyWords).shopId}/storeinfo`;
+    case RutenApisType.SHOP_PROD_LIST: {
+      const limit = Math.min((apiKeyWords as ShopProdListKeyWords).limit, 50);
+      return `${baseApiUrl}/search/v3/index.php/core/seller/${(apiKeyWords as ShopProdListKeyWords).shopId}/prod?sort=prc/ac&limit=${limit}&q=${(apiKeyWords as ShopProdListKeyWords).targetProduct}`;
+    }
+    default:
+      return 'error';
+  }
 };

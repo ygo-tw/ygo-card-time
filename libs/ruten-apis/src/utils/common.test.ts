@@ -6,7 +6,9 @@ import {
   containsAllKeywords,
   notContainsAnotherRarity,
   delay,
+  getRutenApis,
 } from './common';
+import { RutenApisType } from '../services/getShopListByRutenService.type';
 
 describe('ruten-api: common', () => {
   test('isIllegalProductChar should detect illegal characters', () => {
@@ -143,6 +145,71 @@ describe('ruten-api: common', () => {
     it('should return empty string for "點鑽隱普" when replacedRar is in includes check', () => {
       const result = keyWordsFactory('點鑽隱普', 2);
       expect(result).toBe('');
+    });
+  });
+
+  describe('getRutenApis', () => {
+    const baseApiUrl = 'https://rtapi.ruten.com.tw/api';
+    const baseRapiUrl = 'https://rapi.ruten.com.tw/api';
+
+    it('should return the correct URL for PROD_LIST', () => {
+      const apiKeyWords = { queryString: 'laptop' };
+      const result = getRutenApis(RutenApisType.PROD_LIST, apiKeyWords);
+      expect(result).toBe(
+        `${baseApiUrl}/search/v3/index.php/core/prod?q=laptop&type=direct&sort=prc%2Fac&offset=1&limit=100`
+      );
+    });
+
+    it('should return the correct URL for PROD_DETAIL_LIST', () => {
+      const apiKeyWords = { productId: '12345' };
+      const result = getRutenApis(RutenApisType.PROD_DETAIL_LIST, apiKeyWords);
+      expect(result).toBe(
+        `${baseRapiUrl}/items/v2/list?gno=12345&level=simple`
+      );
+    });
+
+    it('should return the correct URL for SHOP_SHIP_INFO', () => {
+      const apiKeyWords = { shopId: '67890' };
+      const result = getRutenApis(RutenApisType.SHOP_SHIP_INFO, apiKeyWords);
+      expect(result).toBe(
+        `${baseRapiUrl}/shippingfee/v1/seller/67890/event/discount`
+      );
+    });
+
+    it('should return the correct URL for SHOP_INFO', () => {
+      const apiKeyWords = { shopId: '67890' };
+      const result = getRutenApis(RutenApisType.SHOP_INFO, apiKeyWords);
+      expect(result).toBe(`${baseRapiUrl}/users/v1/index.php/67890/storeinfo`);
+    });
+
+    it('should return the correct URL for SHOP_PROD_LIST with limit less than 50', () => {
+      const apiKeyWords = {
+        shopId: '12345',
+        limit: 30,
+        targetProduct: 'phone',
+      };
+      const result = getRutenApis(RutenApisType.SHOP_PROD_LIST, apiKeyWords);
+      expect(result).toBe(
+        `${baseApiUrl}/search/v3/index.php/core/seller/12345/prod?sort=prc/ac&limit=30&q=phone`
+      );
+    });
+
+    it('should return the correct URL for SHOP_PROD_LIST with limit more than 50', () => {
+      const apiKeyWords = {
+        shopId: '12345',
+        limit: 100,
+        targetProduct: 'phone',
+      };
+      const result = getRutenApis(RutenApisType.SHOP_PROD_LIST, apiKeyWords);
+      expect(result).toBe(
+        `${baseApiUrl}/search/v3/index.php/core/seller/12345/prod?sort=prc/ac&limit=50&q=phone`
+      );
+    });
+
+    it('should return "error" for an unknown type', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = getRutenApis('UNKNOWN_TYPE' as any, {});
+      expect(result).toBe('error');
     });
   });
 });
