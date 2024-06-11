@@ -5,6 +5,7 @@ import {
   isUnopenedPackProduct,
   containsAllKeywords,
   notContainsAnotherRarity,
+  delay,
 } from './common';
 
 describe('ruten-api: common', () => {
@@ -34,6 +35,18 @@ describe('ruten-api: common', () => {
     expect(notContainsAnotherRarity(`這是一個測試稀有產品`, '稀有', 5)).toBe(
       false
     );
+  });
+
+  test('should delay for the specified time', async () => {
+    const time = 1000; // 1秒
+
+    const promise = delay(time);
+
+    // 快進計時器
+    jest.advanceTimersByTime(time);
+
+    // 等待 promise 被解決
+    await expect(promise).resolves.toBeUndefined();
   });
 
   describe('keyWordsFactory', () => {

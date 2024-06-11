@@ -14,8 +14,10 @@ import {
   isUnopenedPackProduct,
   containsAllKeywords,
   notContainsAnotherRarity,
+  delay,
 } from '../utils';
 import axios from 'axios';
+import _ from 'lodash';
 
 export enum RutenApisType {
   PROD_LIST = 'product_list',
@@ -30,6 +32,14 @@ export enum RutenShipsType {
   FAMILY = 'FAMI',
   HILIFE = 'HILIFE',
 }
+
+type ProdDetail = {
+  price: number;
+  qtl: number;
+  id: string;
+  shopId: string;
+  deliver_way: any;
+};
 
 type SopIdList = {
   name: string;
@@ -70,17 +80,6 @@ export type ApiKeyWordsMap = {
 };
 
 /**
- * 延遲指定時間的函數
- * @param {number} time - 延遲的時間（毫秒）
- * @returns {Promise<void>} - 延遲的 Promise
- */
-const delay = async (time: number): Promise<void> => {
-  return new Promise(resolve => {
-    setTimeout(resolve, time);
-  });
-};
-
-/**
  * Ruten 購物清單服務類
  */
 export class GetShopListByRutenService {
@@ -95,7 +94,7 @@ export class GetShopListByRutenService {
    * @param {ProductRequest[]} shoppingList - 購物清單
    * @param {DataAccessService} dataAccessService - 資料存取服務
    */
-  private constructor(
+  constructor(
     shoppingList: ProductRequest[],
     dataAccessService: DataAccessService
   ) {
@@ -107,32 +106,16 @@ export class GetShopListByRutenService {
   }
 
   /**
-   * 獲取商店列表的靜態方法
-   * @param {ProductRequest[]} shoppingList - 購物清單
-   * @param {DataAccessService} dataAccessService - 資料存取服務
-   * @returns {Promise<Shop[]>} - 商店列表
-   */
-  public static async getShopList(
-    shoppingList: ProductRequest[],
-    dataAccessService: DataAccessService
-  ): Promise<Shop[]> {
-    const instance = new GetShopListByRutenService(
-      shoppingList,
-      dataAccessService
-    );
-    return await instance.findShopList();
-  }
-
-  /**
    * 查找商店列表的方法
    * @returns {Promise<Shop[]>} - 商店列表
    */
-  private async findShopList(): Promise<Shop[]> {
+  public async getShopList(): Promise<Shop[]> {
     // 取得所有商品的版本 => 用於篩選價格使用
     try {
-      await this.getProductRequestExtended();
+      this.shoppingListExtended = await this.getProductRequestExtended();
     } catch (error) {
       this.errorHandler.push(error);
+      return [];
     }
 
     // 找出所有店家的商品列表
@@ -140,7 +123,9 @@ export class GetShopListByRutenService {
       try {
         const prodList = await this.findProductList(prod);
         for (const prodDetail of prodList) {
-          this.addOrUpdateShop(prod, prodDetail);
+          const { idx, shop } = this.addOrUpdateShop(prod, prodDetail);
+          if (idx === -1) this.shopList.push(shop);
+          else this.shopList[idx] = shop;
         }
       } catch (error) {
         this.errorHandler.push(error);
@@ -149,10 +134,21 @@ export class GetShopListByRutenService {
 
     // 取得所有店家是否有其他想購買的商品
     const shopIdList = this.shopList.map(x => ({ name: x.id, id: '' }));
-    await this.findShopHasAnotherProduct(shopIdList);
+    this.shopList = await this.findShopHasAnotherProduct(shopIdList);
 
     // 取得所有店家的運費資訊
-    await this.findShipsInfo();
+    const shopResults = await Promise.allSettled(
+      this.shopList.map((shop, idx) => this.getShipInfo(shop, idx))
+    );
+
+    shopResults.forEach((result, idx) => {
+      if (result.status === 'fulfilled') {
+        this.shopList[idx].freeShip = result.value;
+      } else {
+        this.shopList[idx].freeShip = this.setDefaultFreeShip(idx);
+        this.errorHandler.push(result.reason);
+      }
+    });
 
     return this.shopList;
   }
@@ -160,28 +156,40 @@ export class GetShopListByRutenService {
   /**
    * 添加或更新商店
    * @param {ProductRequestExtended} prod - 擴展的產品請求
-   * @param {any} prodDetail - 產品詳細資訊
+   * @param {ProdDetail} prodDetail - 產品詳細資訊
+   * @returns {{ idx: number; shop: Shop }} - 商店索引與商店物件
    */
-  private addOrUpdateShop(prod: ProductRequestExtended, prodDetail: any) {
+  private addOrUpdateShop(
+    prod: ProductRequestExtended,
+    prodDetail: ProdDetail
+  ): { idx: number; shop: Shop } {
     const idx = this.shopList.findIndex(x => x.id === prodDetail.shopId);
     if (idx === -1) {
-      this.shopList.push({
-        id: prodDetail.shopId,
-        products: {
-          [prod.productName]: {
-            id: prodDetail.id,
-            price: prodDetail.price,
-            qtl: prodDetail.qtl,
+      return {
+        idx,
+        shop: {
+          id: prodDetail.shopId,
+          products: {
+            [prod.productName]: {
+              id: prodDetail.id,
+              price: prodDetail.price,
+              qtl: prodDetail.qtl,
+            },
           },
+          shipPrices: this.extractShipPrices(prodDetail.deliver_way),
+          freeShip: {},
         },
-        shipPrices: this.extractShipPrices(prodDetail.deliver_way),
-        freeShip: {},
-      });
+      };
     } else {
-      this.shopList[idx].products[prod.productName] = {
+      const shop = _.cloneDeep(this.shopList[idx]);
+      shop.products[prod.productName] = {
         id: prodDetail.id,
         price: prodDetail.price,
         qtl: prodDetail.qtl,
+      };
+      return {
+        idx,
+        shop,
       };
     }
   }
@@ -205,57 +213,71 @@ export class GetShopListByRutenService {
   }
 
   /**
-   * 獲取所有商店的運費信息
-   * @returns {Promise<void>}
+   * 設置給定商店的默認免運費配置。
+   *
+   * @private
+   * @param {number} shopIdx - shopList 中商店的索引。
+   * @returns {{ [key: string]: number }} - 表示默認免運費配置的對象。
    */
-  private async findShipsInfo(): Promise<void> {
-    const setDefaultFreeShip = (shopIdx: number) => {
-      this.shopList[shopIdx].freeShip = {
-        [Object.keys(this.shopList[shopIdx].shipPrices)[0]]: 99999,
-      };
+  private setDefaultFreeShip(shopIdx: number): { [key: string]: number } {
+    return {
+      [Object.keys(this.shopList[shopIdx].shipPrices)[0]]: 99999,
     };
+  }
 
-    const getShipInfo = async (shop: Shop, idx: number) => {
-      try {
-        const shopShipInfoUrl = GetShopListByRutenService.getRutenApis(
-          RutenApisType.SHOP_SHIP_INFO,
-          { shopId: shop.id }
-        );
-        const shopShipInfoRes = (await axios.get(shopShipInfoUrl))
-          .data as ShipInfoResponse;
-        const shopShipInfo = shopShipInfoRes.data;
+  /**
+   * 獲取給定商店的運送資訊並設置免運費配置。
+   *
+   * @private
+   * @async
+   * @param {Shop} shop - 包含商店詳細信息的商店對象。
+   * @param {number} idx - shopList 中商店的索引。
+   * @returns {Promise<{ [ship: string]: number }>} - 一個解析為表示免運費配置的對象的 Promise。
+   * @throws 如果獲取運送資訊失敗將拋出錯誤。
+   */
+  private async getShipInfo(
+    shop: Shop,
+    idx: number
+  ): Promise<{ [ship: string]: number }> {
+    let freeShip: { [ship: string]: number } = {};
+    try {
+      const shopShipInfoUrl = GetShopListByRutenService.getRutenApis(
+        RutenApisType.SHOP_SHIP_INFO,
+        { shopId: shop.id }
+      );
 
-        const freeShipTypes = Object.keys(shopShipInfo.discount_conditions);
-        this.shopList[idx].freeShip = {};
+      const shopShipInfo = (
+        (await axios.get(shopShipInfoUrl)).data as ShipInfoResponse
+      ).data;
 
-        for (const freeShipType of freeShipTypes) {
-          if (/SEVEN|FAMILY|HILIFE/.test(freeShipType)) {
-            this.shopList[idx].freeShip[freeShipType] =
-              shopShipInfo.discount_conditions[freeShipType].arrival_amount;
-          }
+      const freeShipTypes = Object.keys(shopShipInfo.discount_conditions);
+
+      for (const freeShipType of freeShipTypes) {
+        if (/SEVEN|FAMILY|HILIFE/.test(freeShipType)) {
+          freeShip[freeShipType] =
+            shopShipInfo.discount_conditions[freeShipType].arrival_amount;
         }
-
-        if (Object.keys(this.shopList[idx].freeShip).length === 0)
-          setDefaultFreeShip(idx);
-      } catch (error) {
-        this.errorHandler.push(`Error while getting ships info for ${shop.id}`);
-        setDefaultFreeShip(idx);
       }
-    };
 
-    await Promise.allSettled(
-      this.shopList.map((shop, idx) => getShipInfo(shop, idx))
-    );
+      if (Object.keys(freeShip).length === 0)
+        freeShip = this.setDefaultFreeShip(idx);
+    } catch (error) {
+      this.errorHandler.push(`Error while getting ships info for ${shop.id}`);
+      freeShip = this.setDefaultFreeShip(idx);
+    }
+
+    return freeShip;
   }
 
   /**
    * 查找商店是否擁有其他產品的方法
    * @param {SopIdList[]} shopIdList - 商店 ID 列表
-   * @returns {Promise<void>}
+   * @returns {Promise<Shop[]>} - 商店 ID 列表
    */
   private async findShopHasAnotherProduct(
     shopIdList: SopIdList[]
-  ): Promise<void> {
+  ): Promise<Shop[]> {
+    const shopList = _.cloneDeep(this.shopList);
     for (const [idx, shop] of shopIdList.entries()) {
       await delay(150);
       // 取得店家 id
@@ -272,22 +294,24 @@ export class GetShopListByRutenService {
       const targetProduct = this.shoppingList
         .map(x => x.productName)
         .filter(x => !shopHasProdList.includes(x));
-      if (targetProduct.length === 0) continue;
-
-      // 取得其他商品資訊
-      for (const prod of targetProduct) {
-        try {
-          const prodDetail = await this.getShopOtherProductInfo(
-            shopIdList[idx].id,
-            prod
-          );
-          if (prodDetail.id === '') continue;
-          this.shopList[idx].products[prod] = prodDetail;
-        } catch (error) {
-          this.errorHandler.push(error);
+      if (targetProduct.length !== 0) {
+        // 取得其他商品資訊
+        for (const prod of targetProduct) {
+          try {
+            const prodDetail = await this.getShopOtherProductInfo(
+              shopIdList[idx].id,
+              prod
+            );
+            if (prodDetail.id !== '') shopList[idx].products[prod] = prodDetail;
+          } catch (error) {
+            this.errorHandler.push(error);
+            continue;
+          }
         }
       }
     }
+
+    return shopList;
   }
 
   /**
@@ -437,15 +461,11 @@ export class GetShopListByRutenService {
       .filter(x => isUnopenedPackProduct(x.name));
 
     if (rarities && nowRarity && rarities.length > 0) {
-      rarities
-        .filter(x => x !== nowRarity)
-        .reduce(
-          (prodList, r) =>
-            prodList.filter(price =>
-              notContainsAnotherRarity(price.name, r, rarities.length)
-            ),
-          list
+      for (const rar of rarities.filter(x => x !== nowRarity)) {
+        list = list.filter(x =>
+          notContainsAnotherRarity(x.name, rar, rarities.length)
         );
+      }
     }
 
     return list
@@ -461,17 +481,17 @@ export class GetShopListByRutenService {
 
   /**
    * 獲取擴展的產品請求
-   * @returns {Promise<void>}
+   * @returns {Promise<ProductRequestExtended[]>}
    */
-  private async getProductRequestExtended(): Promise<void> {
-    this.shoppingListExtended = this.shoppingList.map(x => ({
+  private async getProductRequestExtended(): Promise<ProductRequestExtended[]> {
+    const shopListExtend = this.shoppingList.map(x => ({
       ...x,
-      rarities: [],
+      rarities: [] as string[],
       card_id: x.productName.split('+')[0],
       card_name: '',
       card_number: '',
     }));
-    for (const [p, prod] of this.shoppingListExtended.entries()) {
+    for (const [p, prod] of shopListExtend.entries()) {
       const rarity = prod.productName.split('+')[1];
       const cardData = (
         await this.dataAccessService.find<CardsDataType>(
@@ -489,13 +509,15 @@ export class GetShopListByRutenService {
       if (!cardData)
         throw new Error(`Card data not found for ${prod.card_id} ${rarity}`);
 
-      this.shoppingListExtended[p] = {
-        ...this.shoppingListExtended[p],
+      shopListExtend[p] = {
+        ...shopListExtend[p],
         card_name: cardData.name,
         card_number: cardData.number as string,
         rarities: cardData.rarity,
       };
     }
+
+    return shopListExtend;
   }
 
   /**
