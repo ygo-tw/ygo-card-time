@@ -53,9 +53,11 @@ export class RutenService {
    * @param {CardsDataType[]} [cards] - 可選的卡片資料陣列，若未提供，將從資料庫中查詢符合條件的卡片資料
    * @returns {Promise<{ updateFailedId: string[], noPriceId: string[] }>} 包含更新失敗和沒有價格資料的卡片ID陣列
    */
-  public async getRutenPrice(
-    cards?: CardsDataType[]
-  ): Promise<{ updateFailedId: string[]; noPriceId: string[] }> {
+  public async getRutenPrice(cards?: CardsDataType[]): Promise<{
+    updateFailedId: string[];
+    noPriceId: string[];
+    successIds: string[];
+  }> {
     this.logger.info('Start Reptile Cards Information');
     const cardsInfo =
       cards ??
@@ -72,6 +74,7 @@ export class RutenService {
       ));
     const noPriceId = [];
     const updateFailedId = [];
+    const successIds = [];
 
     for (const [idx, cardInfo] of cardsInfo.entries()) {
       if (!cardInfo.id) continue;
@@ -122,6 +125,8 @@ export class RutenService {
           { id: cardInfo.id },
           { $push: { price: { $each: allCardPrices } } }
         );
+
+        successIds.push(cardInfo.id);
       } catch (error) {
         spinner
           .error({
@@ -155,6 +160,7 @@ export class RutenService {
     return {
       updateFailedId,
       noPriceId,
+      successIds,
     };
   }
 
