@@ -1,20 +1,95 @@
 import { RutenService } from '../services/rutenPrice';
 import { CustomLogger } from '../utils/logger';
 import { DataAccessService } from '@ygo/mongo-server';
-import { DataAccessEnum, CardsDataType } from '@ygo/schemas';
+import { CardsDataType } from '@ygo/schemas';
+import { LineBotService } from '@ygo/line';
+import { YGOMailer } from '@ygo/mailer';
+import { DriveService } from '@ygo/google-apis';
+import dayjs from 'dayjs';
+import { SendMailOptions } from 'nodemailer';
 
-export const reptileRutenCardPrice = async () => {
+/**
+ * 從 Ruten 爬取卡片價格並更新資料庫
+ *
+ * @param {CardsDataType[]} [cards] - 選擇性參數，卡片數據類型的數組
+ *
+ * @async
+ * @function reptileRutenCardPrice
+ */
+export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
+  // line notify
+  const lineBotService = new LineBotService();
+
+  // mailer
+  const mailer = new YGOMailer();
+
+  // google api
+  const driveService = new DriveService();
+
+  // mongodb serveice
   const mongoUrl = `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
   const logger = new CustomLogger();
   const dataAccessService = new DataAccessService(mongoUrl);
-  const testCard = await dataAccessService.find<CardsDataType>(
-    DataAccessEnum.CARDS,
-    {
-      id: 'PAC1-JP004',
-    }
-  );
   const rutenService = new RutenService(dataAccessService, logger);
-  const { updateFailedId, noPriceId, successIds } =
-    await rutenService.getRutenPrice(testCard);
-  console.log(updateFailedId, noPriceId, successIds);
+
+  // 開始爬蟲
+  let html = '';
+  const now = dayjs().format('YYYY-MM-DD');
+  const filename = `${new Date().toDateString()}.json`;
+
+  await lineBotService.sendNotify('Ruten Card Price Crawler Start');
+  let finalResult: {
+    updateFailedId: string[];
+    noPriceId: string[];
+    successIds: string[];
+  } = {
+    updateFailedId: [],
+    noPriceId: [],
+    successIds: [],
+  };
+
+  try {
+    finalResult = await rutenService.getRutenPrice(cards);
+
+    html = `
+    <p>'Updated Data Price Successful !'</p>
+    <p> total updated ${finalResult.successIds.length} data(${now})</a>
+  `;
+  } catch (error) {
+    html = `<h1>Ruten Card Price Crawler Error</h1><p>${error}</p>`;
+  }
+
+  // 爬蟲結束
+  const checkNotError = {
+    mail: true,
+    drive: true,
+  };
+
+  try {
+    const mailOptions: SendMailOptions = {
+      from: 'ygo.cardtime@gmail.com',
+      to: 'f102041332@gmail.com,alex8603062000@gmail.com',
+      subject: `爬蟲完成確認信件(${now})`,
+      html,
+      attachments: [
+        {
+          filename,
+          content: JSON.stringify(finalResult, null, 2),
+        },
+      ],
+    };
+    await mailer.sendMail(mailOptions);
+  } catch (error) {
+    checkNotError.mail = false;
+  }
+
+  try {
+    await driveService.uploadJsonToReptileFolder(filename, finalResult);
+  } catch (error) {
+    checkNotError.drive = false;
+  }
+
+  await lineBotService.sendNotify(
+    `Ruten Card Price Crawler End ! ${!checkNotError.mail ? '(Mail Failed)' : ''} ${!checkNotError.drive ? '(Drive Failed)' : ''}`
+  );
 };
