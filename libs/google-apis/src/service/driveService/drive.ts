@@ -1,6 +1,6 @@
 import { google, drive_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
-import fs from 'fs';
+import { Readable } from 'stream';
 
 export class DriveService {
   private oAuth2Client?: OAuth2Client;
@@ -39,10 +39,10 @@ export class DriveService {
     return this.oAuth2Client;
   }
 
-  public async uploadFileToReptileFolder(
+  public async uploadJsonToReptileFolder(
     fileName: string,
-    filePath: string,
-    mimeType: string
+    jsonData: object | any[],
+    mimeType: string = 'application/json'
   ) {
     try {
       const fileMetadata = {
@@ -50,15 +50,19 @@ export class DriveService {
         mimeType,
         parents: ['1Ci_nD7E258zv0Cjd8M90I44HEoOFWJcl'],
       };
+
+      const jsonString = JSON.stringify(jsonData, null, 2); // 格式化 JSON
       const media = {
         mimeType,
-        body: fs.createReadStream(filePath),
+        body: Readable.from(jsonString),
       };
+
       const response = await this.drive.files.create({
         requestBody: fileMetadata,
         media: media,
         fields: 'id',
       });
+
       return response.data;
     } catch (error) {
       console.error('Failed to upload file', error);

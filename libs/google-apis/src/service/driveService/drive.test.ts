@@ -1,6 +1,7 @@
 import { DriveService } from './drive';
 import { google } from 'googleapis';
 import fs from 'fs';
+import { Readable } from 'stream';
 
 jest.mock('googleapis');
 jest.mock('fs');
@@ -30,20 +31,21 @@ describe('DriveService', () => {
     service = new DriveService();
   });
 
-  describe('uploadFileToReptileFolder', () => {
-    it('should successfully upload a file and return the file ID', async () => {
-      const fileName = 'test.pdf';
-      const filePath = '/path/to/test.pdf';
-      const mimeType = 'application/pdf';
+  describe('uploadJsonToReptileFolder', () => {
+    it('should successfully upload JSON data and return the file ID', async () => {
+      const fileName = 'test.json';
+      const jsonData = { key: 'value' };
+      const mimeType = 'application/json';
 
       const expectedResponse = { data: { id: '12345' } };
       mockDrive.files.create.mockResolvedValue(expectedResponse);
 
-      const result = await service.uploadFileToReptileFolder(
+      const result = await service.uploadJsonToReptileFolder(
         fileName,
-        filePath,
+        jsonData,
         mimeType
       );
+
       expect(result).toBe(expectedResponse.data);
       expect(mockDrive.files.create).toHaveBeenCalledWith({
         requestBody: {
@@ -53,22 +55,22 @@ describe('DriveService', () => {
         },
         media: {
           mimeType,
-          body: 'stream',
+          body: expect.any(Readable),
         },
         fields: 'id',
       });
     });
 
-    it('should throw an error if file upload fails', async () => {
-      const fileName = 'test.pdf';
-      const filePath = '/path/to/test.pdf';
-      const mimeType = 'application/pdf';
+    it('should throw an error if JSON data upload fails', async () => {
+      const fileName = 'test.json';
+      const jsonData = { key: 'value' };
+      const mimeType = 'application/json';
       const errorMessage = 'Failed to upload file';
 
       mockDrive.files.create.mockRejectedValue(new Error(errorMessage));
 
       await expect(
-        service.uploadFileToReptileFolder(fileName, filePath, mimeType)
+        service.uploadJsonToReptileFolder(fileName, jsonData, mimeType)
       ).rejects.toThrow(errorMessage);
     });
   });
