@@ -56,7 +56,7 @@ export class YGOMailer {
    * @returns {Promise<boolean>} 是否成功发送邮件
    * @throws {Error} 发送邮件失败时抛出错误
    */
-  public async sendMail(options: SendMailOptions) {
+  public async sendMail(options: SendMailOptions): Promise<boolean> {
     if (!this.transporter) {
       console.error('Transporter is not initialized');
       throw new Error('Transporter is not initialized');
