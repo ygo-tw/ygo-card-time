@@ -92,6 +92,32 @@ export class DataAccessService {
   }
 
   /**
+   * Aggregates documents from a specified model.
+   *
+   * @template T - The type of the document.
+   * @param {ModelNames} modelName - The name of the model to aggregate.
+   * @param {any[]} pipeline - The aggregation pipeline.
+   * @returns {Promise<T[]>} - A promise that resolves to an array of aggregated documents.
+   * @throws {Error} - Throws an error if aggregation fails.
+   */
+  public async aggregate<T>(
+    modelName: ModelNames,
+    pipeline: any[]
+  ): Promise<T[]> {
+    await this.ensureInitialized();
+    const model = this.registry.getModel(modelName);
+    try {
+      return model.aggregate(pipeline).exec() as Promise<T[]>;
+    } catch (error) {
+      console.error(
+        `Error aggregating documents in model ${modelName}:`,
+        error
+      );
+      throw new Error(`Aggregation failed for model ${modelName}`);
+    }
+  }
+
+  /**
    * Create a new document in the specified model.
    * @param modelName Collection name
    * @param doc Document to create
