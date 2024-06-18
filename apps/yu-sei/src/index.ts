@@ -1,13 +1,13 @@
 import figlet from 'figlet';
-import { envRunner } from './app';
+import { loadEnv } from './app';
 import { reptileRutenCardPrice } from './tasks/reptileRutenCardPrice';
 import { scheduleJob } from 'node-schedule';
 import { reptileJapanInfo } from './tasks/reptileJapanInfo';
 
 const main = async () => {
-  envRunner();
+  loadEnv();
   console.log(
-    figlet.textSync('YGO Card Time CronJob!!!', {
+    figlet.textSync('YGO CronJob!!!', {
       font: 'Ghost',
     })
   );

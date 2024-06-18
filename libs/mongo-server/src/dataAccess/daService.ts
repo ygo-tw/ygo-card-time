@@ -5,6 +5,7 @@ import mongoose, {
   Document,
   UpdateQuery,
   ObjectId,
+  PipelineStage,
 } from 'mongoose';
 import { ModelNames } from '@ygo/schemas';
 import { ModelRegistry } from './modelRegistry';
@@ -96,13 +97,13 @@ export class DataAccessService {
    *
    * @template T - The type of the document.
    * @param {ModelNames} modelName - The name of the model to aggregate.
-   * @param {any[]} pipeline - The aggregation pipeline.
+   * @param {PipelineStage[]} pipeline - The aggregation pipeline.
    * @returns {Promise<T[]>} - A promise that resolves to an array of aggregated documents.
    * @throws {Error} - Throws an error if aggregation fails.
    */
   public async aggregate<T>(
     modelName: ModelNames,
-    pipeline: any[]
+    pipeline: PipelineStage[]
   ): Promise<T[]> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);

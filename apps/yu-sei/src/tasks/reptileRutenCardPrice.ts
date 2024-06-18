@@ -1,12 +1,11 @@
 import { RutenService } from '../services/rutenPrice';
-import { CustomLogger } from '../utils/logger';
+import { CustomLogger, makeMailOptionsPayload } from '../utils';
 import { DataAccessService } from '@ygo/mongo-server';
 import { CardsDataType } from '@ygo/schemas';
 import { LineBotService } from '@ygo/line';
 import { YGOMailer } from '@ygo/mailer';
 import { DriveService } from '@ygo/google-apis';
 import dayjs from 'dayjs';
-import { SendMailOptions } from 'nodemailer';
 
 /**
  * 從 Ruten 爬取卡片價格並更新資料庫
@@ -35,7 +34,7 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
   // 開始爬蟲
   let html = '';
   const now = dayjs().format('YYYY-MM-DD');
-  const filename = `${new Date().toDateString()}.json`;
+  const filename = `Ruten_Price_${new Date().toDateString()}.json`;
 
   await lineBotService.sendNotify('Ruten Card Price Crawler Start');
   let finalResult: {
@@ -66,18 +65,12 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
   };
 
   try {
-    const mailOptions: SendMailOptions = {
-      from: 'ygo.cardtime@gmail.com',
-      to: 'f102041332@gmail.com,alex8603062000@gmail.com',
-      subject: `爬蟲完成確認信件(${now})`,
+    const mailOptions = makeMailOptionsPayload(
+      now,
+      finalResult,
       html,
-      attachments: [
-        {
-          filename,
-          content: JSON.stringify(finalResult, null, 2),
-        },
-      ],
-    };
+      filename
+    );
     await mailer.sendMail(mailOptions);
   } catch (error) {
     checkNotError.mail = false;
