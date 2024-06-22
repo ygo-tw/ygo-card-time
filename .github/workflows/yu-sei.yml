@@ -57,5 +57,5 @@ jobs:
 
       - name: Transfer files
         run: |
-          rsync -avz --delete ./apps/yu-sei/dist/ root@${{ secrets.HOSTNAME }}:/cron_job/
+          rsync -avz --delete ./apps/yu-sei/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/
           scp .env root@${{ secrets.HOSTNAME }}:/cron_job/
