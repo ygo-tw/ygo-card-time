@@ -49,6 +49,10 @@ jobs:
           echo "REDIRECT_URI=${{ secrets.REDIRECT_URI }}" >> .env
           echo "REFRESH_TOKEN=${{ secrets.REFRESH_TOKEN }}" >> .env
 
+      - name: Clear cron_job folder except log
+        run: |
+          ssh root@${{ secrets.HOSTNAME }} "find /root/cron_job -mindepth 1 ! -regex '^/root/cron_job/log\(/.*\)?' -delete"
+
       - name: Transfer files
         run: |
           rsync -avz --delete ./apps/yu-sei/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/dist
