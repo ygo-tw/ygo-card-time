@@ -104,7 +104,7 @@ export class RutenService {
 
       const totalSpendTime = `Total Spend ${chalk.bgGray((new Date().getTime() - this.startTime.getTime()) / 1000)} sec`;
 
-      const progressBar = ` ${(((idx + 1) / cardsInfo.length) * 1000000) / 10000}% `;
+      const progressBar = ` ${Math.floor(((idx + 1) / cardsInfo.length) * 100)}% `;
 
       if (!allCardPrices.length) {
         spinner
@@ -123,10 +123,24 @@ export class RutenService {
         await this.dataAccessService.findAndUpdate<CardsDataType>(
           DataAccessEnum.CARDS,
           { id: cardInfo.id },
-          { $push: { price: { $each: allCardPrices } } }
+          { $push: { price_info: { $each: allCardPrices } } }
         );
 
         successIds.push(cardInfo.id);
+        const successWords = allCardPrices
+          .slice(allCardPrices.length - rarity.length, allCardPrices.length)
+          .map(el => `${el.rarity}-${el.price_lowest}-${el.price_avg}`)
+          .join(' / ');
+
+        spinner
+          .success({
+            text: `Get Card ${chalk.whiteBright.bgGreen(
+              ` ${cardInfo.id}`
+            )} Price Success! (${successWords}) Current progress [${idx + 1}/${
+              cardsInfo.length
+            }] ${chalk.blue(progressBar)} ${totalSpendTime} `,
+          })
+          .clear();
       } catch (error) {
         spinner
           .error({
@@ -140,21 +154,6 @@ export class RutenService {
 
         updateFailedId.push(cardInfo.id);
       }
-
-      const successWords = allCardPrices
-        .slice(allCardPrices.length - rarity.length, allCardPrices.length)
-        .map(el => `${el.rarity}-${el.price_lowest}-${el.price_avg}`)
-        .join(' / ');
-
-      spinner
-        .success({
-          text: `Get Card ${chalk.whiteBright.bgGreen(
-            ` ${cardInfo.id}`
-          )} Price Success! (${successWords}) Current progress [${idx + 1}/${
-            cardsInfo.length
-          }] ${chalk.blue(progressBar)} ${totalSpendTime} `,
-        })
-        .clear();
     }
 
     return {
@@ -350,7 +349,7 @@ export class RutenService {
    * @returns 包含搜尋名稱和稀有度陣列的物件。
    */
   private async preProcessing(cardInfo: CardsDataType, idx: number) {
-    if (idx && !(idx % 300)) await delay(800);
+    if (idx && !(idx % 50)) await delay(800);
     const searchName =
       cardInfo.id.indexOf(' ') === -1
         ? cardInfo.id

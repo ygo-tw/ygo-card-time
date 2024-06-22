@@ -6,7 +6,7 @@ import {
   DataAccessEnum,
   MetaQAIemType,
 } from '@ygo/schemas';
-import { CustomLogger } from '../utils';
+import { CustomLogger, delay } from '../utils';
 import fs from 'fs';
 import { resolve } from 'path';
 
@@ -42,21 +42,26 @@ export class YgoJpInfo {
     );
 
     const failedJpInfo: string[] = [];
+    let count = 0;
     for (const jpInfo of allJpInfo) {
+      await delay(500);
+      count++;
+      const present = Math.floor((count / allJpInfo.length) * 100);
       this.logger.info(`${jpInfo.number}  : start!`);
+
       const { qa, info, failed } = await this.getJPRulesAndInf(jpInfo);
       if (!failed) {
         try {
           const jpInfoDoc = new Set(jpInfo.qa.map(q => q.title));
           const filteredQa = qa.filter(q => !jpInfoDoc.has(q.title));
-          if (!filteredQa.length)
-            this.dataAccessService.findAndUpdate<JurisprudenceDataType>(
+          if (filteredQa.length)
+            await this.dataAccessService.findAndUpdate<JurisprudenceDataType>(
               DataAccessEnum.JURISPRUDENCE,
               { number: jpInfo.number },
               {
                 $push: {
-                  number: {
-                    $each: qa,
+                  qa: {
+                    $each: filteredQa,
                   },
                 },
                 $set: {
@@ -65,11 +70,11 @@ export class YgoJpInfo {
               }
             );
           this.logger.info(
-            `${jpInfo.number}  : update success! ${info ?? ''} / ${qa.length}`
+            `${jpInfo.number}  : update success!(${present}%) total : ${filteredQa.length} new Info : ${info !== '' ? info : 'none'}`
           );
         } catch (error) {
           this.logger.error(
-            `Error : updateCardsJPInfo failed! cards ${jpInfo.number} update failed!`
+            `Error : updateCardsJPInfo failed!(${present}%) cards ${jpInfo.number} update failed!`
           );
         }
       } else {
@@ -107,23 +112,26 @@ export class YgoJpInfo {
       this.logger.error(`Error : getNewCardsJPInfo failed! find cards failed!`);
       return { notSearchJpInfo: noJpInfo };
     }
-
+    let count = 0;
     for (const card in filterCards) {
       let info;
       for (const id of filterCards[card].ids) {
         info = await this.getCardsJPInfo(id, filterCards[card].number);
         if (info?.name_jp_h) break;
       }
-
+      count++;
+      const present = Math.floor(
+        (count / Object.keys(filterCards).length) * 100
+      );
       try {
         if (info?.name_jp_h) {
           this.dataAccessService.createOne<JurisprudenceDataType>(
             DataAccessEnum.JURISPRUDENCE,
             info as JurisprudenceDataType
           );
-          this.logger.info(`${card}  : create success!`);
+          this.logger.info(`${card}  : create success!, ${present}%`);
         } else {
-          this.logger.info(`${card}  : no info!`);
+          this.logger.info(`${card}  : no info!, ${present}%`);
           noJpInfo.push(card);
         }
       } catch (error) {
@@ -213,7 +221,7 @@ export class YgoJpInfo {
         : children.length;
       const pageLink =
         '/' + (jpInfo.jud_link + `&page=${page}`).split('com/')[1];
-      this.logger.info(`Pages : ${page}; Link : ${pageLink}`);
+      // this.logger.info(`Pages : ${page}; Link : ${pageLink}`);
       const result = await this.getRules(jpInfo.qa, pageLink);
 
       return {
@@ -270,14 +278,14 @@ export class YgoJpInfo {
           }
         });
 
-      this.logger.info(`QA Links : ${qaLinks}`);
+      // this.logger.info(`QA Links : ${qaLinks}`);
 
       for (const [idx, link] of qaLinks.entries()) {
         const $ = await this.crawler.crawl(link);
         box[idx].q = this.removeTN($('#question_text').text());
         box[idx].a = this.removeTN($('#answer_text').text());
       }
-      this.logger.info(`Crawl Rules count : ${qaLinks.length}`);
+      // this.logger.info(`Crawl Rules count : ${qaLinks.length}`);
 
       return {
         box: box as MetaQAIemType[],
