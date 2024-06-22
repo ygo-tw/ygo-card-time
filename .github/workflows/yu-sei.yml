@@ -41,22 +41,14 @@ jobs:
           echo "ADMIN=${{ secrets.ADMIN }}" >> .env
           echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> .env
           echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> .env
-          echo "DEPLOY_SSH_KEY=${{ secrets.DEPLOY_SSH_KEY }}" >> .env
           echo "DB=${{ secrets.DB }}" >> .env
           echo "EMAIL=${{ secrets.EMAIL }}" >> .env
           echo "EPASSWORD=${{ secrets.EPASSWORD }}" >> .env
-          echo "HOSTNAME=${{ secrets.HOSTNAME }}" >> .env
           echo "LINENOTIFY=${{ secrets.LINENOTIFY }}" >> .env
           echo "PASSWORD=${{ secrets.PASSWORD }}" >> .env
           echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
           echo "REDIRECT_URI=${{ secrets.REDIRECT_URI }}" >> .env
           echo "REFRESH_TOKEN=${{ secrets.REFRESH_TOKEN }}" >> .env
-
-      - name: List directory contents
-        run: ls -la
-
-      - name: Verify .env file creation
-        run: cat .env
 
       - name: Transfer files
         run: |
