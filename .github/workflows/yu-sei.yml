@@ -19,7 +19,6 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        working-directory: ./apps/yu-sei
         run: yarn install
 
       - name: Build the project
@@ -34,7 +33,7 @@ jobs:
       - name: Update known_hosts file
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan ${{ secrets.HOSTNAME }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ secrets.HOSTNAME }} >> ~/.ssh/known_hosts上
 
       - name: Create .env file
         run: |
@@ -54,8 +53,5 @@ jobs:
         run: |
           rsync -avz --delete ./apps/yu-sei/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/dist
           rsync -avz --delete ./apps/yu-sei/package.json root@${{ secrets.HOSTNAME }}:/root/cron_job/package.json
-          rsync -avz --delete ./yarn.lock root@${{ secrets.HOSTNAME }}:/root/cron_job/yarn.lock
+          rsync -avz --delete ./node_modules root@${{ secrets.HOSTNAME }}:/root/cron_job/node_modules
           scp .env root@${{ secrets.HOSTNAME }}:/root/cron_job/
-      - name: Install dependencies on server
-        run: |
-          ssh root@${{ secrets.HOSTNAME }} "cd /root/cron_job && yarn install"
