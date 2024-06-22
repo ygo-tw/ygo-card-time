@@ -12,8 +12,8 @@ const getLogPath = (
 ): string => {
   const logDir =
     process.env.NODE_ENV === 'production'
-      ? 'logs'
-      : '../../logs' + (dirname ? `/${dirname}` : '');
+      ? 'log'
+      : '../../log' + (dirname ? `/${dirname}` : '');
   const fileName = `${name}_${startTime.toDateString()}.log`;
   return path.join(logDir, 'rutenCrawlerPrice', fileName);
 };
