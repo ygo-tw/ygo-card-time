@@ -25,6 +25,16 @@ jobs:
         working-directory: ./apps/yu-sei
         run: yarn build
 
+      - name: Build libs
+        run: |
+          yarn workspace @ygo/crawler build
+          yarn workspace @ygo/google-apis build
+          yarn workspace @ygo/line build
+          yarn workspace @ygo/mailer build
+          yarn workspace @ygo/mongo-server build
+          yarn workspace @ygo/schemas build
+          yarn workspace @ygo/ruten-apis build
+
       - name: Install SSH key
         uses: webfactory/ssh-agent@v0.5.3
         with:
@@ -58,4 +68,11 @@ jobs:
           rsync -avz --delete ./apps/yu-sei/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/dist
           rsync -avz --delete ./apps/yu-sei/package.json root@${{ secrets.HOSTNAME }}:/root/cron_job/package.json
           rsync -avz --delete ./node_modules/ root@${{ secrets.HOSTNAME }}:/root/cron_job/node_modules
+          rsync -avz --delete ./libs/crawler/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/libs/crawler/dist
+          rsync -avz --delete ./libs/google-apis/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/libs/google-apis/dist
+          rsync -avz --delete ./libs/line/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/libs/line/dist
+          rsync -avz --delete ./libs/mailer/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/libs/mailer/dist
+          rsync -avz --delete ./libs/mongo-server/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/libs/mongo-server/dist
+          rsync -avz --delete ./libs/schemas/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/libs/schemas/dist
+          rsync -avz --delete ./libs/ruten-apis/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/libs/ruten-apis/dist
           scp .env root@${{ secrets.HOSTNAME }}:/root/cron_job/
