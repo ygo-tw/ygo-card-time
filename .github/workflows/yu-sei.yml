@@ -63,6 +63,16 @@ jobs:
         run: |
           ssh root@${{ secrets.HOSTNAME }} "find /root/cron_job -mindepth 1 ! -regex '^/root/cron_job/log\(/.*\)?' -delete"
 
+      - name: Create target directories
+        run: |
+          ssh root@${{ secrets.HOSTNAME }} "mkdir -p /root/cron_job/libs/crawler/dist"
+          ssh root@${{ secrets.HOSTNAME }} "mkdir -p /root/cron_job/libs/google-apis/dist"
+          ssh root@${{ secrets.HOSTNAME }} "mkdir -p /root/cron_job/libs/line/dist"
+          ssh root@${{ secrets.HOSTNAME }} "mkdir -p /root/cron_job/libs/mailer/dist"
+          ssh root@${{ secrets.HOSTNAME }} "mkdir -p /root/cron_job/libs/mongo-server/dist"
+          ssh root@${{ secrets.HOSTNAME }} "mkdir -p /root/cron_job/libs/schemas/dist"
+          ssh root@${{ secrets.HOSTNAME }} "mkdir -p /root/cron_job/libs/ruten-apis/dist"
+
       - name: Transfer files
         run: |
           rsync -avz --delete ./apps/yu-sei/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/dist
