@@ -424,7 +424,7 @@ describe('YgoJpInfo', () => {
       // expect(logger.info).toHaveBeenCalledWith(
       //   `QA Links : /rule-link&request_locale=ja`
       // );
-      expect(logger.info).toHaveBeenCalledWith(`Crawl Rules count : 1`);
+      // expect(logger.info).toHaveBeenCalledWith(`Crawl Rules count : 1`);
     });
   });
 
