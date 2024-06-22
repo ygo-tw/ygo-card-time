@@ -58,6 +58,7 @@ jobs:
           rsync -avz ./apps/yu-sei/package.json root@${{ secrets.HOSTNAME }}:/root/cron_job/package.json
           rsync -avz ./node_modules/ root@${{ secrets.HOSTNAME }}:/root/cron_job/node_modules
           rsync -avz ./libs/ root@${{ secrets.HOSTNAME }}:/root/cron_job/libs
+          rsync -avz ./yarn.lock root@${{ secrets.HOSTNAME }}:/root/cron_job/yarn.lock
           scp .env root@${{ secrets.HOSTNAME }}:/root/cron_job/
 
       - name: Install dependencies on server
