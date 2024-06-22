@@ -1,7 +1,12 @@
 import { DataAccessService } from '@ygo/mongo-server';
 import { createSpinner } from 'nanospinner';
 import chalk from 'chalk';
-import { delay, PriceCalculator, CustomLogger } from '../utils';
+import {
+  delay,
+  PriceCalculator,
+  CustomLogger,
+  notHasPriceInfo,
+} from '../utils';
 import dayjs from 'dayjs';
 import {
   CardsDataType,
@@ -67,6 +72,9 @@ export class RutenService {
           'price_info.time': {
             $not: new RegExp(dayjs().format('YYYY-MM-DD')),
           },
+          id: {
+            $nin: notHasPriceInfo,
+          },
           // id: 'PAC1-JP004',
         },
         { id: 1, rarity: 1, _id: 0, number: 1 },
@@ -89,17 +97,20 @@ export class RutenService {
       const allCardPrices: PriceInfo[] = [];
 
       for (const rar of rarity) {
-        await delay(100);
-        const priceInfo = await this.getPriceByRarity(
-          rar,
-          searchName,
-          rarity.length,
-          cardInfo.id,
-          rarity
-        );
+        await delay(500);
+        try {
+          const priceInfo = await this.getPriceByRarity(
+            rar,
+            searchName,
+            rarity.length,
+            cardInfo.id,
+            rarity
+          );
 
-        if (!this.isPriceInfoValid(priceInfo)) allCardPrices.push(priceInfo);
-        else this.logger.warn(`Invalid price information for ${cardInfo.id}`);
+          if (!this.isPriceInfoValid(priceInfo)) allCardPrices.push(priceInfo);
+        } catch (error) {
+          this.logger.error(`Error for ${cardInfo.id} : ${error}`);
+        }
       }
 
       const totalSpendTime = `Total Spend ${chalk.bgGray((new Date().getTime() - this.startTime.getTime()) / 1000)} sec`;
@@ -117,42 +128,42 @@ export class RutenService {
           })
           .clear();
         noPriceId.push(cardInfo.id);
-      }
+      } else {
+        try {
+          await this.dataAccessService.findAndUpdate<CardsDataType>(
+            DataAccessEnum.CARDS,
+            { id: cardInfo.id },
+            { $push: { price_info: { $each: allCardPrices } } }
+          );
 
-      try {
-        await this.dataAccessService.findAndUpdate<CardsDataType>(
-          DataAccessEnum.CARDS,
-          { id: cardInfo.id },
-          { $push: { price_info: { $each: allCardPrices } } }
-        );
+          successIds.push(cardInfo.id);
+          const successWords = allCardPrices
+            .slice(allCardPrices.length - rarity.length, allCardPrices.length)
+            .map(el => `${el.rarity}-${el.price_lowest}-${el.price_avg}`)
+            .join(' / ');
 
-        successIds.push(cardInfo.id);
-        const successWords = allCardPrices
-          .slice(allCardPrices.length - rarity.length, allCardPrices.length)
-          .map(el => `${el.rarity}-${el.price_lowest}-${el.price_avg}`)
-          .join(' / ');
+          spinner
+            .success({
+              text: `Get Card ${chalk.whiteBright.bgGreen(
+                ` ${cardInfo.id}`
+              )} Price Success! (${successWords}) Current progress [${idx + 1}/${
+                cardsInfo.length
+              }] ${chalk.blue(progressBar)} ${totalSpendTime} `,
+            })
+            .clear();
+        } catch (error) {
+          spinner
+            .error({
+              text: `Card Number : ${chalk.white.bgCyanBright(
+                `${cardInfo.id} upload Failed!`
+              )} Current progress [${idx + 1}/${cardsInfo.length}] ${chalk.blue(
+                progressBar
+              )} ${totalSpendTime}`,
+            })
+            .clear();
 
-        spinner
-          .success({
-            text: `Get Card ${chalk.whiteBright.bgGreen(
-              ` ${cardInfo.id}`
-            )} Price Success! (${successWords}) Current progress [${idx + 1}/${
-              cardsInfo.length
-            }] ${chalk.blue(progressBar)} ${totalSpendTime} `,
-          })
-          .clear();
-      } catch (error) {
-        spinner
-          .error({
-            text: `Card Number : ${chalk.white.bgCyanBright(
-              `${cardInfo.id} upload Failed!`
-            )} Current progress [${idx + 1}/${cardsInfo.length}] ${chalk.blue(
-              progressBar
-            )} ${totalSpendTime}`,
-          })
-          .clear();
-
-        updateFailedId.push(cardInfo.id);
+          updateFailedId.push(cardInfo.id);
+        }
       }
     }
 
@@ -217,7 +228,7 @@ export class RutenService {
     ).Rows.map(el => el.Id);
 
     if (!targets.length) {
-      this.logger.warn(number, ': No product found');
+      // this.logger.warn(number, ': No product found');
       return {
         ...price,
         price_lowest: null,
@@ -254,7 +265,7 @@ export class RutenService {
     );
 
     if (!priceList.length) {
-      this.logger.warn(number, ': No price found');
+      // this.logger.warn(number, ': No price found');
       return {
         ...price,
         price_lowest: null,

@@ -8,13 +8,23 @@ import {
 } from '@ygo/schemas';
 import { CustomLogger, delay } from '../utils';
 import fs from 'fs';
-import { resolve } from 'path';
+import path from 'path';
 
 type AccumulatorType = {
   [key: string]: {
     number: string;
     ids: string[];
   };
+};
+
+const getLogPath = (name: string): string => {
+  const basePath =
+    process.env.NODE_ENV === 'production'
+      ? './log/jpInfoCrawler'
+      : '../../../../log/jpInfoCrawler';
+  const logDir = path.resolve(__dirname, basePath);
+  const fileName = `${name}_${new Date().toDateString()}.json`;
+  return path.join(logDir, fileName);
 };
 
 export class YgoJpInfo {
@@ -79,6 +89,7 @@ export class YgoJpInfo {
         }
       } else {
         failedJpInfo.push(jpInfo.number);
+        this.logger.warn(`${jpInfo.number}  : update failed!(${present}%)`);
       }
     }
     this.writeLog('failedJpInfo', failedJpInfo);
@@ -146,10 +157,7 @@ export class YgoJpInfo {
   }
 
   private writeLog(name: string, data: object) {
-    const path = resolve(
-      __dirname,
-      `../../../../log/jpInfoCrawler/${name}_${new Date().toDateString()}.json`
-    );
+    const path = getLogPath(name);
     fs.writeFileSync(path, JSON.stringify(data, null, 2));
   }
 
