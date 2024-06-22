@@ -22,11 +22,11 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        working-directory: ./app/yu-sei
+        working-directory: ./apps/yu-sei
         run: yarn install
 
       - name: Build the project
-        working-directory: ./app/yu-sei
+        working-directory: ./apps/yu-sei
         run: yarn build
 
       - name: Install SSH key
@@ -57,5 +57,5 @@ jobs:
 
       - name: Transfer files
         run: |
-          rsync -avz --delete ./app/yu-sei/dist/ root@${{ secrets.HOSTNAME }}:/cron_job/
+          rsync -avz --delete ./apps/yu-sei/dist/ root@${{ secrets.HOSTNAME }}:/cron_job/
           scp .env root@${{ secrets.HOSTNAME }}:/cron_job/
