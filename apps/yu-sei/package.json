@@ -21,13 +21,6 @@
   "dependencies": {
     "@types/node": "^20.12.11",
     "@types/winston": "^2.4.4",
-    "@ygo/crawler": "file:../../libs/crawler",
-    "@ygo/google-apis": "file:../../libs/google-apis",
-    "@ygo/line": "file:../../libs/line",
-    "@ygo/mailer": "file:../../libs/mailer",
-    "@ygo/mongo-server": "file:../../libs/mongo-server",
-    "@ygo/schemas": "file:../../libs/schemas",
-    "@ygo/ruten-apis": "file:../../libs/ruten-apis",
     "axios": "^1.6.8",
     "chalk": "^4.1.2",
     "dayjs": "^1.11.11",
