@@ -54,8 +54,9 @@ jobs:
           echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
           echo "REDIRECT_URI=${{ secrets.REDIRECT_URI }}" >> .env
           echo "REFRESH_TOKEN=${{ secrets.REFRESH_TOKEN }}" >> .env
-
+      - name: Verify .env file creation
+        run: cat ./apps/yu-sei/.env
       - name: Transfer files
         run: |
           rsync -avz --delete ./apps/yu-sei/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/
-          scp .env root@${{ secrets.HOSTNAME }}:/cron_job/
+          scp ./apps/yu-sei/.env root@${{ secrets.HOSTNAME }}:/root/cron_job/
