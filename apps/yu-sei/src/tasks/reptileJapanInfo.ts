@@ -15,7 +15,7 @@ export const reptileJapanInfo = async (cardNumbers?: string[]) => {
   const mailer = new YGOMailer();
   //  ygoJpInfo
   const mongoUrl = `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
-  const logger = new CustomLogger();
+  const logger = new CustomLogger('jpInfoCrawler');
   const dataAccessService = new DataAccessService(mongoUrl);
   const crawler = new CheerioCrawler('https://www.db.yugioh-card.com/');
   const ygoJpInfo = new YgoJpInfo(crawler, dataAccessService, logger);
@@ -104,4 +104,6 @@ export const reptileJapanInfo = async (cardNumbers?: string[]) => {
   await lineBotService.sendNotify(
     `Japan Info Crawler End ! ${!checkNotError.mail ? '(Mail Failed)' : ''}`
   );
+
+  logger.info('Japan Info Crawler End !');
 };

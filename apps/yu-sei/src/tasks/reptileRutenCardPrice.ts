@@ -4,7 +4,6 @@ import { DataAccessService } from '@ygo/mongo-server';
 import { CardsDataType } from '@ygo/schemas';
 import { LineBotService } from '@ygo/line';
 import { YGOMailer } from '@ygo/mailer';
-import { DriveService } from '@ygo/google-apis';
 import dayjs from 'dayjs';
 
 /**
@@ -22,12 +21,9 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
   // mailer
   const mailer = new YGOMailer();
 
-  // google api
-  const driveService = new DriveService();
-
   // mongodb serveice
   const mongoUrl = `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
-  const logger = new CustomLogger();
+  const logger = new CustomLogger('rutenCrawlerPrice');
   const dataAccessService = new DataAccessService(mongoUrl);
   const rutenService = new RutenService(dataAccessService, logger);
 
@@ -55,6 +51,7 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
     <p> total updated ${finalResult.successIds.length} data(${now})</a>
   `;
   } catch (error) {
+    console.log(error);
     html = `<h1>Ruten Card Price Crawler Error</h1><p>${error}</p>`;
   }
 
@@ -76,13 +73,9 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
     checkNotError.mail = false;
   }
 
-  try {
-    await driveService.uploadJsonToReptileFolder(filename, finalResult);
-  } catch (error) {
-    checkNotError.drive = false;
-  }
-
   await lineBotService.sendNotify(
-    `Ruten Card Price Crawler End ! ${!checkNotError.mail ? '(Mail Failed)' : ''} ${!checkNotError.drive ? '(Drive Failed)' : ''}`
+    `Ruten Card Price Crawler End ! ${!checkNotError.mail ? '(Mail Failed)' : ''}`
   );
+
+  logger.info('Ruten Card Price Crawler End !');
 };
