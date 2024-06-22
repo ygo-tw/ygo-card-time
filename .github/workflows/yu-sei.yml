@@ -1,0 +1,61 @@
+name: YU-SEI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./app/yu-sei
+        run: yarn install
+
+      - name: Build the project
+        working-directory: ./app/yu-sei
+        run: yarn build
+
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Update known_hosts file
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan ${{ secrets.HOSTNAME }} >> ~/.ssh/known_hosts
+
+      - name: Create .env file
+        run: |
+          echo "ADMIN=${{ secrets.ADMIN }}" >> .env
+          echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> .env
+          echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> .env
+          echo "DEPLOY_SSH_KEY=${{ secrets.DEPLOY_SSH_KEY }}" >> .env
+          echo "DB=${{ secrets.DB }}" >> .env
+          echo "EMAIL=${{ secrets.EMAIL }}" >> .env
+          echo "EPASSWORD=${{ secrets.EPASSWORD }}" >> .env
+          echo "HOSTNAME=${{ secrets.HOSTNAME }}" >> .env
+          echo "LINENOTIFY=${{ secrets.LINENOTIFY }}" >> .env
+          echo "PASSWORD=${{ secrets.PASSWORD }}" >> .env
+          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
+          echo "REDIRECT_URI=${{ secrets.REDIRECT_URI }}" >> .env
+          echo "REFRESH_TOKEN=${{ secrets.REFRESH_TOKEN }}" >> .env
+
+      - name: Transfer files
+        run: |
+          rsync -avz --delete ./app/yu-sei/dist/ root@${{ secrets.HOSTNAME }}:/cron_job/
+          scp .env root@${{ secrets.HOSTNAME }}:/cron_job/
