@@ -1,14 +1,28 @@
 import { createLogger, format, transports, Logger } from 'winston';
 import stripAnsi from 'strip-ansi';
 import gradient from 'gradient-string';
+import path from 'path';
 
 const { combine, timestamp, printf } = format;
+
+const getLogPath = (
+  startTime: Date,
+  name: string,
+  dirname?: string
+): string => {
+  const logDir =
+    process.env.NODE_ENV === 'production'
+      ? 'log'
+      : '../../log' + (dirname ? `/${dirname}` : '');
+  const fileName = `${name}_${startTime.toDateString()}.log`;
+  return path.join(logDir, 'rutenCrawlerPrice', fileName);
+};
 
 export class CustomLogger {
   private logger: Logger;
   private startTime: Date;
 
-  constructor() {
+  constructor(dir?: string) {
     this.startTime = new Date();
 
     this.logger = createLogger({
@@ -22,7 +36,7 @@ export class CustomLogger {
           ),
         }),
         new transports.File({
-          filename: `../../log/rutenCrawlerPrice/combined_${this.startTime.toDateString()}.log`,
+          filename: getLogPath(this.startTime, 'combined', dir),
           format: combine(
             timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
             this.fileFormat()
@@ -31,7 +45,7 @@ export class CustomLogger {
       ],
       exceptionHandlers: [
         new transports.File({
-          filename: `../../log/rutenCrawlerPrice/exceptions_${this.startTime.toDateString()}.log`,
+          filename: getLogPath(this.startTime, 'exception', dir),
           format: combine(
             timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
             this.fileFormat()

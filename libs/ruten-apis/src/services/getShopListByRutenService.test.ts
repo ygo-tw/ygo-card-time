@@ -1,7 +1,5 @@
-import {
-  GetShopListByRutenService,
-  RutenApisType,
-} from './getShopListByRutenService';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { GetShopListByRutenService } from './getShopListByRutenService';
 import { DataAccessService } from '@ygo/mongo-server';
 import { ProductRequest } from './bestPlanByRutenService';
 import { Document } from 'mongoose';
@@ -12,6 +10,7 @@ import {
   isUnopenedPackProduct,
   containsAllKeywords,
   notContainsAnotherRarity,
+  getRutenApis,
 } from '../utils';
 
 jest.mock('../utils', () => ({
@@ -21,6 +20,7 @@ jest.mock('../utils', () => ({
   containsAllKeywords: jest.fn(),
   notContainsAnotherRarity: jest.fn(),
   delay: jest.fn(),
+  getRutenApis: jest.fn(),
 }));
 jest.mock('@ygo/mongo-server');
 jest.mock('axios');
@@ -524,9 +524,7 @@ describe('GetShopListByRutenService', () => {
 
   describe('getShopOtherProductInfo', () => {
     test('if axios get empty array, return empty', async () => {
-      jest
-        .spyOn(GetShopListByRutenService, 'getRutenApis')
-        .mockReturnValueOnce('url1');
+      (getRutenApis as jest.Mock).mockReturnValueOnce('url1');
 
       (axios.get as jest.Mock).mockResolvedValueOnce({
         data: {
@@ -545,10 +543,10 @@ describe('GetShopListByRutenService', () => {
     });
 
     test('if axios get not empty array, return other product info', async () => {
-      jest
-        .spyOn(GetShopListByRutenService, 'getRutenApis')
+      (getRutenApis as jest.Mock)
         .mockReturnValueOnce('url1')
         .mockReturnValueOnce('url2');
+
       const expected = {
         id: '456',
         price: 200,
@@ -585,9 +583,8 @@ describe('GetShopListByRutenService', () => {
 
   describe('getShopId', () => {
     test('success to get shop id', async () => {
-      jest
-        .spyOn(GetShopListByRutenService, 'getRutenApis')
-        .mockReturnValueOnce('url1');
+      (getRutenApis as jest.Mock).mockReturnValueOnce('url1');
+
       (axios.get as jest.Mock).mockResolvedValueOnce({
         data: {
           data: {
@@ -605,9 +602,8 @@ describe('GetShopListByRutenService', () => {
     });
 
     test('fail to get shop id', async () => {
-      jest
-        .spyOn(GetShopListByRutenService, 'getRutenApis')
-        .mockReturnValueOnce('url1');
+      (getRutenApis as jest.Mock).mockReturnValueOnce('url1');
+
       (axios.get as jest.Mock).mockRejectedValueOnce(new Error('mock error'));
       await expect(
         (mockGetShopListByRutenService as any).getShopId('456')
@@ -698,7 +694,8 @@ describe('GetShopListByRutenService', () => {
           freeShip: {},
         },
       ];
-      jest.spyOn(GetShopListByRutenService, 'getRutenApis');
+      (getRutenApis as jest.Mock).mockReturnValueOnce('url1');
+
       (axios.get as jest.Mock).mockResolvedValueOnce({
         data: {
           data: {
@@ -758,7 +755,8 @@ describe('GetShopListByRutenService', () => {
           freeShip: {},
         },
       ];
-      jest.spyOn(GetShopListByRutenService, 'getRutenApis');
+      (getRutenApis as jest.Mock).mockReturnValueOnce('url1');
+
       (axios.get as jest.Mock).mockResolvedValueOnce({
         data: {
           data: {
@@ -817,7 +815,8 @@ describe('GetShopListByRutenService', () => {
           freeShip: {},
         },
       ];
-      jest.spyOn(GetShopListByRutenService, 'getRutenApis');
+      (getRutenApis as jest.Mock).mockReturnValueOnce('url1');
+
       (axios.get as jest.Mock).mockImplementationOnce(() =>
         Promise.reject(new Error(''))
       );
@@ -844,8 +843,7 @@ describe('GetShopListByRutenService', () => {
         card_name: 'A怪',
         card_number: '123',
       };
-      jest
-        .spyOn(GetShopListByRutenService, 'getRutenApis')
+      (getRutenApis as jest.Mock)
         .mockReturnValueOnce('url1')
         .mockReturnValueOnce('url2');
 
@@ -882,9 +880,8 @@ describe('GetShopListByRutenService', () => {
         card_name: 'A怪',
         card_number: '123',
       };
-      jest
-        .spyOn(GetShopListByRutenService, 'getRutenApis')
-        .mockReturnValueOnce('url1');
+      (getRutenApis as jest.Mock).mockReturnValueOnce('url1');
+
       const errorMessage = `Error while getting product list for ${prod.productName}`;
       (axios.get as jest.Mock).mockImplementationOnce(() =>
         Promise.reject(new Error(errorMessage))
@@ -973,91 +970,6 @@ describe('GetShopListByRutenService', () => {
       };
 
       expect(result).toEqual(expected);
-    });
-  });
-
-  describe('getRutenApis', () => {
-    const baseApiUrl = 'https://rtapi.ruten.com.tw/api';
-    const baseRapiUrl = 'https://rapi.ruten.com.tw/api';
-
-    it('should return the correct URL for PROD_LIST', () => {
-      const apiKeyWords = { queryString: 'laptop' };
-      const result = GetShopListByRutenService.getRutenApis(
-        RutenApisType.PROD_LIST,
-        apiKeyWords
-      );
-      expect(result).toBe(
-        `${baseApiUrl}/search/v3/index.php/core/prod?q=laptop&type=direct&sort=prc%2Fac&offset=1&limit=100`
-      );
-    });
-
-    it('should return the correct URL for PROD_DETAIL_LIST', () => {
-      const apiKeyWords = { productId: '12345' };
-      const result = GetShopListByRutenService.getRutenApis(
-        RutenApisType.PROD_DETAIL_LIST,
-        apiKeyWords
-      );
-      expect(result).toBe(
-        `${baseRapiUrl}/items/v2/list?gno=12345&level=simple`
-      );
-    });
-
-    it('should return the correct URL for SHOP_SHIP_INFO', () => {
-      const apiKeyWords = { shopId: '67890' };
-      const result = GetShopListByRutenService.getRutenApis(
-        RutenApisType.SHOP_SHIP_INFO,
-        apiKeyWords
-      );
-      expect(result).toBe(
-        `${baseRapiUrl}/shippingfee/v1/seller/67890/event/discount`
-      );
-    });
-
-    it('should return the correct URL for SHOP_INFO', () => {
-      const apiKeyWords = { shopId: '67890' };
-      const result = GetShopListByRutenService.getRutenApis(
-        RutenApisType.SHOP_INFO,
-        apiKeyWords
-      );
-      expect(result).toBe(`${baseRapiUrl}/users/v1/index.php/67890/storeinfo`);
-    });
-
-    it('should return the correct URL for SHOP_PROD_LIST with limit less than 50', () => {
-      const apiKeyWords = {
-        shopId: '12345',
-        limit: 30,
-        targetProduct: 'phone',
-      };
-      const result = GetShopListByRutenService.getRutenApis(
-        RutenApisType.SHOP_PROD_LIST,
-        apiKeyWords
-      );
-      expect(result).toBe(
-        `${baseApiUrl}/search/v3/index.php/core/seller/12345/prod?sort=prc/ac&limit=30&q=phone`
-      );
-    });
-
-    it('should return the correct URL for SHOP_PROD_LIST with limit more than 50', () => {
-      const apiKeyWords = {
-        shopId: '12345',
-        limit: 100,
-        targetProduct: 'phone',
-      };
-      const result = GetShopListByRutenService.getRutenApis(
-        RutenApisType.SHOP_PROD_LIST,
-        apiKeyWords
-      );
-      expect(result).toBe(
-        `${baseApiUrl}/search/v3/index.php/core/seller/12345/prod?sort=prc/ac&limit=50&q=phone`
-      );
-    });
-
-    it('should return "error" for an unknown type', () => {
-      const result = GetShopListByRutenService.getRutenApis(
-        'UNKNOWN_TYPE' as any,
-        {}
-      );
-      expect(result).toBe('error');
     });
   });
 });

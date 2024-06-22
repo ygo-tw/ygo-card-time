@@ -1,7 +1,12 @@
 import { DataAccessService } from '@ygo/mongo-server';
 import { createSpinner } from 'nanospinner';
 import chalk from 'chalk';
-import { delay, PriceCalculator, CustomLogger } from '../utils';
+import {
+  delay,
+  PriceCalculator,
+  CustomLogger,
+  notHasPriceInfo,
+} from '../utils';
 import dayjs from 'dayjs';
 import {
   CardsDataType,
@@ -53,9 +58,11 @@ export class RutenService {
    * @param {CardsDataType[]} [cards] - 可選的卡片資料陣列，若未提供，將從資料庫中查詢符合條件的卡片資料
    * @returns {Promise<{ updateFailedId: string[], noPriceId: string[] }>} 包含更新失敗和沒有價格資料的卡片ID陣列
    */
-  public async getRutenPrice(
-    cards?: CardsDataType[]
-  ): Promise<{ updateFailedId: string[]; noPriceId: string[] }> {
+  public async getRutenPrice(cards?: CardsDataType[]): Promise<{
+    updateFailedId: string[];
+    noPriceId: string[];
+    successIds: string[];
+  }> {
     this.logger.info('Start Reptile Cards Information');
     const cardsInfo =
       cards ??
@@ -65,6 +72,9 @@ export class RutenService {
           'price_info.time': {
             $not: new RegExp(dayjs().format('YYYY-MM-DD')),
           },
+          id: {
+            $nin: notHasPriceInfo,
+          },
           // id: 'PAC1-JP004',
         },
         { id: 1, rarity: 1, _id: 0, number: 1 },
@@ -72,6 +82,7 @@ export class RutenService {
       ));
     const noPriceId = [];
     const updateFailedId = [];
+    const successIds = [];
 
     for (const [idx, cardInfo] of cardsInfo.entries()) {
       if (!cardInfo.id) continue;
@@ -86,22 +97,25 @@ export class RutenService {
       const allCardPrices: PriceInfo[] = [];
 
       for (const rar of rarity) {
-        await delay(100);
-        const priceInfo = await this.getPriceByRarity(
-          rar,
-          searchName,
-          rarity.length,
-          cardInfo.id,
-          rarity
-        );
+        await delay(500);
+        try {
+          const priceInfo = await this.getPriceByRarity(
+            rar,
+            searchName,
+            rarity.length,
+            cardInfo.id,
+            rarity
+          );
 
-        if (!this.isPriceInfoValid(priceInfo)) allCardPrices.push(priceInfo);
-        else this.logger.warn(`Invalid price information for ${cardInfo.id}`);
+          if (!this.isPriceInfoValid(priceInfo)) allCardPrices.push(priceInfo);
+        } catch (error) {
+          this.logger.error(`Error for ${cardInfo.id} : ${error}`);
+        }
       }
 
       const totalSpendTime = `Total Spend ${chalk.bgGray((new Date().getTime() - this.startTime.getTime()) / 1000)} sec`;
 
-      const progressBar = ` ${(((idx + 1) / cardsInfo.length) * 1000000) / 10000}% `;
+      const progressBar = ` ${Math.floor(((idx + 1) / cardsInfo.length) * 100)}% `;
 
       if (!allCardPrices.length) {
         spinner
@@ -114,47 +128,49 @@ export class RutenService {
           })
           .clear();
         noPriceId.push(cardInfo.id);
+      } else {
+        try {
+          await this.dataAccessService.findAndUpdate<CardsDataType>(
+            DataAccessEnum.CARDS,
+            { id: cardInfo.id },
+            { $push: { price_info: { $each: allCardPrices } } }
+          );
+
+          successIds.push(cardInfo.id);
+          const successWords = allCardPrices
+            .slice(allCardPrices.length - rarity.length, allCardPrices.length)
+            .map(el => `${el.rarity}-${el.price_lowest}-${el.price_avg}`)
+            .join(' / ');
+
+          spinner
+            .success({
+              text: `Get Card ${chalk.whiteBright.bgGreen(
+                ` ${cardInfo.id}`
+              )} Price Success! (${successWords}) Current progress [${idx + 1}/${
+                cardsInfo.length
+              }] ${chalk.blue(progressBar)} ${totalSpendTime} `,
+            })
+            .clear();
+        } catch (error) {
+          spinner
+            .error({
+              text: `Card Number : ${chalk.white.bgCyanBright(
+                `${cardInfo.id} upload Failed!`
+              )} Current progress [${idx + 1}/${cardsInfo.length}] ${chalk.blue(
+                progressBar
+              )} ${totalSpendTime}`,
+            })
+            .clear();
+
+          updateFailedId.push(cardInfo.id);
+        }
       }
-
-      try {
-        await this.dataAccessService.findAndUpdate<CardsDataType>(
-          DataAccessEnum.CARDS,
-          { id: cardInfo.id },
-          { $push: { price: { $each: allCardPrices } } }
-        );
-      } catch (error) {
-        spinner
-          .error({
-            text: `Card Number : ${chalk.white.bgCyanBright(
-              `${cardInfo.id} upload Failed!`
-            )} Current progress [${idx + 1}/${cardsInfo.length}] ${chalk.blue(
-              progressBar
-            )} ${totalSpendTime}`,
-          })
-          .clear();
-
-        updateFailedId.push(cardInfo.id);
-      }
-
-      const successWords = allCardPrices
-        .slice(allCardPrices.length - rarity.length, allCardPrices.length)
-        .map(el => `${el.rarity}-${el.price_lowest}-${el.price_avg}`)
-        .join(' / ');
-
-      spinner
-        .success({
-          text: `Get Card ${chalk.whiteBright.bgGreen(
-            ` ${cardInfo.id}`
-          )} Price Success! (${successWords}) Current progress [${idx + 1}/${
-            cardsInfo.length
-          }] ${chalk.blue(progressBar)} ${totalSpendTime} `,
-        })
-        .clear();
     }
 
     return {
       updateFailedId,
       noPriceId,
+      successIds,
     };
   }
 
@@ -212,7 +228,7 @@ export class RutenService {
     ).Rows.map(el => el.Id);
 
     if (!targets.length) {
-      this.logger.warn(number, ': No product found');
+      // this.logger.warn(number, ': No product found');
       return {
         ...price,
         price_lowest: null,
@@ -249,7 +265,7 @@ export class RutenService {
     );
 
     if (!priceList.length) {
-      this.logger.warn(number, ': No price found');
+      // this.logger.warn(number, ': No price found');
       return {
         ...price,
         price_lowest: null,
@@ -344,7 +360,7 @@ export class RutenService {
    * @returns 包含搜尋名稱和稀有度陣列的物件。
    */
   private async preProcessing(cardInfo: CardsDataType, idx: number) {
-    if (idx && !(idx % 300)) await delay(800);
+    if (idx && !(idx % 50)) await delay(800);
     const searchName =
       cardInfo.id.indexOf(' ') === -1
         ? cardInfo.id
