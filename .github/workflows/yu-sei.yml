@@ -33,7 +33,7 @@ jobs:
       - name: Update known_hosts file
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan ${{ secrets.HOSTNAME }} >> ~/.ssh/known_hosts上
+          ssh-keyscan ${{ secrets.HOSTNAME }} >> ~/.ssh/known_hosts
 
       - name: Create .env file
         run: |
