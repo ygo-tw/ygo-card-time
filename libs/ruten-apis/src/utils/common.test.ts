@@ -107,8 +107,8 @@ describe('ruten-api: common', () => {
       expect(result).toBe('+金鑽');
     });
 
-    it('should return empty string for "普卡放射鑽" when rarityLength is 1', () => {
-      const result = keyWordsFactory('普卡放射鑽', 1);
+    it('should return empty string for "普卡放射鑽" when rarityLength is 2', () => {
+      const result = keyWordsFactory('普卡放射鑽', 2);
       expect(result).toBe('+普卡放射鑽');
     });
 
