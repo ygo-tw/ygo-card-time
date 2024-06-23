@@ -54,13 +54,9 @@ jobs:
 
       - name: Transfer files
         run: |
-          rsync -avz ./apps/yu-sei/ root@${{ secrets.HOSTNAME }}:/root/cron_job/app
+          rsync -avz ./apps/yu-sei/ root@${{ secrets.HOSTNAME }}:/root/cron_job/apps/yu-sei
           rsync -avz ./libs/ root@${{ secrets.HOSTNAME }}:/root/cron_job/libs
           rsync -avz ./yarn.lock root@${{ secrets.HOSTNAME }}:/root/cron_job/yarn.lock
           rsync -avz ./package.json root@${{ secrets.HOSTNAME }}:/root/cron_job/package.json
           rsync -avz ./node_modules/ root@${{ secrets.HOSTNAME }}:/root/cron_job/node_modules
           scp .env root@${{ secrets.HOSTNAME }}:/root/cron_job/app
-
-      - name: Install dependencies on server
-        run: |
-          ssh root@${{ secrets.HOSTNAME }} "cd /root/cron_job && yarn install"
