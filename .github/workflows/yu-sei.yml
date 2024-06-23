@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'libs/**'
+      - 'apps/yu-sei/**'
 
 jobs:
   build-and-deploy:
