@@ -61,3 +61,6 @@ jobs:
           rsync -avz ./package.json root@${{ secrets.HOSTNAME }}:/root/cron_job/package.json
           rsync -avz ./node_modules/ root@${{ secrets.HOSTNAME }}:/root/cron_job/node_modules
           scp .env root@${{ secrets.HOSTNAME }}:/root/cron_job/apps/yu-sei
+      - name: Restart PM2 process
+        run: |
+          ssh root@${{ secrets.HOSTNAME }} "pm2 restart card-time-reptile"
