@@ -11,14 +11,15 @@ const main = async () => {
       font: 'Ghost',
     })
   );
-  // 每天 14:40 執行 RutenCardPriceReptile
-  scheduleJob('scheduleReptilePrice', '30 14 17 * * *', async () => {
+
+  // 台灣時間 8:00 執行 RutenCardPriceReptile
+  scheduleJob('scheduleReptilePrice', '1 0 0 * * *', async () => {
     console.log('Running scheduleReptilePrice...');
 
     await reptileRutenCardPrice();
   });
-  // 每天 14:50 執行 RutenCardPriceReptile
-  scheduleJob('scheduleRetileJapanInfo', '0 30 21 * * 6', async () => {
+  // 台灣時間每周六 16:00 執行 RutenCardPriceReptile
+  scheduleJob('scheduleRetileJapanInfo', '1 0 8 * * 6', async () => {
     console.log('Running scheduleRetileJapanInfo...');
 
     await reptileJapanInfo();
