@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '18.17.1'
 
       - name: Install dependencies
         run: yarn install
@@ -54,9 +54,7 @@ jobs:
 
       - name: Transfer files
         run: |
-          rsync -avz ./apps/yu-sei/dist/ root@${{ secrets.HOSTNAME }}:/root/cron_job/dist
-          rsync -avz ./apps/yu-sei/package.json root@${{ secrets.HOSTNAME }}:/root/cron_job/package.json
-          rsync -avz ./node_modules/ root@${{ secrets.HOSTNAME }}:/root/cron_job/node_modules
+          rsync -avz ./apps/yu-sei/ root@${{ secrets.HOSTNAME }}:/root/cron_job/
           rsync -avz ./libs/ root@${{ secrets.HOSTNAME }}:/root/cron_job/libs
           rsync -avz ./yarn.lock root@${{ secrets.HOSTNAME }}:/root/cron_job/yarn.lock
           scp .env root@${{ secrets.HOSTNAME }}:/root/cron_job/
