@@ -22,7 +22,7 @@ jobs:
         run: yarn install
 
       - name: Build all projects
-        run: yarn workspaces run build
+        run: yarn setup
 
       - name: Install SSH key
         uses: webfactory/ssh-agent@v0.5.3
@@ -54,10 +54,12 @@ jobs:
 
       - name: Transfer files
         run: |
-          rsync -avz ./apps/yu-sei/ root@${{ secrets.HOSTNAME }}:/root/cron_job/
+          rsync -avz ./apps/yu-sei/ root@${{ secrets.HOSTNAME }}:/root/cron_job/app
           rsync -avz ./libs/ root@${{ secrets.HOSTNAME }}:/root/cron_job/libs
           rsync -avz ./yarn.lock root@${{ secrets.HOSTNAME }}:/root/cron_job/yarn.lock
-          scp .env root@${{ secrets.HOSTNAME }}:/root/cron_job/
+          rsync -avz ./package.json root@${{ secrets.HOSTNAME }}:/root/cron_job/package.json
+          rsync -avz ./node_modules/ root@${{ secrets.HOSTNAME }}:/root/cron_job/node_modules
+          scp .env root@${{ secrets.HOSTNAME }}:/root/cron_job/app
 
       - name: Install dependencies on server
         run: |
