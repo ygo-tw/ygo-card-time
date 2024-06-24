@@ -67,3 +67,6 @@ jobs:
       - name: Restart PM2 process
         run: |
           ssh root@${{ secrets.HOSTNAME }} "pm2 restart card-time-reptile"
+      - name: Clean up unnecessary files
+        run: |
+          ssh root@${{ secrets.HOSTNAME }} "rm -rf /root/cron_job/apps/*/src /root/cron_job/libs/*/src"
