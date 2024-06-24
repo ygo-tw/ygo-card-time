@@ -7,7 +7,7 @@ on:
     paths:
       - 'libs/**'
       - 'apps/yu-sei/**'
-      - '.github/workflows/yu-sei-pipeline.yml'
+      - '.github/workflows/yu-sei.yml'
 
 jobs:
   build-and-deploy:
