@@ -93,11 +93,11 @@ export class RutenService {
       spinner.start({
         text: `Get Card Number : ${chalk.whiteBright.bgMagenta(cardInfo.id)}  Price Information`,
       });
+      await delay(500);
 
       const allCardPrices: PriceInfo[] = [];
 
       for (const rar of rarity) {
-        await delay(500);
         try {
           const priceInfo = await this.getPriceByRarity(
             rar,
