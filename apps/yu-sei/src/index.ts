@@ -11,7 +11,7 @@ const main = async () => {
       font: 'Ghost',
     })
   );
-
+  await reptileRutenCardPrice();
   // 台灣時間 8:00 執行 RutenCardPriceReptile
   scheduleJob('scheduleReptilePrice', '1 0 0 * * *', async () => {
     console.log('Running scheduleReptilePrice...');
