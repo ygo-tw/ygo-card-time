@@ -62,7 +62,6 @@ jobs:
           rsync -avz ./apps/yu-sei/ root@${{ secrets.HOSTNAME }}:/root/cron_job/apps/yu-sei
           rsync -avz .env root@${{ secrets.HOSTNAME }}:/root/cron_job/apps/yu-sei
           rsync -avz ./libs/ root@${{ secrets.HOSTNAME }}:/root/cron_job/libs
-          rsync -avz ./pm2/ root@${{ secrets.HOSTNAME }}:/root/cron_job/pm2
           rsync -avz ./yarn.lock root@${{ secrets.HOSTNAME }}:/root/cron_job/yarn.lock
           rsync -avz ./package.json root@${{ secrets.HOSTNAME }}:/root/cron_job/package.json
           rsync -avz ./node_modules/ root@${{ secrets.HOSTNAME }}:/root/cron_job/node_modules
