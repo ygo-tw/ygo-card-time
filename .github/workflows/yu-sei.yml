@@ -65,6 +65,9 @@ jobs:
           rsync -avz ./yarn.lock root@${{ secrets.HOSTNAME }}:/root/cron_job/yarn.lock
           rsync -avz ./package.json root@${{ secrets.HOSTNAME }}:/root/cron_job/package.json
           rsync -avz ./node_modules/ root@${{ secrets.HOSTNAME }}:/root/cron_job/node_modules
+      - name: Restart PM2 process
+        run: |
+          ssh root@${{ secrets.HOSTNAME }} "cd /root/cron_job && pm2 restart yu-sei"
       - name: Clean up unnecessary files
         run: |
           ssh root@${{ secrets.HOSTNAME }} "rm -rf /root/cron_job/apps/*/src /root/cron_job/libs/*/src"
