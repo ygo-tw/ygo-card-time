@@ -63,7 +63,7 @@ export const notContainsAnotherRarity = (
  * @returns 關鍵字字串。
  */
 export const keyWordsFactory = (rarity: string, rarityLength: number) => {
-  if (rarityLength === 1) return '';
+  if (rarityLength === 1 && rarity.indexOf('普') !== -1) return '';
 
   const exactReplacements: { [key: string]: string } = {
     方鑽: '+普卡',
