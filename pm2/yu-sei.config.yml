@@ -1,6 +1,0 @@
-apps:
-  - script: ./apps/yu-sei/dist/index.js
-    name: yu-sei
-    exec_mode: fork
-    instances: 1
-    watch: true
