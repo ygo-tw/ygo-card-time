@@ -7,18 +7,18 @@ import { v4 as uuidv4 } from 'uuid';
 loadEnv();
 
 const app = Fastify({
-  logger: getLoggerSetting(process.env.NODE_ENV ?? 'development'),
+  logger: getLoggerSetting(),
   genReqId(req) {
     const reqId =
       req.headers['x-request-id'] && req.headers['x-request-id'] !== '-'
         ? req.headers['x-request-id']
         : null;
     const traceId =
-      req.headers['n1-trace-id'] ??
+      req.headers['ygo-trace-id'] ??
       req.headers['traceId'] ??
       reqId ??
       uuidv4().substring(0, 6);
-    req.headers['n1-trace-id'] = traceId.toString();
+    req.headers['ygo-trace-id'] = traceId.toString();
     return traceId.toString();
   },
 });
@@ -26,7 +26,7 @@ const app = Fastify({
 app.register(import('./app'));
 
 app.addHook('onSend', (req, res, _, done) => {
-  res.header('n1-trace-id', req.headers['n1-trace-id']);
+  res.header('ygo-trace-id', req.headers['ygo-trace-id']);
   done();
 });
 
@@ -80,56 +80,28 @@ function gracefullyClose(): void {
  * @param nodeEnv 目前環境
  * @returns logger 設定
  */
-function getLoggerSetting(nodeEnv: string): object | boolean {
-  switch (nodeEnv) {
-    case 'development':
-      return {
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            translateTime: 'HH:MM:ss Z',
-            ignore: 'pid,hostname',
-          },
-        },
-        formatters: {
-          log(content: object) {
-            if ('req' in content) {
-              return getRequestLogFormat(content['req'] as FastifyRequest);
-            }
-            if ('res' in content) {
-              return getResponseLogFormat(content['res'] as FastifyReply);
-            }
-            return content;
-          },
-        },
-      };
-    case 'production':
-      return {
-        level: process.env.LOG_LEVEL ?? 'info',
-        timestamp: false,
-        formatters: {
-          level(label: string) {
-            return { level: label };
-          },
-          log(content: object) {
-            if ('req' in content) {
-              return getRequestLogFormat(content['req'] as FastifyRequest);
-            }
-            if ('res' in content) {
-              return getResponseLogFormat(content['res'] as FastifyReply);
-            }
-            return content;
-          },
-          bindings() {
-            return {};
-          },
-        },
-      };
-    case 'test':
-      return false;
-    default:
-      return false;
-  }
+function getLoggerSetting(): object | boolean {
+  return {
+    level: process.env.LOG_LEVEL ?? 'info',
+    timestamp: false,
+    formatters: {
+      level(label: string) {
+        return { level: label };
+      },
+      log(content: object) {
+        if ('req' in content) {
+          return getRequestLogFormat(content['req'] as FastifyRequest);
+        }
+        if ('res' in content) {
+          return getResponseLogFormat(content['res'] as FastifyReply);
+        }
+        return content;
+      },
+      bindings() {
+        return {};
+      },
+    },
+  };
 }
 
 /**
