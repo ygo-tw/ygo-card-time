@@ -1,6 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 
-// @fastify-auth 官方說明 https://github.com/fastify/fastify-auth
 export async function verifyToken(
   request: FastifyRequest,
   reply: FastifyReply
