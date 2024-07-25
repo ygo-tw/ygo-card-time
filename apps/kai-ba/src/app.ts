@@ -2,8 +2,12 @@ import { join } from 'path';
 import AutoLoad, { AutoloadPluginOptions } from '@fastify/autoload';
 import { FastifyPluginAsync, FastifyServerOptions } from 'fastify';
 import fastifyCompress from '@fastify/compress';
+import { loadEnv } from './envRunner';
 
 import { fastifyStatic, FastifyStaticOptions } from '@fastify/static';
+
+// 讀取環境變數
+loadEnv();
 
 const fastifyStaticOptions: FastifyStaticOptions = {
   cacheControl: true,
