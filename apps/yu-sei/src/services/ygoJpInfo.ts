@@ -20,9 +20,10 @@ type AccumulatorType = {
 const getLogPath = (name: string): string => {
   const basePath =
     process.env.NODE_ENV === 'production'
-      ? './log/jpInfoCrawler'
+      ? '.../../log/jpInfoCrawler'
       : '../../../../log/jpInfoCrawler';
   const logDir = path.resolve(__dirname, basePath);
+  if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
   const fileName = `${name}_${new Date().toDateString()}.json`;
   return path.join(logDir, fileName);
 };

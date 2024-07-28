@@ -11,7 +11,8 @@
     "build:workspaces": "yarn workspaces run build",
     "setup": "run-s clean deps build:workspaces",
     "postsetup": "rimraf ./apps/**/node_modules ./libs/**/node_modules",
-    "prepare": "node .husky/prepare-husky.js"
+    "prepare": "node .husky/prepare-husky.js",
+    "redis-run": "cd ./docker/redis && docker compose up -d"
   },
   "workspaces": [
     "libs/schemas/",
