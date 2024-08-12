@@ -1,0 +1,25 @@
+services:
+  redis-master:
+    image: redis:latest
+    container_name: redis-master
+    ports:
+      - '6380:6379'
+    volumes:
+      - redis-master-data:/data
+    command: ['redis-server', '--appendonly', 'yes']
+
+  redis-slave:
+    image: redis:latest
+    container_name: redis-slave
+    depends_on:
+      - redis-master
+    ports:
+      - '6381:6379'
+    volumes:
+      - redis-slave-data:/data
+    command: >
+      sh -c "redis-server --replicaof redis-master 6379 --appendonly yes --slave-read-only no"
+
+volumes:
+  redis-master-data:
+  redis-slave-data:
