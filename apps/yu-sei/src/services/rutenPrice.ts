@@ -132,7 +132,7 @@ export class RutenService {
         try {
           await this.dataAccessService.findAndUpdate<CardsDataType>(
             DataAccessEnum.CARDS,
-            { id: cardInfo.id },
+            { id: cardInfo.id, number: cardInfo.number },
             { $push: { price_info: { $each: allCardPrices } } }
           );
 
