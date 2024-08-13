@@ -96,7 +96,8 @@ export const keyWordsFactory = (rarity: string, rarityLength: number) => {
     }
   }
 
-  if (rarity.indexOf('異圖') !== -1) return rarity.replace('-', '+');
+  if (rarity.indexOf('異圖') !== -1)
+    return rarityLength > 1 ? rarity.replace('-', '+') : rarity.split('-')[0];
 
   const complexRarities = ['方鑽', '點鑽', '碎鑽'];
   for (const complexRarity of complexRarities) {
