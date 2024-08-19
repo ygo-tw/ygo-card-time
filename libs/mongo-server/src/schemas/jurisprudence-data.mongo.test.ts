@@ -8,11 +8,12 @@ config({ path: resolve(__dirname, '../../../../config/.env.common') });
 config({ path: resolve(__dirname, '../../../../config/.env.service') });
 
 const JurisprudenceModel = mongoose.model<JurisprudenceDataType>(
-  'Card',
+  'Jurisprudence',
   JurisprudenceMongoSchema
 );
 
 describe('JurisprudenceMongoSchema', () => {
+  jest.setTimeout(20000);
   beforeAll(async () => {
     await mongoose.connect(
       `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`
