@@ -32,6 +32,7 @@ export const usefulValueObjectMetaSchema = {
       type: 'string',
       pattern: '^[0-9]{8}[A-Z]?$',
     },
+    create_date: { title: '時間', description: '建立時間', type: 'string' },
     price_object: {
       type: 'object',
       properties: {

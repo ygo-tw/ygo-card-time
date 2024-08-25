@@ -28,13 +28,37 @@
       "maximum": 2
     },
     "name": {
-      "title": "資料名稱",
-      "description": "此筆資料的命名",
-      "type": "string",
-      "maxLength": 50
+      "$ref": "https://card.time.com/schema/useful/value-object/meta#/$defs/name"
     },
     "create_date": {
       "$ref": "https://card.time.com/schema/useful/value-object/meta#/$defs/create_date"
+    },
+    "photo": {
+      "$ref": "https://card.time.com/schema/useful/value-object/meta#/$defs/photo"
+    },
+    "status": {
+      "title": "狀態",
+      "description": "帳號目前的狀態",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2
+    },
+    "account": {
+      "title": "帳號",
+      "description": "使用者帳號",
+      "type": "string"
+    },
+    "password": {
+      "title": "密碼",
+      "description": "使用者密碼",
+      "type": "string",
+      "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,16}$"
+    },
+    "email": {
+      "title": "郵箱",
+      "description": "使用者郵箱",
+      "type": "string",
+      "format": "email"
     }
   }
 }
