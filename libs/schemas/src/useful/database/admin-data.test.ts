@@ -25,7 +25,8 @@ const example = {
   type: 0,
   name: 'Alex W.',
   create_date: '2023-04-08T00:00:00.000+00:00',
-  photo: '',
+  photo:
+    'https://cardtime.tw/api/card-image/article/7dcd704b-ee9d-4c3d-9e67-16b0fc73165d.png',
   status: 0,
   account: 'alex123456',
   password: 'Ckap1234',
