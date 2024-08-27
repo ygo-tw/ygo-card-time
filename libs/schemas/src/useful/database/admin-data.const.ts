@@ -46,7 +46,12 @@ export const usefulDatabaseAdminDataSchema = {
       minimum: 0,
       maximum: 2,
     },
-    account: { title: '帳號', description: '使用者帳號', type: 'string' },
+    account: {
+      title: '帳號',
+      description: '使用者帳號',
+      type: 'string',
+      maxLength: 50,
+    },
     password: {
       title: '密碼',
       description: '使用者密碼',
