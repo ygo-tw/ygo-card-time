@@ -46,7 +46,8 @@
     "account": {
       "title": "帳號",
       "description": "使用者帳號",
-      "type": "string"
+      "type": "string",
+      "maxLength": 50
     },
     "password": {
       "title": "密碼",
