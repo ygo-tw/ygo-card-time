@@ -75,5 +75,26 @@ export const usefulValueObjectMetaSchema = {
       },
       required: ['title', 'tag', 'date', 'q', 'a'],
     },
+    title: { type: 'string', description: '標題', maxLength: 100 },
+    publish_date: {
+      type: 'string',
+      format: 'date-time',
+      description: '發布日期',
+    },
+    content: { type: 'string', description: '內容', maxLength: 6000 },
+    status: { type: 'number', description: '狀態', maximum: 1, minimum: 0 },
+    to_top: { type: 'boolean', description: '是否置頂' },
+    tag: {
+      type: 'array',
+      description: '標籤',
+      items: {
+        type: 'object',
+        description: '標籤內容',
+        properties: {
+          _id: { $ref: '#/$defs/_id' },
+          tag: { type: 'string', description: '標籤' },
+        },
+      },
+    },
   },
 } as const;

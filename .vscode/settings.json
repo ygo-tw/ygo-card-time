@@ -23,7 +23,6 @@
   },
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": "active",
-  "workbench.colorTheme": "GitHub Dark Colorblind (Beta)",
   "prettier.arrowParens": "avoid",
   "editor.tabSize": 2,
   "editor.fontLigatures": true,
