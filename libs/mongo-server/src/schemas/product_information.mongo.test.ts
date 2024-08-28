@@ -9,7 +9,7 @@ import {
 config({ path: resolve(__dirname, '../../../../config/.env.common') });
 config({ path: resolve(__dirname, '../../../../config/.env.service') });
 
-describe('CardsMongoSchema', () => {
+describe('ProductInformationMongoSchema', () => {
   let ProductInformationModel: mongoose.Model<ProductInformationDataByDateType>;
   jest.setTimeout(20000);
   beforeAll(async () => {
