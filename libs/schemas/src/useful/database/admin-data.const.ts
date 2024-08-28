@@ -24,8 +24,8 @@ export const usefulDatabaseAdminDataSchema = {
       $ref: 'https://card.time.com/schema/useful/value-object/meta#/$defs/_id',
     },
     type: {
-      title: '類型',
-      description: '帳號類型',
+      title: '帳號類型',
+      description: '0=管理者, 1=前後台用戶, 2=前台用戶',
       type: 'number',
       minimum: 0,
       maximum: 2,
@@ -40,8 +40,8 @@ export const usefulDatabaseAdminDataSchema = {
       $ref: 'https://card.time.com/schema/useful/value-object/meta#/$defs/photo',
     },
     status: {
-      title: '狀態',
-      description: '帳號目前的狀態',
+      title: '帳號目前的狀態',
+      description: '0=正常, 1=停用中, 2=驗證中',
       type: 'number',
       minimum: 0,
       maximum: 2,
@@ -63,6 +63,7 @@ export const usefulDatabaseAdminDataSchema = {
       description: '使用者郵箱',
       type: 'string',
       format: 'email',
+      pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$',
     },
   },
 } as const;
