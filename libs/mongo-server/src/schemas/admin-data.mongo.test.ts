@@ -20,11 +20,6 @@ describe('AdminMongoSchema', () => {
     await mongoose.connection.close();
   });
 
-  afterEach(async () => {
-    // 清空數據庫中的資料
-    await AdminModel.deleteMany({});
-  });
-
   it('should create a valid admin data document', async () => {
     const validAdminData = {
       type: 1,
