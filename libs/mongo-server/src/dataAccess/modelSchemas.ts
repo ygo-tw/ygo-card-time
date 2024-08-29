@@ -5,6 +5,7 @@ import {
   JurisprudenceMongoSchema,
   PermissionMongoSchema,
   ProductInformationMongoSchema,
+  ProductInformationTypeMongoSchema,
 } from '../schemas';
 
 export const modelSchemas: ModelSchema = {
@@ -22,5 +23,8 @@ export const modelSchemas: ModelSchema = {
   },
   product_information: {
     originSchema: ProductInformationMongoSchema,
+  },
+  product_information_type: {
+    originSchema: ProductInformationTypeMongoSchema,
   },
 };
