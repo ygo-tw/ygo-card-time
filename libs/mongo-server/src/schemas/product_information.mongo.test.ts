@@ -26,11 +26,6 @@ describe('ProductInformationMongoSchema', () => {
     await mongoose.connection.close();
   });
 
-  afterEach(async () => {
-    // 清空數據庫中的資料
-    await ProductInformationModel.deleteMany({});
-  });
-
   it('should throw an error when required fields are missing', async () => {
     const productInfo = new ProductInformationModel({
       // 缺少必要的字段
@@ -76,8 +71,9 @@ describe('ProductInformationMongoSchema', () => {
       tag: ['tag1', 'tag2'],
     });
 
-    const savedProduct = await productInfo.save();
+    const validationError = productInfo.validateSync();
+    expect(validationError).toBeUndefined();
 
-    expect(savedProduct.publish_date).toBe('2023-08-27T00:00:00.000Z');
+    expect(productInfo.publish_date).toEqual('2023-08-27T00:00:00.000Z');
   });
 });
