@@ -41,7 +41,7 @@ export const ProductInformationMongoSchema =
         type: String,
       },
       content: {
-        type: String, // 假設是文字內容，視具體需求可調整
+        type: String,
         required: true,
       },
       status: {
@@ -62,8 +62,6 @@ export const ProductInformationMongoSchema =
     },
     {
       collection: DataAccessEnum.PRODUCT_INFORMATION,
-      versionKey: false,
-      strict: 'throw',
       toJSON: { getters: true },
       toObject: { getters: true },
     }
