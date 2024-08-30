@@ -8,3 +8,5 @@ export * from './permission-data';
 export * from './permission-data.const';
 export * from './product_information';
 export * from './product_information.const';
+export * from './product_information_type.const';
+export * from './product_information_type';

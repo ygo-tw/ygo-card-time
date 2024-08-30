@@ -56,5 +56,9 @@ export const AdminMongoSchema = new Schema<AdminnDataByDateType>(
       match: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
     },
   },
-  { collection: DataAccessEnum.ADMIN }
+  {
+    collection: DataAccessEnum.ADMIN,
+    toJSON: { getters: true },
+    toObject: { getters: true },
+  }
 );
