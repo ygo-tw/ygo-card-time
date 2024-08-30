@@ -10,6 +10,6 @@ export default fp<FastifyPluginAsync>(
     });
   },
   {
-    name: 'cors-plugin',
+    name: 'cors',
   }
 );
