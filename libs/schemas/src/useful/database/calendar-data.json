@@ -1,0 +1,39 @@
+{
+  "$id": "https://card.time.com/schema/useful/database/calendar-data",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "database calendar-data schema",
+  "description": "YGO Card Time database calendar-data schema",
+  "type": "object",
+  "unevaluatedProperties": false,
+  "required": ["_id", "title", "date", "content", "type"],
+  "properties": {
+    "_id": {
+      "$ref": "https://card.time.com/schema/useful/value-object/meta#/$defs/_id"
+    },
+    "title": {
+      "title": "資料名稱",
+      "description": "行事曆標題",
+      "$ref": "https://card.time.com/schema/useful/value-object/meta#/$defs/title"
+    },
+    "date": {
+      "title": "日期",
+      "description": "行事曆活動日期",
+      "$ref": "https://card.time.com/schema/useful/value-object/meta#/$defs/publish_date"
+    },
+    "url": {
+      "title": "網址",
+      "description": "行事曆活動網址",
+      "maxLength": 200
+    },
+    "content": {
+      "$ref": "https://card.time.com/schema/useful/value-object/meta#/$defs/content"
+    },
+    "type": {
+      "title": "行事曆分類",
+      "description": "行事曆分類 0=賽事, 1=發售日期, 2=其他相關活動",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 2
+    }
+  }
+}
