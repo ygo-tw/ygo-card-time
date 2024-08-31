@@ -444,6 +444,8 @@ describe('YgoJpInfo', () => {
       failed: true,
     });
 
-    expect(logger.error).toHaveBeenCalledWith('Error : getRules failed!');
+    expect(logger.error).toHaveBeenCalledWith(
+      'Error : getRules failed!Error: Crawl error'
+    );
   });
 });

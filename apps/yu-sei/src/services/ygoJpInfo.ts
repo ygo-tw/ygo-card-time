@@ -20,9 +20,13 @@ type AccumulatorType = {
 const getLogPath = (name: string): string => {
   const basePath =
     process.env.NODE_ENV === 'production'
-      ? '.../../log/jpInfoCrawler'
+      ? '/log/jpInfoCrawler'
       : '../../../../log/jpInfoCrawler';
-  const logDir = path.resolve(__dirname, basePath);
+  const logDir =
+    process.env.NODE_ENV === 'production'
+      ? `/root/cron_job${basePath}`
+      : path.resolve(__dirname, basePath);
+
   if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
   const fileName = `${name}_${new Date().toDateString()}.json`;
   return path.join(logDir, fileName);
@@ -55,7 +59,7 @@ export class YgoJpInfo {
     const failedJpInfo: string[] = [];
     let count = 0;
     for (const jpInfo of allJpInfo) {
-      await delay(500);
+      await delay(1000);
       count++;
       const present = Math.floor((count / allJpInfo.length) * 100);
       this.logger.info(`${jpInfo.number}  : start!`);
@@ -239,7 +243,7 @@ export class YgoJpInfo {
         failed: result.failed,
       };
     } catch (error) {
-      this.logger.error(`Error : Crawler failed!`);
+      this.logger.error(`Error : Crawler failed!/${error}`);
       return {
         ...fix,
         failed: true,
@@ -301,7 +305,7 @@ export class YgoJpInfo {
         failed: false,
       };
     } catch (error) {
-      this.logger.error(`Error : getRules failed!`);
+      this.logger.error(`Error : getRules failed!${error}`);
 
       return {
         box: [],
