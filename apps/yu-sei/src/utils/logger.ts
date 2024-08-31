@@ -2,6 +2,7 @@ import { createLogger, format, transports, Logger } from 'winston';
 import stripAnsi from 'strip-ansi';
 import gradient from 'gradient-string';
 import path from 'path';
+import fs from 'fs';
 
 const { combine, timestamp, printf } = format;
 
@@ -12,8 +13,9 @@ const getLogPath = (
 ): string => {
   const logDir =
     process.env.NODE_ENV === 'production'
-      ? 'log'
+      ? 'root/cron_job/log'
       : '../../log' + (dirname ? `/${dirname}` : '');
+  if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
   const fileName = `${name}_${startTime.toDateString()}.log`;
   return path.join(logDir, 'rutenCrawlerPrice', fileName);
 };
