@@ -11,6 +11,6 @@ export default fp(
     });
   },
   {
-    name: 'cookie-plugin',
+    name: 'cookie',
   }
 );

@@ -9,6 +9,6 @@ export default fp<FastifyPluginAsync>(
     fastify.register(fastifyAuth);
   },
   {
-    name: 'auth-plugin',
+    name: 'auth',
   }
 );

@@ -40,6 +40,6 @@ export default fp<FastifyPluginAsync>(
     });
   },
   {
-    name: 'swagger-plugin',
+    name: 'swagger',
   }
 );

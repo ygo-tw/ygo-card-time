@@ -27,6 +27,6 @@ export default fp<FastifyPluginAsync>(
     });
   },
   {
-    name: 'session-plugin',
+    name: 'session',
   }
 );
