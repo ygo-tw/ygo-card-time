@@ -13,9 +13,12 @@ export const usefulDatabaseProductInformationDataSchema = {
     'type',
     'title',
     'publish_date',
+    'photo',
     'content',
     'status',
     'to_top',
+    'admin_id',
+    'tag',
   ],
   properties: {
     _id: {
