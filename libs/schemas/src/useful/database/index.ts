@@ -10,6 +10,8 @@ export * from './forbidden_card_list-data';
 export * from './forbidden_card_list-data.const';
 export * from './jurisprudence-data';
 export * from './jurisprudence-data.const';
+export * from './meta_deck-data';
+export * from './meta_deck-data.const';
 export * from './permission-data';
 export * from './permission-data.const';
 export * from './product_information';

@@ -4,6 +4,7 @@ export * from './calendar-data.mongo';
 export * from './cards-data.mongo';
 export * from './forbidden_card_list-data.mongo';
 export * from './jurisprudence-data.mongo';
+export * from './meta_deck-data.mongo';
 export * from './permission-data.mongo';
 export * from './product_information.mongo';
 export * from './product_information_type.mongo';
