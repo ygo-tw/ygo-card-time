@@ -37,8 +37,8 @@ export const ProductInformationMongoSchema =
         },
       } as SchemaDefinitionProperty<Date>,
       photo: {
-        required: true,
         type: String,
+        required: true,
       },
       content: {
         type: String,
@@ -55,9 +55,11 @@ export const ProductInformationMongoSchema =
       },
       admin_id: {
         type: String,
+        required: true,
       },
       tag: {
         type: [String],
+        required: true,
       },
     },
     {

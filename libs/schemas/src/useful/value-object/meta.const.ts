@@ -82,8 +82,16 @@ export const usefulValueObjectMetaSchema = {
       description: '發布日期',
     },
     content: { type: 'string', description: '內容', maxLength: 6000 },
-    status: { type: 'number', description: '狀態', maximum: 1, minimum: 0 },
-    to_top: { type: 'boolean', description: '是否置頂' },
+    status: {
+      type: 'number',
+      description: '狀態 0=上架中, 1=下架中',
+      maximum: 1,
+      minimum: 0,
+    },
+    to_top: {
+      type: 'boolean',
+      description: '是否置頂 true=置頂, false=不置頂',
+    },
     tag: {
       type: 'array',
       description: '標籤',
