@@ -51,7 +51,7 @@ export const MetaDeckMongoSchema = new Schema<MetaDeckDataByDateType>(
     },
   },
   {
-    collection: DataAccessEnum.CALENDAR,
+    collection: DataAccessEnum.META_DECK,
     toJSON: { getters: true },
     toObject: { getters: true },
   }

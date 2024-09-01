@@ -12,8 +12,6 @@ export const ForbiddenCardListMongoSchema =
       },
     },
     {
-      collection: DataAccessEnum.CALENDAR,
-      toJSON: { getters: true },
-      toObject: { getters: true },
+      collection: DataAccessEnum.FORBIDDEN_CARD_LIST,
     }
   );
