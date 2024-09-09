@@ -13,9 +13,13 @@ const getLogPath = (
 ): string => {
   const logDir =
     process.env.NODE_ENV === 'production'
-      ? 'root/cron_job/log'
+      ? '/root/log'
       : '../../log' + (dirname ? `/${dirname}` : '');
-  if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
+  try {
+    if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+  } catch (error) {
+    console.log(error);
+  }
   const fileName = `${name}_${startTime.toDateString()}.log`;
   return path.join(logDir, 'rutenCrawlerPrice', fileName);
 };
