@@ -1,14 +1,18 @@
 import fp from 'fastify-plugin';
-import { asClass, createContainer } from 'awilix';
+import { asFunction, createContainer } from 'awilix';
 import { DataAccessService } from '@ygo/mongo-server';
 
 export default fp(
-  // 可以分不同情況，實踐不同的 di
   async fastify => {
     const container = createContainer();
 
     container.register({
-      dal: asClass(DataAccessService).singleton(),
+      mongoUrl: asFunction(() => {
+        return `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
+      }).singleton(),
+      dal: asFunction(cradle => {
+        return new DataAccessService(cradle.mongoUrl);
+      }).singleton(),
     });
 
     fastify.decorateRequest('diContainer', null);

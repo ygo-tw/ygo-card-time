@@ -16,7 +16,6 @@ interface ContainerServices {
 
 declare module 'fastify' {
   interface FastifyRequest {
-    daService: DataAccessService;
     userInfo?: UserInfo;
     validateCompiler: ValidateCompiler;
     diContainer: AwilixContainer<ContainerServices>;
