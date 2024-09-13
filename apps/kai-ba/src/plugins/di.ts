@@ -5,13 +5,12 @@ import { DataAccessService } from '@ygo/mongo-server';
 export default fp(
   async fastify => {
     const container = createContainer();
+    const mongodbUrl = `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
+    // cache
 
     container.register({
-      mongoUrl: asFunction(() => {
-        return `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
-      }).singleton(),
-      dal: asFunction(cradle => {
-        return new DataAccessService(cradle.mongoUrl);
+      dal: asFunction(() => {
+        return new DataAccessService(mongodbUrl);
       }).singleton(),
     });
 
@@ -23,5 +22,6 @@ export default fp(
   },
   {
     name: 'di',
+    dependencies: ['redis'],
   }
 );
