@@ -2,6 +2,7 @@ import { DataAccessService } from '@ygo/mongo-server';
 import { UserInfo } from '../Interface/auth.type';
 import { ValidateCompiler } from './validateCompiler';
 import { AwilixContainer } from 'awilix';
+import { DataCacheService } from '../services/cacheService';
 
 declare module 'awilix' {
   interface AwilixContainer {
@@ -12,6 +13,7 @@ declare module 'awilix' {
 // 後續有任何 service 請擴充於此
 interface ContainerServices {
   dal: DataAccessService;
+  cache: DataCacheService;
 }
 
 declare module 'fastify' {
