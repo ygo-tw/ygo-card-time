@@ -1,17 +1,32 @@
 import fp from 'fastify-plugin';
 import { asFunction, createContainer } from 'awilix';
 import { DataAccessService } from '@ygo/mongo-server';
+import { RedisClients } from '../services/cacheService/type/cache.type';
+import { DataCacheService } from '../services/cacheService';
 
 export default fp(
   async fastify => {
     const container = createContainer();
+    const mongodbUrl = `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
+    // cache
+    const redisClients: RedisClients = {
+      read: fastify.redis.read,
+      write: fastify.redis.write,
+    };
 
     container.register({
-      mongoUrl: asFunction(() => {
-        return `mongodb+srv://${process.env.ADMIN}:${process.env.PASSWORD}@cluster0.rnvhhr4.mongodb.net/${process.env.DB}?retryWrites=true&w=majority`;
+      dal: asFunction(() => {
+        return new DataAccessService(mongodbUrl);
       }).singleton(),
-      dal: asFunction(cradle => {
-        return new DataAccessService(cradle.mongoUrl);
+      cache: asFunction(() => {
+        return new DataCacheService(fastify.log, redisClients, {
+          ENABLE_CACHE: process.env.ENABLE_CACHE === 'true',
+          ENABLE_REDIS_CACHE: process.env.ENABLE_REDIS_CACHE === 'true',
+          ENABLE_MEMORY_CACHE: process.env.ENABLE_MEMORY_CACHE === 'true',
+          CACHE_PREFIX: process.env.KAI_BA_CACHE_PREFIX ?? 'kAI_BA',
+          REDIS_DEFAULT_TTL_SECONDS:
+            Number(process.env.KAI_BA_REDIS_DEFAULT_TTL_SECONDS) ?? 86400,
+        });
       }).singleton(),
     });
 
@@ -23,5 +38,6 @@ export default fp(
   },
   {
     name: 'di',
+    dependencies: ['redis'],
   }
 );
