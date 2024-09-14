@@ -13,6 +13,8 @@
     "danlevett.pattern-links",
     "aaron-bond.better-comments",
     "eliostruyf.vscode-typescript-exportallmodules",
-    "mongodb.mongodb-vscode"
+    "mongodb.mongodb-vscode",
+    "bierner.markdown-mermaid",
+    "vstirbu.vscode-mermaid-preview"
   ]
 }
