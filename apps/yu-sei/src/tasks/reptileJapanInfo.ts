@@ -77,7 +77,7 @@ export const reptileJapanInfo = async (cardNumbers?: string[]) => {
     `;
   } catch (error) {
     failTasks.push('getNewCardsJPInfo');
-    html += `<h1> New Cards Jp Info Error</h1><p>${error}</p>`;
+    html += `<h1> New Cards Jp Info Error</h1><p>${error}</p><p>${__dirname + __filename}</p>`;
   }
 
   try {
@@ -85,7 +85,7 @@ export const reptileJapanInfo = async (cardNumbers?: string[]) => {
     html += `<p>'Updated Data QA Info Successful !'</p>`;
   } catch (error) {
     failTasks.push('updateCardsJPInfo');
-    html += `<h1> QA Info Error</h1><p>${error}</p>`;
+    html += `<h1> QA Info Error</h1><p>${error}</p><p>${__dirname + __filename}</p>`;
   }
 
   // 爬蟲結束

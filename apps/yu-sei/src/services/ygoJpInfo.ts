@@ -24,7 +24,7 @@ const getLogPath = (name: string): string => {
       : '../../../../log/jpInfoCrawler';
   const logDir =
     process.env.NODE_ENV === 'production'
-      ? `/root/cron_job${basePath}`
+      ? `/root/${basePath}`
       : path.resolve(__dirname, basePath);
 
   if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
