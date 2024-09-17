@@ -1,8 +1,7 @@
 import fp from 'fastify-plugin';
 import { asFunction, createContainer } from 'awilix';
 import { DataAccessService } from '@ygo/mongo-server';
-import { RedisClients } from '../services/cacheService/type/cache.type';
-import { DataCacheService } from '../services/cacheService';
+import { DataCacheService, RedisClients } from '@ygo/cache';
 
 export default fp(
   async fastify => {

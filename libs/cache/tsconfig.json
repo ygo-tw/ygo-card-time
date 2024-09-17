@@ -1,5 +1,4 @@
 {
-  "extends": "fastify-tsconfig",
   "compilerOptions": {
     "composite": true, // 啟用合成檔案
     "target": "ES2021", // 編譯到的目標 JavaScript 版本
@@ -27,31 +26,5 @@
   "exclude": [
     "node_modules", // 排除的目錄
     "**/*.spec.ts"
-  ],
-  "references": [
-    {
-      "path": "../../libs/crawler"
-    },
-    {
-      "path": "../../libs/google-apis"
-    },
-    {
-      "path": "../../libs/line"
-    },
-    {
-      "path": "../../libs/mailer"
-    },
-    {
-      "path": "../../libs/mongo-server"
-    },
-    {
-      "path": "../../libs/schemas"
-    },
-    {
-      "path": "../../libs/ruten-apis"
-    },
-    {
-      "path": "../../libs/cache"
-    }
   ]
 }

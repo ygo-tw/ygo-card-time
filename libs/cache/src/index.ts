@@ -12,6 +12,8 @@ import { MemoryProvider } from './provider/memory';
 import NodeCache from 'node-cache';
 import { RedisProvider } from './provider/redis';
 
+export * from './type/cache.type';
+
 type CacheParams<T> = {
   keys: (string | number)[];
   source: () => Promise<T>;
