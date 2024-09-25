@@ -72,6 +72,8 @@ export class RedisProvider {
       safeStringify(cacheData as CacheValue)
     );
 
+    await this.changeProviderTtl(cacheKey, providerTtlSeconds);
+
     return cacheData;
   }
 
