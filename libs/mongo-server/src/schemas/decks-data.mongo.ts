@@ -20,6 +20,7 @@ export const DecksMongoSchema = new Schema<DecksDataByDateType>(
     title: {
       type: String,
       required: true,
+      maxlength: 50,
     },
     create_date: {
       type: Date,
