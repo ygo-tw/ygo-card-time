@@ -49,9 +49,13 @@ describe('TagMongoSchema', () => {
     };
 
     const model = new TagModel(invalidData);
-    const error = model.validateSync();
-    expect(error).toBeDefined();
-    expect(error?.errors).toHaveProperty('tag'); // 確保錯誤來自於 tag 字段
-    expect(error?.errors['tag'].message).toBe('Tag is too long');
+    const validationError = model.validateSync();
+    expect(validationError).toBeDefined();
+    expect(validationError?.errors).toHaveProperty('tag'); // 確保錯誤來自於 tag 字段
+    expect(validationError?.errors['tag'].message).toBe(
+      'Path `tag` (`' +
+        invalidData.tag +
+        '`) is longer than the maximum allowed length (50).'
+    );
   });
 });
