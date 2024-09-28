@@ -104,5 +104,18 @@ export const usefulValueObjectMetaSchema = {
         },
       },
     },
+    deck: {
+      type: 'array',
+      description: '牌組列表',
+      items: {
+        type: 'object',
+        description: '牌組內容',
+        properties: {
+          _id: { $ref: '#/$defs/_id' },
+          card_id: { type: 'string', description: '卡片ID' },
+          card_rarity: { type: 'string', description: '卡片稀有度' },
+        },
+      },
+    },
   },
 } as const;
