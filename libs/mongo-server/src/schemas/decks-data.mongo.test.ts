@@ -154,9 +154,8 @@ describe('MetaDeckMongoSchema', () => {
 
     const model = new DecksModel(invalidData);
     const validationError = model.validateSync();
-
     expect(validationError).toBeDefined();
-    expect(validationError?.errors).toHaveProperty('title'); // 確保 title 產生了錯誤
-    expect(validationError?.errors['title'].message).toBe('title文字過長');
+    expect(validationError?.errors).toHaveProperty('title');
+    expect(validationError?.errors.title).toBe('title文字過長');
   });
 });
