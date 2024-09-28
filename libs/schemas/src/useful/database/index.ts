@@ -6,6 +6,8 @@ export * from './calendar-data';
 export * from './calendar-data.const';
 export * from './cards-data';
 export * from './cards-data.const';
+export * from './decks-data';
+export * from './decks-data.const';
 export * from './forbidden_card_list-data';
 export * from './forbidden_card_list-data.const';
 export * from './jurisprudence-data';
