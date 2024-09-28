@@ -155,7 +155,11 @@ describe('MetaDeckMongoSchema', () => {
     const model = new DecksModel(invalidData);
     const validationError = model.validateSync();
     expect(validationError).toBeDefined();
-    expect(validationError?.errors).toHaveProperty('title');
-    expect(validationError?.errors.title).toBe('title文字過長');
+    expect(validationError?.errors).toHaveProperty('title'); // 確保錯誤來自於 tag 字段
+    expect(validationError?.errors['title'].message).toBe(
+      'Path `title` (`' +
+        invalidData.title +
+        '`) is longer than the maximum allowed length (50).'
+    );
   });
 });
