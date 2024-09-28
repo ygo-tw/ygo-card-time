@@ -46,27 +46,36 @@ export const DecksMongoSchema = new Schema<DecksDataByDateType>(
         return date;
       },
     } as SchemaDefinitionProperty<Date>,
-    main_deck: [
-      {
-        _id: { type: String, required: true },
-        card_id: { type: String, required: true },
-        card_rarity: { type: String, required: true },
-      },
-    ],
-    extra_deck: [
-      {
-        _id: { type: String, required: true },
-        card_id: { type: String, required: true },
-        card_rarity: { type: String, required: true },
-      },
-    ],
-    side_deck: [
-      {
-        _id: { type: String, required: true },
-        card_id: { type: String, required: true },
-        card_rarity: { type: String, required: true },
-      },
-    ],
+    main_deck: {
+      type: [
+        {
+          _id: { type: String, required: true },
+          card_id: { type: String, required: true },
+          card_rarity: { type: String, required: true },
+        },
+      ],
+      required: true,
+    },
+    extra_deck: {
+      type: [
+        {
+          _id: { type: String, required: true },
+          card_id: { type: String, required: true },
+          card_rarity: { type: String, required: true },
+        },
+      ],
+      required: true,
+    },
+    side_deck: {
+      type: [
+        {
+          _id: { type: String, required: true },
+          card_id: { type: String, required: true },
+          card_rarity: { type: String, required: true },
+        },
+      ],
+      required: true,
+    },
   },
   {
     collection: DataAccessEnum.DECKS,

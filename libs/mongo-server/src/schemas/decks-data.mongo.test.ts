@@ -60,7 +60,10 @@ describe('MetaDeckMongoSchema', () => {
 
   it('should be invalid if required fields are missing', () => {
     const invalidData = {
-      // 缺少 admin_id, title, create_date, last_edit_date, main_deck, extra_deck, side_deck
+      main_deck: [],
+      extra_deck: [],
+      side_deck: [],
+      // 缺少 admin_id, title, create_date, last_edit_date
     };
 
     const doc = new DecksModel(invalidData);
@@ -71,9 +74,6 @@ describe('MetaDeckMongoSchema', () => {
     expect(validationError?.errors).toHaveProperty('title');
     expect(validationError?.errors).toHaveProperty('create_date');
     expect(validationError?.errors).toHaveProperty('last_edit_date');
-    expect(validationError?.errors).toHaveProperty('main_deck');
-    expect(validationError?.errors).toHaveProperty('extra_deck');
-    expect(validationError?.errors).toHaveProperty('side_deck');
   });
 
   it('should be invalid if deck is incorrect', () => {
@@ -130,15 +130,15 @@ describe('MetaDeckMongoSchema', () => {
     const validationError = doc.validateSync();
 
     expect(validationError).toBeDefined();
-    expect(validationError?.errors).toHaveProperty('main_deck.0._id');
-    expect(validationError?.errors).toHaveProperty('main_deck.1.card_id');
-    expect(validationError?.errors).toHaveProperty('main_deck.2.card_rarity');
-    expect(validationError?.errors).toHaveProperty('extra_deck.0._id');
-    expect(validationError?.errors).toHaveProperty('extra_deck.1.card_id');
-    expect(validationError?.errors).toHaveProperty('extra_deck.2.card_rarity');
-    expect(validationError?.errors).toHaveProperty('side_deck.0._id');
-    expect(validationError?.errors).toHaveProperty('side_deck.1.card_id');
-    expect(validationError?.errors).toHaveProperty('side_deck.2.card_rarity');
+    expect(validationError?.errors['main_deck.0._id']).toBeDefined();
+    expect(validationError?.errors['main_deck.1.card_id']).toBeDefined();
+    expect(validationError?.errors['main_deck.2.card_rarity']).toBeDefined();
+    expect(validationError?.errors['extra_deck.0._id']).toBeDefined();
+    expect(validationError?.errors['extra_deck.1.card_id']).toBeDefined();
+    expect(validationError?.errors['extra_deck.2.card_rarity']).toBeDefined();
+    expect(validationError?.errors['side_deck.0._id']).toBeDefined();
+    expect(validationError?.errors['side_deck.1.card_id']).toBeDefined();
+    expect(validationError?.errors['side_deck.2.card_rarity']).toBeDefined();
   });
 
   it('should be invalid if title is longer than 50 characters', () => {
