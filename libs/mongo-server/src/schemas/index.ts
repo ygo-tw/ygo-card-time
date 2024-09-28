@@ -8,3 +8,4 @@ export * from './meta_deck-data.mongo';
 export * from './permission-data.mongo';
 export * from './product_information.mongo';
 export * from './product_information_type.mongo';
+export * from './tag-data.mongo';
