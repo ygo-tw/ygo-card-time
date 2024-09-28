@@ -44,11 +44,11 @@ describe('TagMongoSchema', () => {
   });
 
   it('should fail to create admin data with a name longer than 50 characters', async () => {
-    const invalidAdminData = {
+    const invalidData = {
       tag: 'a'.repeat(51), // 超過最大長度
     };
 
-    const model = new TagModel(invalidAdminData);
+    const model = new TagModel(invalidData);
     const error = model.validateSync();
     expect(error).toBeDefined();
     expect(error?.errors).toHaveProperty('tag'); // 確保錯誤來自於 tag 字段
