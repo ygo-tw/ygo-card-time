@@ -52,7 +52,7 @@ export const CardsMongoSchema = new Schema<CardsDataType>(
     ],
     race: {
       type: String,
-      enum: YGO_OPTIONS.race,
+      enum: [...YGO_OPTIONS.race, ''],
     },
     product_information_type: {
       type: String,
