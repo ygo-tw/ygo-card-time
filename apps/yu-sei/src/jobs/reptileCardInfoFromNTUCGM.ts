@@ -45,7 +45,7 @@ const reptileCardInfoFromNTUCGM = async (
   );
 
   fs.writeFileSync(
-    './cardsDataList.json',
+    './src/scripts/cardsDataList.json',
     JSON.stringify(cardsDataList, null, 2)
   );
   console.log(`${setCode} Card Data List Get Successfully!`);
