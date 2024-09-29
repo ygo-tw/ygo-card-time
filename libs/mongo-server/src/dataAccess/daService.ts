@@ -139,4 +139,29 @@ export class DataAccessService {
       throw error;
     }
   }
+
+  /**
+   * Insert multiple documents into the specified model.
+   * @param modelName Collection name
+   * @param docs Documents to insert
+   * @returns Inserted documents
+   */
+  public async insertMany<T extends Document>(
+    modelName: ModelNames,
+    docs: T[]
+  ): Promise<T[]> {
+    await this.ensureInitialized();
+    const model = this.registry.getModel(modelName);
+    await model.syncIndexes();
+    try {
+      const result = await model.insertMany(docs);
+      return result as unknown as T[];
+    } catch (error) {
+      console.error(
+        `Error inserting multiple documents in model ${modelName}:`,
+        error
+      );
+      throw error;
+    }
+  }
 }

@@ -35,6 +35,7 @@ describe('DataAccessService', () => {
       exec: jest.fn().mockResolvedValue([]),
       findOneAndUpdate: jest.fn().mockReturnThis(),
       syncIndexes: jest.fn().mockResolvedValue(undefined),
+      insertMany: jest.fn().mockReturnThis(),
       collection: {
         insertOne: jest
           .fn()
@@ -209,6 +210,16 @@ describe('DataAccessService', () => {
       await expect(service.createOne(modelName, {} as any)).rejects.toThrow(
         'Create error'
       );
+    });
+  });
+
+  describe('insertMany', () => {
+    it('should ensure the database is initialized', async () => {
+      const spyInit = jest
+        .spyOn(service as any, 'init')
+        .mockResolvedValue(undefined);
+      await service.insertMany('admin', [{ name: 'test' } as any]);
+      expect(spyInit).toHaveBeenCalled();
     });
   });
 });
