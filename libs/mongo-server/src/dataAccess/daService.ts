@@ -76,13 +76,19 @@ export class DataAccessService {
     filter: FilterQuery<T>,
     update: UpdateQuery<T>,
     options: QueryOptions = {}
-  ): Promise<T | null> {
+  ): Promise<T> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
     try {
-      return model
+      const result = (await model
         .findOneAndUpdate(filter, update, { new: true, ...options })
-        .exec() as Promise<T | null>;
+        .exec()) as unknown as T | null;
+      if (!result) {
+        throw new Error(
+          `No document found for filter: ${JSON.stringify(filter)}`
+        );
+      }
+      return result;
     } catch (error) {
       console.error(
         `Error finding and updating document in model ${modelName}:`,
@@ -161,6 +167,32 @@ export class DataAccessService {
         `Error inserting multiple documents in model ${modelName}:`,
         error
       );
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a document from the specified model.
+   * @param modelName Collection name
+   * @param filter Filter query
+   * @returns Deleted document
+   * @throws {Error} - Throws an error if deletion fails.
+   */
+  public async deleteOne<T extends Document>(
+    modelName: ModelNames,
+    filter: FilterQuery<T>
+  ): Promise<void> {
+    await this.ensureInitialized();
+    const model = this.registry.getModel(modelName);
+    try {
+      const result = await model.deleteOne(filter);
+      if (result.deletedCount === 0) {
+        throw new Error(
+          `No document found for filter: ${JSON.stringify(filter)}`
+        );
+      }
+    } catch (error) {
+      console.error(`Error deleting document in model ${modelName}:`, error);
       throw error;
     }
   }

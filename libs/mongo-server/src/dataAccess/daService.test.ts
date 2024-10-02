@@ -147,24 +147,22 @@ describe('DataAccessService', () => {
       expect(res).toEqual(mockUpdatedDocument);
     });
 
-    it('should return null if no document is found', async () => {
+    it('should throw an error if no document is found', async () => {
       const modelName = 'admin';
       const filter = { name: 'test' };
       const update = { $set: { name: 'updatedName' } };
       const options = { new: true };
 
-      mockModel.exec = jest.fn().mockResolvedValue(null);
+      mockModel.exec = jest.fn().mockResolvedValue(null); // 模擬返回 null
 
-      const res = await service.findAndUpdate(
-        modelName,
-        filter,
-        update,
-        options
-      );
+      await expect(
+        service.findAndUpdate(modelName, filter, update, options)
+      ).rejects.toThrow(
+        `No document found for filter: ${JSON.stringify(filter)}`
+      ); // 檢查是否拋出錯誤
       expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(filter, update, {
         ...options,
       });
-      expect(res).toBeNull();
     });
 
     it('should handle errors', async () => {
@@ -220,6 +218,39 @@ describe('DataAccessService', () => {
         .mockResolvedValue(undefined);
       await service.insertMany('admin', [{ name: 'test' } as any]);
       expect(spyInit).toHaveBeenCalled();
+    });
+  });
+
+  describe('deleteOne', () => {
+    it('should delete a document successfully', async () => {
+      const modelName = 'admin';
+      const filter = { name: 'test' };
+      mockModel.deleteOne = jest.fn().mockResolvedValue({ deletedCount: 1 });
+
+      await service.deleteOne(modelName, filter);
+      expect(mockModel.deleteOne).toHaveBeenCalledWith(filter);
+    });
+
+    it('should throw an error if no document is found', async () => {
+      const modelName = 'admin';
+      const filter = { name: 'test' };
+      mockModel.deleteOne = jest.fn().mockResolvedValue({ deletedCount: 0 });
+
+      await expect(service.deleteOne(modelName, filter)).rejects.toThrow(
+        `No document found for filter: ${JSON.stringify(filter)}`
+      );
+    });
+
+    it('should handle errors', async () => {
+      const modelName = 'admin';
+      const filter = { name: 'test' };
+      mockModel.deleteOne = jest
+        .fn()
+        .mockRejectedValue(new Error('Delete error'));
+
+      await expect(service.deleteOne(modelName, filter)).rejects.toThrow(
+        'Delete error'
+      );
     });
   });
 });
