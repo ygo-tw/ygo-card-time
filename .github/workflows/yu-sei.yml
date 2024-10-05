@@ -7,6 +7,8 @@ on:
     paths:
       - 'libs/**'
       - 'apps/yu-sei/**'
+      - '!apps/yu-sei/jobs/**'
+      - '!apps/yu-sei/scripts/**'
       - '.github/workflows/yu-sei.yml'
 
 jobs:

@@ -16,12 +16,6 @@ const main = async () => {
   // line notify
   const lineBotService = new LineBotService();
 
-  try {
-    await reptileJapanInfo();
-  } catch (error) {
-    await lineBotService.sendNotify(`Japan Info Crawler Error: ${error}`);
-  }
-
   // 台灣時間 8:00 執行 RutenCardPriceReptile
   scheduleJob('scheduleReptilePrice', '1 0 0 * * *', async () => {
     console.log('Running scheduleReptilePrice...');
