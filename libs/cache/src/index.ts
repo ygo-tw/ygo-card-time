@@ -202,6 +202,22 @@ export class DataCacheService {
     );
   }
 
+  public generateCacheKeyArray(keys: (string | number | object)[]): string[] {
+    const cacheKeyArray: string[] = [];
+
+    for (const key of keys) {
+      cacheKeyArray.push(
+        `${
+          typeof key === 'object'
+            ? JSON.stringify(key).replaceAll(':', '_')
+            : key
+        }`
+      );
+    }
+
+    return cacheKeyArray;
+  }
+
   /**
    * 刷新快取
    * @param params 快取參數

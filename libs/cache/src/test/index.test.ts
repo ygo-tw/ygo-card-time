@@ -53,6 +53,22 @@ describe('Data Cache Service', () => {
     redisClients.subscriber.disconnect();
   });
 
+  describe('generateCacheKeyArray', () => {
+    it('應該正確生成快取鍵陣列', () => {
+      const keys = ['key1', 2, { id: 3, name: 'test' }];
+      const expected = ['key1', '2', '{"id"_3,"name"_"test"}'];
+      const result = dataCacheService.generateCacheKeyArray(keys);
+      expect(result).toEqual(expected);
+    });
+
+    it('應該處理空陣列', () => {
+      const keys: (string | number | object)[] = [];
+      const expected: string[] = [];
+      const result = dataCacheService.generateCacheKeyArray(keys);
+      expect(result).toEqual(expected);
+    });
+  });
+
   describe('Set Cache Data', () => {
     it.each([
       {
