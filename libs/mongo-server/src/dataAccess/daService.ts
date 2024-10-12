@@ -6,6 +6,10 @@ import mongoose, {
   UpdateQuery,
   ObjectId,
   PipelineStage,
+  mongo,
+  InsertManyOptions,
+  AggregateOptions,
+  CreateOptions,
 } from 'mongoose';
 import { ModelNames } from '@ygo/schemas';
 import { ModelRegistry } from './modelRegistry';
@@ -56,7 +60,11 @@ export class DataAccessService {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
     try {
-      return model.find(filter, projection, options).exec() as Promise<T[]>;
+      const result = await model
+        .find(filter, projection, options)
+        .lean()
+        .exec();
+      return result as unknown as T[];
     } catch (error) {
       console.error(`Error finding documents in model ${modelName}:`, error);
       throw error;
@@ -109,12 +117,13 @@ export class DataAccessService {
    */
   public async aggregate<T>(
     modelName: ModelNames,
-    pipeline: PipelineStage[]
+    pipeline: PipelineStage[],
+    options: AggregateOptions = {}
   ): Promise<T[]> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
     try {
-      return model.aggregate(pipeline).exec() as Promise<T[]>;
+      return model.aggregate(pipeline, options).exec() as Promise<T[]>;
     } catch (error) {
       console.error(
         `Error aggregating documents in model ${modelName}:`,
@@ -132,14 +141,15 @@ export class DataAccessService {
    */
   public async createOne<T extends Document>(
     modelName: ModelNames,
-    doc: T
+    doc: T,
+    options: CreateOptions = {}
   ): Promise<ObjectId> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
     await model.syncIndexes();
     try {
-      const result = await model.collection.insertOne(doc);
-      return result.insertedId as unknown as ObjectId;
+      const result = await model.create([doc], options);
+      return result[0]?._id as unknown as ObjectId;
     } catch (error) {
       console.error(`Error creating document in model ${modelName}:`, error);
       throw error;
@@ -150,17 +160,19 @@ export class DataAccessService {
    * Insert multiple documents into the specified model.
    * @param modelName Collection name
    * @param docs Documents to insert
+   * @param options Insert options
    * @returns Inserted documents
    */
   public async insertMany<T extends Document>(
     modelName: ModelNames,
-    docs: T[]
+    docs: T[],
+    options: InsertManyOptions = {}
   ): Promise<T[]> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
     await model.syncIndexes();
     try {
-      const result = await model.insertMany(docs);
+      const result = await model.insertMany(docs, options);
       return result as unknown as T[];
     } catch (error) {
       console.error(
@@ -175,17 +187,19 @@ export class DataAccessService {
    * Delete a document from the specified model.
    * @param modelName Collection name
    * @param filter Filter query
+   * @param options Delete options
    * @returns Deleted document
    * @throws {Error} - Throws an error if deletion fails.
    */
   public async deleteOne<T extends Document>(
     modelName: ModelNames,
-    filter: FilterQuery<T>
+    filter: FilterQuery<T>,
+    options: mongo.DeleteOptions = {}
   ): Promise<void> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
     try {
-      const result = await model.deleteOne(filter);
+      const result = await model.deleteOne(filter, options);
       if (result.deletedCount === 0) {
         throw new Error(
           `No document found for filter: ${JSON.stringify(filter)}`
@@ -194,6 +208,55 @@ export class DataAccessService {
     } catch (error) {
       console.error(`Error deleting document in model ${modelName}:`, error);
       throw error;
+    }
+  }
+
+  /**
+   * Find the count of documents in the specified model.
+   * @param modelName Collection name
+   * @param filter Filter query
+   * @param options Count options
+   * @returns Count of documents
+   */
+  public async findDocumentCount<T extends Document>(
+    modelName: ModelNames,
+    filter: FilterQuery<T>,
+    options: mongo.CountOptions
+  ): Promise<number | null> {
+    try {
+      await this.ensureInitialized();
+      const model = this.registry.getModel(modelName);
+      return model.countDocuments(filter, options);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  /**
+   * Run a transaction with the provided operations.
+   * @param operations An array of functions that perform operations within the transaction.
+   * @returns The result of the transaction.
+   */
+  public async runTransaction<T>(
+    operations: Array<(session: mongoose.ClientSession) => Promise<T>>
+  ): Promise<T[]> {
+    await this.ensureInitialized();
+    const session = await mongoose.startSession();
+    const results: T[] = [];
+
+    try {
+      session.startTransaction();
+      for (const operation of operations) {
+        const result = await operation(session);
+        results.push(result);
+      }
+      await session.commitTransaction();
+      return results;
+    } catch (error) {
+      await session.abortTransaction();
+      throw new Error('Transaction aborted due to error');
+    } finally {
+      session.endSession();
     }
   }
 }
