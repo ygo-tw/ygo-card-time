@@ -69,7 +69,7 @@
   "explorer.fileNesting.expand": false,
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
-    "*.json": "${capture}.ts, ${capture}.type.ts, ${capture}.const.ts,${capture}.test.ts",
+    "*.json": "${capture}.ts, ${capture}.type.ts, ${capture}.const.ts,${capture}.test.ts,${capture}.example.ts",
     "*.ts": "${capture}.test.ts, ${capture}.type.ts"
   },
   "patternlinks.rules": [
