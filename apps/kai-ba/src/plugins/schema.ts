@@ -20,6 +20,7 @@ export default fp<FastifySchemaOptions>(
         if (Array.isArray(schemas[key])) {
           if (!('$id' in schemas[key])) continue;
         }
+        if (key.includes('example')) continue;
         fastify.addSchema(lodash.cloneDeep(schemas[key]));
         dependenciesSchemas.push(lodash.cloneDeep(schemas[key]) as AnySchema);
       } catch (ex) {

@@ -9,11 +9,13 @@ export default fp(
       const statusCode = error.status ?? 500;
 
       fastify.log.error(
-        `${error.logMsg ?? 'An unexpected error occurred'} | ${errorName} |${statusCode}`
+        `${error.logMsg ?? JSON.stringify(error)} | ${errorName} |${statusCode}`
       );
 
       reply.status(statusCode).send({
-        error: error.clientMsg || 'An unexpected error occurred',
+        errorCodes: statusCode,
+        message: error.clientMsg ?? JSON.stringify(error),
+        data: null,
       });
     });
   },
