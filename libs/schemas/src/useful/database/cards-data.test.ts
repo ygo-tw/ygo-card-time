@@ -2,7 +2,10 @@ import Ajv from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
 
 import { usefulDatabaseCardsDataSchema as schema } from './cards-data.const';
-import { usefulValueObjectMetaSchema } from '../value-object';
+import {
+  usefulValueObjectMetaSchema,
+  usefulValueObjectCardMetaSchema,
+} from '../value-object';
 
 const ajv = new Ajv({
   allowUnionTypes: true,
@@ -14,7 +17,7 @@ const ajv = new Ajv({
 addFormats(ajv);
 
 ajv.addSchema(usefulValueObjectMetaSchema);
-
+ajv.addSchema(usefulValueObjectCardMetaSchema);
 test('schema 定義正確', () => {
   const validate = ajv.compile(schema);
   expect(validate.errors).toBeNull();
@@ -27,7 +30,7 @@ const example = {
   type: '特殊召喚',
   star: '等級10',
   attribute: '闇',
-  rarity: ['紅鑽'],
+  rarity: ['浮雕', '紅鑽'],
   atk: null,
   def: null,
   product_information_type: 'IGAS',

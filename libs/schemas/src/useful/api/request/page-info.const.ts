@@ -1,0 +1,15 @@
+/* eslint-disable */
+
+//! auto generated from json schema
+export const usefulApiRequestPageInfoSchema = {
+  $id: 'https://card.time.com/schema/useful/api/request/page-info',
+  $schema: 'https://json-schema.org/draft/2020-12/schema',
+  title: '分頁資訊',
+  description: '分頁資訊',
+  type: 'object',
+  properties: {
+    page: { type: 'number', description: '頁數', default: 1 },
+    limit: { type: 'number', description: '每頁顯示的項目數量', default: 10 },
+  },
+  required: ['page', 'limit'],
+} as const;

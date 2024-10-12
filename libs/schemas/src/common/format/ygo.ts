@@ -67,6 +67,7 @@ export const YGO_OPTIONS: {
     'LINK-6',
     'LINK-7',
     'LINK-8',
+    '',
   ],
   attribute: ['闇', '光', '炎', '水', '地', '風', '神', '魔', '罠'],
   race: [
@@ -96,6 +97,7 @@ export const YGO_OPTIONS: {
     '創造神族',
     '電子界族',
     '幻想魔族',
+    '',
   ],
   rare: [
     '普卡',
@@ -110,6 +112,7 @@ export const YGO_OPTIONS: {
     '雷射',
     '黃金',
     '凸版浮雕',
+    '浮雕',
     '雕鑽',
     '白鑽',
     '紅鑽',
