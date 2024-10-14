@@ -36,7 +36,7 @@ export default fp<FastifyPluginAsync>(
     });
 
     await fastify.register(SwaggerUI, {
-      routePrefix: '/documentation',
+      routePrefix: '/swagger',
     });
   },
   {

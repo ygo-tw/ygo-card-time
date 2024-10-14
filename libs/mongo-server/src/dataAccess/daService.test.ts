@@ -41,6 +41,12 @@ describe('DataAccessService', () => {
           .fn()
           .mockResolvedValue({ insertedId: new mongoose.Types.ObjectId() }),
       },
+      deleteOne: jest.fn().mockReturnThis(),
+      create: jest
+        .fn()
+        .mockResolvedValue([
+          { _id: new mongoose.Types.ObjectId('1234567890abcdef12345678') },
+        ]),
     };
 
     (ModelRegistry.getInstance as jest.Mock).mockImplementation(() => {
@@ -86,19 +92,16 @@ describe('DataAccessService', () => {
   });
 
   describe('find', () => {
-    it('should ensure the database is initialized', async () => {
-      const spyInit = jest
-        .spyOn(service as any, 'init')
-        .mockResolvedValue(undefined);
-      await service.find('admin');
-      expect(spyInit).toHaveBeenCalled();
-    });
-
     it('should return an array of documents', async () => {
       const modelName = 'admin';
       const filter = { name: 'test' };
       const projection = { name: 1 };
       const options = {};
+
+      mockModel.find = jest.fn().mockReturnValue({
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue([]),
+      });
 
       const res = await service.find(modelName, filter, projection, options);
       expect(mockModel.find).toHaveBeenCalledWith(filter, projection, options);
@@ -107,7 +110,10 @@ describe('DataAccessService', () => {
 
     it('should handle errors', async () => {
       const modelName = 'admin';
-      mockModel.exec = jest.fn().mockRejectedValue(new Error('Find error'));
+      mockModel.find = jest.fn().mockReturnValue({
+        lean: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockRejectedValue(new Error('Find error')),
+      });
 
       await expect(service.find(modelName)).rejects.toThrow('Find error');
     });
@@ -195,15 +201,15 @@ describe('DataAccessService', () => {
       mockModel.collection.insertOne.mockResolvedValue({ insertedId });
 
       const res = await service.createOne(modelName, doc);
-      expect(mockModel.collection.insertOne).toHaveBeenCalledWith(doc);
-      expect(res).toEqual(insertedId);
+      expect(mockModel.create).toHaveBeenCalledWith([doc], {});
+      expect(res).toEqual(
+        new mongoose.Types.ObjectId('1234567890abcdef12345678')
+      );
     });
 
     it('should handle errors', async () => {
       const modelName = 'admin';
-      mockModel.collection.insertOne.mockRejectedValue(
-        new Error('Create error')
-      );
+      mockModel.create.mockRejectedValue(new Error('Create error'));
 
       await expect(service.createOne(modelName, {} as any)).rejects.toThrow(
         'Create error'
@@ -225,10 +231,8 @@ describe('DataAccessService', () => {
     it('should delete a document successfully', async () => {
       const modelName = 'admin';
       const filter = { name: 'test' };
-      mockModel.deleteOne = jest.fn().mockResolvedValue({ deletedCount: 1 });
-
       await service.deleteOne(modelName, filter);
-      expect(mockModel.deleteOne).toHaveBeenCalledWith(filter);
+      expect(mockModel.deleteOne).toHaveBeenCalledWith(filter, {});
     });
 
     it('should throw an error if no document is found', async () => {
@@ -251,6 +255,42 @@ describe('DataAccessService', () => {
       await expect(service.deleteOne(modelName, filter)).rejects.toThrow(
         'Delete error'
       );
+    });
+  });
+
+  describe('findDocumentCount', () => {
+    it('should ensure the database is initialized', async () => {
+      const spyInit = jest
+        .spyOn(service as any, 'init')
+        .mockResolvedValue(undefined);
+      await service.findDocumentCount('admin', {}, {});
+      expect(spyInit).toHaveBeenCalled();
+    });
+
+    it('should return the count of documents', async () => {
+      const modelName = 'admin';
+      const filter = { name: 'test' };
+      const options = {};
+      const mockCount = 5;
+
+      mockModel.countDocuments = jest.fn().mockResolvedValue(mockCount);
+
+      const res = await service.findDocumentCount(modelName, filter, options);
+      expect(mockModel.countDocuments).toHaveBeenCalledWith(filter, options);
+      expect(res).toEqual(mockCount);
+    });
+
+    it('should handle errors', async () => {
+      const modelName = 'admin';
+      const filter = { name: 'test' };
+      const options = {};
+      mockModel.countDocuments = jest
+        .fn()
+        .mockRejectedValue(new Error('Count error'));
+
+      await expect(
+        service.findDocumentCount(modelName, filter, options)
+      ).rejects.toThrow('Count error');
     });
   });
 });
