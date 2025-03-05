@@ -11,7 +11,7 @@ export const usefulValueObjectCardMetaSchema = {
       title: '號碼',
       description: '卡片號碼',
       type: 'string',
-      pattern: '^[A-Z0-9]{2,4}[- ][A-Za-z0-9]{1,15}$',
+      pattern: '^[A-Z0-9]{1,4}[- ][A-Za-z0-9]{1,15}$',
     },
     type: {
       title: '種類',
@@ -216,7 +216,7 @@ export const usefulValueObjectCardMetaSchema = {
       title: '卡包',
       description: '補充包代號',
       type: 'string',
-      pattern: '^[A-Z0-9]{2,4}$',
+      pattern: '^[A-Z0-9]{1,4}$',
     },
     effect: {
       title: '效果',

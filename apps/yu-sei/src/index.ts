@@ -30,7 +30,7 @@ const main = async () => {
     console.log('Finished scheduleReptilePrice...');
   });
   // 台灣時間每周六 16:00 執行 RutenCardPriceReptile
-  scheduleJob('scheduleRetileJapanInfo', '1 0 8 * * 6', async () => {
+  scheduleJob('scheduleRetileJapanInfo', '1 0 9 * * 6', async () => {
     console.log('Running scheduleRetileJapanInfo...');
 
     try {
