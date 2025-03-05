@@ -309,6 +309,8 @@ export class RutenService {
       isIllegalProductChar(prices.ProdName);
     const isNotUnopenedPack = (prices: RutenPriceDetailResponse) =>
       isUnopenedPackProduct(prices.ProdName);
+    const isPriceNameIsToLong = (prices: RutenPriceDetailResponse) =>
+      prices.ProdName.length <= 30;
     const isFixedPrice = (prices: RutenPriceDetailResponse) =>
       prices.PriceRange[0] === prices.PriceRange[1];
 
@@ -324,6 +326,7 @@ export class RutenService {
       .filter(isNotFanMade)
       .filter(isNotBagOrMisc)
       .filter(isNotUnopenedPack)
+      .filter(isPriceNameIsToLong)
       .filter(product =>
         number.indexOf(' ') === -1
           ? product.ProdName.indexOf(number) !== -1

@@ -20,5 +20,17 @@
   },
   "env": {
     "node": true
-  }
+  },
+  "overrides": [
+    {
+      "files": ["ops/**/*.js"], // 指定 ops 目錄下的所有 JS 檔案
+      "rules": {
+        // 禁用所有規則
+        "no-unused-vars": "off",
+        "no-console": "off",
+        "no-undef": "off"
+        // 可以根據需要添加更多規則
+      }
+    }
+  ]
 }
