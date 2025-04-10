@@ -2,7 +2,7 @@ import { RutenService } from '../services/rutenPrice';
 import { CustomLogger, makeMailOptionsPayload } from '../utils';
 import { DataAccessService } from '@ygo/mongo-server';
 import { CardsDataType } from '@ygo/schemas';
-import { LineBotService } from '@ygo/line';
+// import { LineBotService } from '@ygo/line';
 import { YGOMailer } from '@ygo/mailer';
 import dayjs from 'dayjs';
 
@@ -16,7 +16,7 @@ import dayjs from 'dayjs';
  */
 export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
   // line notify
-  const lineBotService = new LineBotService();
+  // const lineBotService = new LineBotService();
 
   // mailer
   const mailer = new YGOMailer();
@@ -32,7 +32,7 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
   const now = dayjs().format('YYYY-MM-DD');
   const filename = `Ruten_Price_${new Date().toDateString()}.json`;
 
-  await lineBotService.sendNotify('Ruten Card Price Crawler Start');
+  // await lineBotService.sendNotify('Ruten Card Price Crawler Start');
   let finalResult: {
     updateFailedId: string[];
     noPriceId: string[];
@@ -73,9 +73,9 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
     checkNotError.mail = false;
   }
 
-  await lineBotService.sendNotify(
-    `Ruten Card Price Crawler End ! ${!checkNotError.mail ? '(Mail Failed)' : ''}`
-  );
+  // await lineBotService.sendNotify(
+  //   `Ruten Card Price Crawler End ! ${!checkNotError.mail ? '(Mail Failed)' : ''}`
+  // );
 
   logger.info('Ruten Card Price Crawler End !');
 };
