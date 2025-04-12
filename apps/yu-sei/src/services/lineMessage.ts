@@ -17,11 +17,16 @@ export class LineMessageService {
    * 發送訊息
    * @param msg 訊息
    */
-  public async sendMsg(msg: string) {
-    if (this.userIds && this.userIds.length > 0) {
-      await this.lineService.sendMulticastMessage(this.userIds, msg);
-    } else {
-      await this.lineService.broadcastMessage(msg);
+  public async sendMsg(msg: string): Promise<boolean> {
+    try {
+      if (this.userIds && this.userIds.length > 0) {
+        await this.lineService.sendMulticastMessage(this.userIds, msg);
+      } else {
+        await this.lineService.broadcastMessage(msg);
+      }
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 }

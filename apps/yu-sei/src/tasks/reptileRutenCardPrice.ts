@@ -36,7 +36,9 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
   const now = dayjs().format('YYYY-MM-DD');
   const filename = `Ruten_Price_${new Date().toDateString()}.json`;
 
-  await lineService.sendMsg('Ruten Card Price Crawler Start');
+  const isLineMsgOk = await lineService.sendMsg(
+    'Ruten Card Price Crawler Start'
+  );
 
   let finalResult: {
     updateFailedId: string[];
@@ -58,6 +60,10 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
   } catch (error) {
     console.log(error);
     html = `<h1>Ruten Card Price Crawler Error</h1><p>${error}</p>`;
+  }
+
+  if (!isLineMsgOk) {
+    html += `<h1> Line Msg Error</h1>`;
   }
 
   // 爬蟲結束

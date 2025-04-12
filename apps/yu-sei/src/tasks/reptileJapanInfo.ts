@@ -42,7 +42,7 @@ export const reptileJapanInfo = async (cardNumbers?: string[]) => {
   const now = dayjs().format('YYYY-MM-DD');
   const filename = `JP_Info_${new Date().toDateString()}.json`;
 
-  await lineService.sendMsg('Japan Info Crawler Start');
+  const isLineMsgOk = await lineService.sendMsg('Japan Info Crawler Start');
 
   let lostCardsInfo = cardNumbers;
   // 沒有欲針對的目標 則比較資料庫缺失數據重爬
@@ -91,6 +91,15 @@ export const reptileJapanInfo = async (cardNumbers?: string[]) => {
   } catch (error) {
     failTasks.push('updateCardsJPInfo');
     html += `<h1> QA Info Error</h1><p>${error}</p><p>${__dirname + __filename}</p>`;
+  }
+
+  if (!isLineMsgOk) {
+    failTasks.push('lineMsg');
+    html += `<h1> Line Msg Error</h1>`;
+  }
+
+  if (failTasks.length > 0) {
+    html += `<h1> Fail Tasks</h1><p>${failTasks.join(', ')}</p>`;
   }
 
   // 爬蟲結束
