@@ -2,7 +2,7 @@ import { RutenService } from '../services/rutenPrice';
 import { CustomLogger, makeMailOptionsPayload } from '../utils';
 import { DataAccessService } from '@ygo/mongo-server';
 import { CardsDataType } from '@ygo/schemas';
-// import { LineBotService } from '@ygo/line';
+import { LineMessageService } from '../services/lineMessage';
 import { YGOMailer } from '@ygo/mailer';
 import dayjs from 'dayjs';
 
@@ -15,9 +15,13 @@ import dayjs from 'dayjs';
  * @function reptileRutenCardPrice
  */
 export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
-  // line notify
-  // const lineBotService = new LineBotService();
-
+  // line message
+  const lineService = new LineMessageService(
+    {
+      channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN as string,
+    },
+    process.env.LINE_MANAGER_ID?.split(',') as string[]
+  );
   // mailer
   const mailer = new YGOMailer();
 
@@ -32,7 +36,10 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
   const now = dayjs().format('YYYY-MM-DD');
   const filename = `Ruten_Price_${new Date().toDateString()}.json`;
 
-  // await lineBotService.sendNotify('Ruten Card Price Crawler Start');
+  const isLineMsgOk = await lineService.sendMsg(
+    'Ruten Card Price Crawler Start'
+  );
+
   let finalResult: {
     updateFailedId: string[];
     noPriceId: string[];
@@ -55,6 +62,10 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
     html = `<h1>Ruten Card Price Crawler Error</h1><p>${error}</p>`;
   }
 
+  if (!isLineMsgOk) {
+    html += `<h1> Line Msg Error</h1>`;
+  }
+
   // 爬蟲結束
   const checkNotError = {
     mail: true,
@@ -73,9 +84,9 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
     checkNotError.mail = false;
   }
 
-  // await lineBotService.sendNotify(
-  //   `Ruten Card Price Crawler End ! ${!checkNotError.mail ? '(Mail Failed)' : ''}`
-  // );
+  await lineService.sendMsg(
+    `Ruten Card Price Crawler End ! ${!checkNotError.mail ? '(Mail Failed)' : ''}`
+  );
 
   logger.info('Ruten Card Price Crawler End !');
 };
