@@ -3,13 +3,18 @@ import { CustomLogger, makeMailOptionsPayload } from '../utils';
 import { DataAccessService } from '@ygo/mongo-server';
 import { CheerioCrawler } from '@ygo/crawler';
 import { DataAccessEnum } from '@ygo/schemas';
-// import { LineBotService } from '@ygo/line';
+import { LineMessageService } from '../services/lineMessage';
 import { YGOMailer } from '@ygo/mailer';
 import dayjs from 'dayjs';
 
 export const reptileJapanInfo = async (cardNumbers?: string[]) => {
-  // line notify
-  // const lineBotService = new LineBotService();
+  // line message
+  const lineService = new LineMessageService(
+    {
+      channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN as string,
+    },
+    process.env.LINE_MANAGER_ID?.split(',') as string[]
+  );
 
   // mailer
   const mailer = new YGOMailer();
@@ -37,7 +42,7 @@ export const reptileJapanInfo = async (cardNumbers?: string[]) => {
   const now = dayjs().format('YYYY-MM-DD');
   const filename = `JP_Info_${new Date().toDateString()}.json`;
 
-  // await lineBotService.sendNotify('Japan Info Crawler Start');
+  await lineService.sendMsg('Japan Info Crawler Start');
 
   let lostCardsInfo = cardNumbers;
   // 沒有欲針對的目標 則比較資料庫缺失數據重爬
@@ -101,9 +106,9 @@ export const reptileJapanInfo = async (cardNumbers?: string[]) => {
     checkNotError.mail = false;
   }
 
-  // await lineBotService.sendNotify(
-  //   `Japan Info Crawler End ! ${!checkNotError.mail ? '(Mail Failed)' : ''}`
-  // );
+  await lineService.sendMsg(
+    `Japan Info Crawler End ! ${!checkNotError.mail ? '(Mail Failed)' : ''}`
+  );
 
   logger.info('Japan Info Crawler End !');
 };

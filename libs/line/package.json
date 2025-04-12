@@ -9,6 +9,7 @@
     "build": "yarn clean && tsc  --build --verbose"
   },
   "dependencies": {
+    "@line/bot-sdk": "^9.8.0",
     "axios": "^1.6.8"
   },
   "devDependencies": {
