@@ -18,7 +18,7 @@ export const reptileRutenCardPrice = async (cards?: CardsDataType[]) => {
   // line message
   const lineService = new LineMessageService(
     {
-      channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN as string,
+      channelAccessToken: process.env.LIME_MESSAGE_TOKEN as string,
     },
     process.env.LINE_MANAGER_ID?.split(',') as string[]
   );

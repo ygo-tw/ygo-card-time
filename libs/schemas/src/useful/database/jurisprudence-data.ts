@@ -1,5 +1,4 @@
 import { FromSchema } from 'json-schema-to-ts';
-import { Document } from 'mongoose';
 import { usefulValueObjectMetaSchema } from '../value-object/meta.const';
 import { usefulDatabaseJurisprudenceDataSchema } from './jurisprudence-data.const';
 import { RemoveIndex } from '../../utility.types';
@@ -12,4 +11,4 @@ type Type = FromSchema<
   }
 >;
 
-export type JurisprudenceDataType = RemoveIndex<Type> & Document;
+export type JurisprudenceDataType = RemoveIndex<Type>;
