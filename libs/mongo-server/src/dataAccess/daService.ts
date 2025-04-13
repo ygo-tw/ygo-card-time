@@ -2,7 +2,6 @@ import mongoose, {
   FilterQuery,
   ProjectionType,
   QueryOptions,
-  Document,
   UpdateQuery,
   ObjectId,
   PipelineStage,
@@ -51,7 +50,7 @@ export class DataAccessService {
    * @param options query options
    * @returns query result
    */
-  public async find<T extends Document>(
+  public async find<T>(
     modelName: ModelNames,
     filter: FilterQuery<T> = {},
     projection: ProjectionType<T> = {},
@@ -79,7 +78,7 @@ export class DataAccessService {
    * @param options query options
    * @returns updated document
    */
-  public async findAndUpdate<T extends Document>(
+  public async findAndUpdate<T>(
     modelName: ModelNames,
     filter: FilterQuery<T>,
     update: UpdateQuery<T>,
@@ -139,7 +138,7 @@ export class DataAccessService {
    * @param doc Document to create
    * @returns Created document
    */
-  public async createOne<T extends Document>(
+  public async createOne<T>(
     modelName: ModelNames,
     doc: T,
     options: CreateOptions = {}
@@ -163,7 +162,7 @@ export class DataAccessService {
    * @param options Insert options
    * @returns Inserted documents
    */
-  public async insertMany<T extends Document>(
+  public async insertMany<T>(
     modelName: ModelNames,
     docs: T[],
     options: InsertManyOptions = {}
@@ -191,7 +190,7 @@ export class DataAccessService {
    * @returns Deleted document
    * @throws {Error} - Throws an error if deletion fails.
    */
-  public async deleteOne<T extends Document>(
+  public async deleteOne<T>(
     modelName: ModelNames,
     filter: FilterQuery<T>,
     options: mongo.DeleteOptions = {}
@@ -218,7 +217,7 @@ export class DataAccessService {
    * @param options Count options
    * @returns Count of documents
    */
-  public async findDocumentCount<T extends Document>(
+  public async findDocumentCount<T>(
     modelName: ModelNames,
     filter: FilterQuery<T>,
     options: mongo.CountOptions
