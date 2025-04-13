@@ -32,15 +32,5 @@ export const usefulDatabaseJurisprudenceDataSchema = {
       },
     },
   },
-  required: [
-    '_id',
-    'number',
-    'name_jp_h',
-    'name_jp_k',
-    'name_en',
-    'effect_jp',
-    'jud_link',
-    'info',
-    'qa',
-  ],
+  required: ['_id', 'number', 'name_jp_h', 'effect_jp', 'jud_link', 'qa'],
 } as const;

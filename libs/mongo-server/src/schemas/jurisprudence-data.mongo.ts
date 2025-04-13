@@ -49,12 +49,10 @@ export const JurisprudenceMongoSchema = new Schema<JurisprudenceDataType>(
     },
     name_jp_k: {
       type: String,
-      required: true,
       description: 'Japanese name (katakana)',
     },
     name_en: {
       type: String,
-      required: true,
       description: 'English name',
     },
     effect_jp: {
@@ -70,7 +68,6 @@ export const JurisprudenceMongoSchema = new Schema<JurisprudenceDataType>(
     },
     info: {
       type: String,
-      required: true,
       description: 'Additional information',
     },
     qa: {

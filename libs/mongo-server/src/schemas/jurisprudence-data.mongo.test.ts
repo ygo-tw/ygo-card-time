@@ -50,33 +50,6 @@ describe('JurisprudenceMongoSchema', () => {
     expect(error).toBeUndefined();
   });
 
-  it('should be invalid if required fields are missing', async () => {
-    const invalidData = {
-      number: '12345',
-      name_jp_h: '名誉の名前',
-      name_jp_k: 'ナメエ',
-      // missing name_en
-      effect_jp: 'カード効果',
-      jud_link: 'https://example.com',
-      info: 'Additional info',
-      qa: [
-        {
-          _id: '60b8d295f1d2a2c2e4b6d1c5',
-          title: '質問のタイトル',
-          tag: 'タグ',
-          date: '2023-01-01',
-          q: '質問内容',
-          a: '回答内容',
-        },
-      ],
-    };
-
-    const model = new JurisprudenceModel(invalidData);
-    const error = model.validateSync();
-    expect(error).toBeDefined();
-    expect(error?.errors['name_en']).toBeDefined();
-  });
-
   it('should be invalid if date format is incorrect', async () => {
     const invalidData = {
       number: '12345',
