@@ -63,8 +63,8 @@ export const task = async (
   }
 
   await lineService.sendMsg(
-    `Japan Info Crawler End ! ${!checkNotError.mail ? '(Mail Failed)' : ''}`
+    `${taskName} End ! ${!checkNotError.mail ? '(Mail Failed)' : ''}`
   );
 
-  logger.info('Japan Info Crawler End !');
+  logger.info(`${taskName} End !`);
 };
