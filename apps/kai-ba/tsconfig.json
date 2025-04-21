@@ -29,29 +29,13 @@
     "**/*.spec.ts"
   ],
   "references": [
-    {
-      "path": "../../libs/crawler"
-    },
-    {
-      "path": "../../libs/google-apis"
-    },
-    {
-      "path": "../../libs/line"
-    },
-    {
-      "path": "../../libs/mailer"
-    },
-    {
-      "path": "../../libs/mongo-server"
-    },
-    {
-      "path": "../../libs/schemas"
-    },
-    {
-      "path": "../../libs/ruten-apis"
-    },
-    {
-      "path": "../../libs/cache"
-    }
+    { "path": "../../libs/crawler" },
+    { "path": "../../libs/google-apis" },
+    { "path": "../../libs/line" },
+    { "path": "../../libs/mailer" },
+    { "path": "../../libs/mongo-server" },
+    { "path": "../../libs/schemas" },
+    { "path": "../../libs/ruten-apis" },
+    { "path": "../../libs/cache" }
   ]
 }

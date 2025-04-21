@@ -139,8 +139,6 @@ function getRequestLogFormat(req: FastifyRequest): object {
  */
 function getResponseLogFormat(res: FastifyReply): object {
   const date = new Date();
-  // 若 server timeout 會導致 res.getResponseTime 及 res.request 為 undefined，導致 server crash
-  const timeTaken = res.getResponseTime ? res.getResponseTime() : 'unknown';
   const csMethod = res.request ? res.request.method : '-';
   const csUriStem = res.request ? res.request.url.split('?')[0] : '/';
   const csUriQuery = res.request ? res.request.url.split('?')[1] : '-';
@@ -151,7 +149,6 @@ function getResponseLogFormat(res: FastifyReply): object {
     w3cTime: date.toISOString().split('T')[1].split('.')[0],
     scStatus: res.statusCode ?? '-',
     scBytes: res.getHeader('content-length') ?? '0',
-    timeTaken,
     csMethod,
     csUriStem,
     csUriQuery,

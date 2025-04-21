@@ -29,14 +29,9 @@ export default fp(
       }).singleton(),
     });
 
-    fastify.decorateRequest('diContainer', null);
-    fastify.addHook('onRequest', (request, _, done) => {
-      request.diContainer = container.createScope();
-      done();
+    fastify.decorateRequest('diContainer', {
+      getter: () => container.createScope(),
     });
   },
-  {
-    name: 'di',
-    dependencies: ['redis'],
-  }
+  { name: 'di', dependencies: ['redis'] }
 );

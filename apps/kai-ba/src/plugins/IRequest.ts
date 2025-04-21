@@ -1,6 +1,5 @@
 import { DataAccessService } from '@ygo/mongo-server';
 import { UserInfo } from '../Interface/auth.type';
-import { ValidateCompiler } from './validateCompiler';
 import { AwilixContainer } from 'awilix';
 import { DataCacheService } from '@ygo/cache';
 
@@ -19,7 +18,6 @@ interface ContainerServices {
 declare module 'fastify' {
   interface FastifyRequest {
     userInfo?: UserInfo;
-    validateCompiler: ValidateCompiler;
     diContainer: AwilixContainer<ContainerServices>;
   }
 }
