@@ -43,8 +43,8 @@ export default fp<RateLimitPluginOptions>(
       // skipOnError: true, 											// default false
       keyGenerator: (request: FastifyRequest) => {
         let key = 'UserId:';
-        if (request.userInfo?.userId) {
-          key += request.userInfo?.userId;
+        if (request.userInfo?.email) {
+          key += request.userInfo?.email;
         } else if (request.headers['x-real-ip']) {
           key = 'RealIP:' + request.headers['x-real-ip'];
         } else if (request.headers['x-forwarded-for']) {

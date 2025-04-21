@@ -43,11 +43,7 @@ export class ValidateCompiler {
   ) {
     if (logger) this.logger = logger;
     this.logger.trace('plugins/validator/ajvFactory: start');
-    const ajvInstance = new Ajv2020(
-      option ?? {
-        ...defaultAjvOptions,
-      }
-    );
+    const ajvInstance = new Ajv2020(option ?? { ...defaultAjvOptions });
     addFormats(ajvInstance);
     ajvErrors(ajvInstance);
     Object.keys(schemas).forEach(key => {
@@ -96,11 +92,6 @@ export default fp<FastifyValidateCompilerOptions>(
       fastify.dependenciesSchemas
     );
     fastify.decorate('ajvFactory', validateCompiler.ajvFactory);
-    fastify.decorateRequest('validateCompiler', null);
-    fastify.addHook('onRequest', (req, _, done) => {
-      req.validateCompiler = validateCompiler;
-      done();
-    });
     fastify.log.trace('plugins/validateCompiler: done');
     done();
   },

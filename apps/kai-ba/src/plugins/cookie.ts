@@ -1,13 +1,19 @@
 import fp from 'fastify-plugin';
-import cookie, { FastifyCookieOptions } from '@fastify/cookie';
+import cookie from '@fastify/cookie';
 
 // @fastify-cookie 官方說明 https://github.com/fastify/fastify-cookie
 
 export default fp(
-  async (fastify, opts: FastifyCookieOptions) => {
+  async fastify => {
     fastify.register(cookie, {
-      secret: opts.secret || 'my-secret', // 用於簽名 cookie 的密鑰
-      parseOptions: opts.parseOptions || {}, // 用於解析 cookie 的選項
+      secret: process.env.COOKIE_SECRET || 'my-cookie-secret',
+      parseOptions: {
+        // 默認的 cookie 安全選項
+        secure: process.env.NODE_ENV === 'production', // 生產環境強制 HTTPS
+        httpOnly: true, // 防止 JavaScript 訪問
+        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // 防止 CSRF
+        path: '/', // cookie 可訪問的路徑
+      },
     });
   },
   {
