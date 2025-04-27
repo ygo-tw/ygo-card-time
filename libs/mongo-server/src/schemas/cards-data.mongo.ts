@@ -9,19 +9,21 @@ export const CardsMongoSchema = new Schema<CardsDataType>(
     price_info: [
       {
         time: { type: String, match: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ },
-        price_lowest: { type: Number, default: null },
-        price_avg: { type: Number, default: null },
-        price: { type: Number, default: null },
+        price_lowest: { type: Number, required: false },
+        price_avg: { type: Number, required: false },
+        price: { type: Number, required: false },
         rarity: { type: String },
+        _id: false,
       },
     ],
     price_yuyu: [
       {
         time: { type: String, match: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ },
-        price_lowest: { type: Number, default: null },
-        price_avg: { type: Number, default: null },
-        price: { type: Number, default: null },
+        price_lowest: { type: Number, required: false },
+        price_avg: { type: Number, required: false },
+        price: { type: Number, required: false },
         rarity: { type: String },
+        _id: false,
       },
     ],
     id: {
@@ -61,5 +63,9 @@ export const CardsMongoSchema = new Schema<CardsDataType>(
     },
     effect: { type: String, maxLength: 800 },
   },
-  { collection: DataAccessEnum.CARDS }
+  {
+    collection: DataAccessEnum.CARDS,
+    id: false,
+    minimize: false,
+  }
 );

@@ -51,6 +51,17 @@ const main = async () => {
     }
     console.log('Finished scheduleRetileJapanInfo...');
   });
+
+  // 台灣時間每天 4:00 執行 YuyuPriceTask
+  scheduleJob('scheduleYuyuPrice', '1 0 18 * * *', async () => {
+    console.log('Running scheduleYuyuPrice...');
+
+    try {
+      await taskService.yuyuPriceTask();
+    } catch (error) {
+      await lineService.sendMsg(`Yuyu Price Crawler Error: ${error}`);
+    }
+  });
 };
 
 main();

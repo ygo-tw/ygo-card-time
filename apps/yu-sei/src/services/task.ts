@@ -6,6 +6,7 @@ import { CustomLogger } from '../utils';
 import { CardsDataType, DataAccessEnum } from '@ygo/schemas';
 import { CheerioCrawler } from '@ygo/crawler';
 import { YgoJpInfo } from './ygoJpInfo';
+import { YuyuPriceService } from './yuyu';
 
 type FinalRutenInfoType = {
   updateFailedId: string[];
@@ -45,6 +46,41 @@ export class TaskService {
       `JP_Info_${new Date().toDateString()}.json`,
       async (logger: CustomLogger) => this.japanTask(logger, cardNumbers)
     );
+  }
+
+  public async yuyuPriceTask() {
+    await task(
+      'Yuyu Price Crawler',
+      'yuyuCrawlerPrice',
+      `Yuyu_Price_${new Date().toDateString()}.json`,
+      async (logger: CustomLogger) => this.yuyuTask(logger)
+    );
+  }
+
+  private async yuyuTask(logger: CustomLogger) {
+    const yuyuService = new YuyuPriceService(this.daService, logger);
+    const now = dayjs().format('YYYY-MM-DD');
+    const failTasks: string[] = [];
+    let html = '';
+    let finalInfo: {
+      errorCardList: string[];
+      crawledCardList: string[];
+    } = {
+      errorCardList: [],
+      crawledCardList: [],
+    };
+    try {
+      finalInfo = await yuyuService.getYuyuprice();
+      html = `
+      <p>'Updated Data Yuyu Price Successful !'</p>
+      <p> total updated ${finalInfo.crawledCardList.length} data(${now})</a>
+    `;
+    } catch (error) {
+      failTasks.push('getYuyuprice');
+      html = `<h1>Yuyu Price Crawler Error</h1><p>${error}</p>`;
+    }
+
+    return { html, finalInfo, failTasks };
   }
 
   private async japanTask(logger: CustomLogger, cardNumbers?: string[]) {

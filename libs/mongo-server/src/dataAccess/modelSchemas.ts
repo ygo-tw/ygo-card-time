@@ -10,6 +10,7 @@ import {
   PermissionMongoSchema,
   ProductInformationMongoSchema,
   ProductInformationTypeMongoSchema,
+  PriceArchiveSchema,
 } from '../schemas';
 
 export const modelSchemas: ModelSchema = {
@@ -42,5 +43,8 @@ export const modelSchemas: ModelSchema = {
   },
   product_information_type: {
     originSchema: ProductInformationTypeMongoSchema,
+  },
+  price_archive: {
+    originSchema: PriceArchiveSchema,
   },
 };

@@ -17,4 +17,5 @@ export enum DataAccessEnum {
   SERIES_STORY = 'series_story',
   TAG = 'tag',
   USEFUL_CARD_INTRODUCTION = 'useful_card_introduction',
+  PRICE_ARCHIVE = 'price_archive',
 }

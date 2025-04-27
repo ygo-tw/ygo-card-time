@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { DataAccessService } from './daService';
 import { ModelRegistry } from './modelRegistry';
+import { ModelNames } from '@ygo/schemas';
 
 jest.mock('mongoose', () => {
   const originalMongoose = jest.requireActual('mongoose');
@@ -33,7 +34,11 @@ describe('DataAccessService', () => {
     mockModel = {
       find: jest.fn().mockReturnThis(),
       exec: jest.fn().mockResolvedValue([]),
-      findOneAndUpdate: jest.fn().mockReturnThis(),
+      findOneAndUpdate: jest.fn().mockReturnValue({
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue({}), // 默認返回空對象
+        }),
+      }),
       syncIndexes: jest.fn().mockResolvedValue(undefined),
       insertMany: jest.fn().mockReturnThis(),
       collection: {
@@ -47,6 +52,7 @@ describe('DataAccessService', () => {
         .mockResolvedValue([
           { _id: new mongoose.Types.ObjectId('1234567890abcdef12345678') },
         ]),
+      lean: jest.fn().mockReturnThis(), // 添加全局 lean 方法
     };
 
     (ModelRegistry.getInstance as jest.Mock).mockImplementation(() => {
@@ -91,31 +97,212 @@ describe('DataAccessService', () => {
     });
   });
 
-  describe('find', () => {
-    it('should return an array of documents', async () => {
-      const modelName = 'admin';
-      const filter = { name: 'test' };
-      const projection = { name: 1 };
-      const options = {};
+  describe('findOne', () => {
+    const modelName = 'Cards' as unknown as ModelNames;
+    const defaultExpectedResult = { _id: 'testId', name: 'test' };
 
-      mockModel.find = jest.fn().mockReturnValue({
-        lean: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue([]),
-      });
+    // 共用的測試設置
+    const setupFindOneTest = (mockResult: any, isInit = true) => {
+      service['isInit'] = isInit;
+      mockModel.findOne = jest.fn().mockReturnThis();
+      mockModel.lean = jest.fn().mockResolvedValue(mockResult);
+    };
 
-      const res = await service.find(modelName, filter, projection, options);
-      expect(mockModel.find).toHaveBeenCalledWith(filter, projection, options);
-      expect(res).toEqual([]);
+    // 共用的錯誤測試設置
+    const setupFindOneErrorTest = (error: Error) => {
+      service['isInit'] = true;
+      mockModel.findOne = jest.fn().mockReturnThis();
+      mockModel.lean = jest.fn().mockRejectedValue(error);
+    };
+
+    it('should find document with default parameters', async () => {
+      setupFindOneTest(defaultExpectedResult);
+
+      const result = await service.findOne(modelName);
+
+      expect(mockModel.findOne).toHaveBeenCalledWith({}, {}, {});
+      expect(result).toEqual(defaultExpectedResult);
     });
 
-    it('should handle errors', async () => {
-      const modelName = 'admin';
-      mockModel.find = jest.fn().mockReturnValue({
-        lean: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockRejectedValue(new Error('Find error')),
-      });
+    it('should find document with custom parameters', async () => {
+      const testParams = {
+        filter: { name: 'test' },
+        projection: { name: 1, _id: 0 },
+        options: { lean: true },
+      };
+      const expectedResult = { name: 'test' };
 
-      await expect(service.find(modelName)).rejects.toThrow('Find error');
+      setupFindOneTest(expectedResult);
+
+      const result = await service.findOne(
+        modelName,
+        testParams.filter,
+        testParams.projection,
+        testParams.options
+      );
+
+      expect(mockModel.findOne).toHaveBeenCalledWith(
+        testParams.filter,
+        testParams.projection,
+        testParams.options
+      );
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should return null when no document is found', async () => {
+      setupFindOneTest(null);
+
+      const result = await service.findOne(modelName);
+
+      expect(result).toBeNull();
+    });
+
+    it('should throw error when query fails', async () => {
+      const error = new Error('Database error');
+      setupFindOneErrorTest(error);
+
+      await expect(service.findOne(modelName)).rejects.toThrow(
+        'Database error'
+      );
+    });
+
+    it('should ensure database is initialized before query', async () => {
+      service['isInit'] = false;
+      mockModel.findOne = jest.fn().mockReturnThis();
+      mockModel.lean = jest.fn().mockResolvedValue(null);
+
+      const initSpy = jest
+        .spyOn(service as any, 'init')
+        .mockImplementation(async () => {
+          service['isInit'] = true;
+          return Promise.resolve();
+        });
+
+      await service.findOne(modelName);
+
+      expect(initSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('find', () => {
+    const modelName = 'fdlConfig' as unknown as ModelNames;
+    const defaultExpectedResult = [
+      { _id: 'testId1', name: 'test1' },
+      { _id: 'testId2', name: 'test2' },
+    ];
+
+    // 共用的測試設置
+    const setupFindTest = (mockResult: any[], isInit = true) => {
+      service['isInit'] = isInit;
+      mockModel.find = jest.fn().mockReturnThis();
+      mockModel.lean = jest.fn().mockResolvedValue(mockResult);
+    };
+
+    // 共用的錯誤測試設置
+    const setupFindErrorTest = (error: Error) => {
+      service['isInit'] = true;
+      mockModel.find = jest.fn().mockReturnThis();
+      mockModel.lean = jest.fn().mockRejectedValue(error);
+    };
+
+    it('should find documents with default parameters', async () => {
+      setupFindTest(defaultExpectedResult);
+
+      const result = await service.find(modelName);
+
+      expect(mockModel.find).toHaveBeenCalledWith({}, {}, {});
+      expect(result).toEqual(defaultExpectedResult);
+    });
+
+    it('should find documents with custom parameters', async () => {
+      const testParams = {
+        filter: { name: 'test' },
+        projection: { name: 1, _id: 0 },
+        options: { lean: true },
+      };
+      const expectedResult = [{ name: 'test1' }, { name: 'test2' }];
+
+      setupFindTest(expectedResult);
+
+      const result = await service.find(
+        modelName,
+        testParams.filter,
+        testParams.projection,
+        testParams.options
+      );
+
+      expect(mockModel.find).toHaveBeenCalledWith(
+        testParams.filter,
+        testParams.projection,
+        testParams.options
+      );
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should return empty array when no documents are found', async () => {
+      setupFindTest([]);
+
+      const result = await service.find(modelName);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should throw error when query fails', async () => {
+      const error = new Error('Database error');
+      setupFindErrorTest(error);
+
+      await expect(service.find(modelName)).rejects.toThrow('Database error');
+    });
+
+    it('should ensure database is initialized before query', async () => {
+      service['isInit'] = false;
+      mockModel.find = jest.fn().mockReturnThis();
+      mockModel.lean = jest.fn().mockResolvedValue([]);
+
+      const initSpy = jest
+        .spyOn(service as any, 'init')
+        .mockImplementation(async () => {
+          service['isInit'] = true;
+          return Promise.resolve();
+        });
+
+      await service.find(modelName);
+
+      expect(initSpy).toHaveBeenCalled();
+    });
+
+    it('should handle complex query conditions correctly', async () => {
+      const complexQuery = {
+        filter: {
+          name: { $regex: 'test' },
+          createdAt: { $gte: new Date() },
+        },
+        projection: { name: 1, createdAt: 1 },
+        options: {
+          sort: { createdAt: -1 },
+          limit: 10,
+        },
+      };
+      const expectedResult = [
+        { name: 'test1', createdAt: new Date() },
+        { name: 'test2', createdAt: new Date() },
+      ];
+
+      setupFindTest(expectedResult);
+
+      const result = await service.find(
+        modelName,
+        complexQuery.filter,
+        complexQuery.projection,
+        complexQuery.options
+      );
+
+      expect(mockModel.find).toHaveBeenCalledWith(
+        complexQuery.filter,
+        complexQuery.projection,
+        complexQuery.options
+      );
+      expect(result).toEqual(expectedResult);
     });
   });
 
@@ -139,7 +326,9 @@ describe('DataAccessService', () => {
       const options = { new: true };
 
       const mockUpdatedDocument = { name: 'updatedName' };
-      mockModel.exec = jest.fn().mockResolvedValue(mockUpdatedDocument);
+      mockModel.findOneAndUpdate().lean().exec = jest
+        .fn()
+        .mockResolvedValue(mockUpdatedDocument);
 
       const res = await service.findAndUpdate(
         modelName,
@@ -153,19 +342,23 @@ describe('DataAccessService', () => {
       expect(res).toEqual(mockUpdatedDocument);
     });
 
-    it('should throw an error if no document is found', async () => {
+    it('should return null if no document is found', async () => {
       const modelName = 'admin';
       const filter = { name: 'test' };
       const update = { $set: { name: 'updatedName' } };
       const options = { new: true };
 
-      mockModel.exec = jest.fn().mockResolvedValue(null); // 模擬返回 null
+      mockModel.findOneAndUpdate().lean().exec = jest
+        .fn()
+        .mockResolvedValue(null);
 
-      await expect(
-        service.findAndUpdate(modelName, filter, update, options)
-      ).rejects.toThrow(
-        `No document found for filter: ${JSON.stringify(filter)}`
-      ); // 檢查是否拋出錯誤
+      const result = await service.findAndUpdate(
+        modelName,
+        filter,
+        update,
+        options
+      );
+      expect(result).toBeNull();
       expect(mockModel.findOneAndUpdate).toHaveBeenCalledWith(filter, update, {
         ...options,
       });
@@ -173,7 +366,9 @@ describe('DataAccessService', () => {
 
     it('should handle errors', async () => {
       const modelName = 'admin';
-      mockModel.exec = jest.fn().mockRejectedValue(new Error('Update error'));
+      mockModel.findOneAndUpdate().lean().exec = jest
+        .fn()
+        .mockRejectedValue(new Error('Update error'));
 
       await expect(
         service.findAndUpdate(

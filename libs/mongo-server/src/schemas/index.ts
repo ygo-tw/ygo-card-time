@@ -10,3 +10,4 @@ export * from './permission-data.mongo';
 export * from './product_information.mongo';
 export * from './product_information_type.mongo';
 export * from './tag-data.mongo';
+export * from './price-archive.mongo';
