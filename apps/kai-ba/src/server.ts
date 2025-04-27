@@ -1,5 +1,5 @@
 import { loadEnv } from './envRunner';
-import closeWithGrace from 'close-with-grace';
+import gracefulShutdown from 'fastify-graceful-shutdown';
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -23,15 +23,11 @@ const app = Fastify({
   },
 });
 
+app.register(gracefulShutdown);
 app.register(import('./app'));
 
 app.addHook('onSend', (req, res, _, done) => {
   res.header('ygo-trace-id', req.headers['ygo-trace-id']);
-  done();
-});
-
-app.addHook('onClose', (_, done) => {
-  gracefullyClose();
   done();
 });
 
@@ -58,22 +54,6 @@ process.on('uncaughtRejection', err => {
   );
   process.exit(1);
 });
-
-/**
- * 優雅的關閉 server
- */
-function gracefullyClose(): void {
-  const closeListeners = closeWithGrace(
-    { delay: parseInt(process.env.FASTIFY_GRACEFULLY_CLOSE_DELAY ?? '500') },
-    async function ({ err }) {
-      if (err) {
-        app.log.error(err);
-      }
-      await app.close();
-    } as closeWithGrace.CloseWithGraceAsyncCallback
-  );
-  closeListeners.uninstall();
-}
 
 /**
  * 取得 logger 設定
