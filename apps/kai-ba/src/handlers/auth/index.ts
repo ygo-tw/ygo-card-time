@@ -1,5 +1,4 @@
 import { RouteHandler } from 'fastify';
-import { AuthService } from '../../services/authService';
 import { LoginError } from '../../services/errorService/businessError/authError';
 import { UserInfo } from '../../Interface/auth.type';
 export const loginHandler: RouteHandler<{
@@ -8,10 +7,7 @@ export const loginHandler: RouteHandler<{
 }> = async (request, reply) => {
   const { account, password } = request.body;
 
-  const authService = new AuthService(
-    request.diContainer.resolve('dal'),
-    request.log
-  );
+  const authService = request.diContainer.resolve('authService');
 
   const userInfo = await authService.login(reply, { account, password });
 
