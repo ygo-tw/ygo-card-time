@@ -2,6 +2,8 @@ import fp from 'fastify-plugin';
 import { asFunction, createContainer } from 'awilix';
 import { DataAccessService } from '@ygo/mongo-server';
 import { DataCacheService, RedisClients } from '@ygo/cache';
+import { CardService } from '../services/cardService';
+import { AuthService } from '../services/authService';
 
 export default fp(
   async fastify => {
@@ -26,6 +28,12 @@ export default fp(
           REDIS_DEFAULT_TTL_SECONDS:
             Number(process.env.KAI_BA_REDIS_DEFAULT_TTL_SECONDS) ?? 86400,
         });
+      }).singleton(),
+      cardService: asFunction(cradle => {
+        return new CardService(cradle.dal, fastify.log);
+      }).singleton(),
+      authService: asFunction(cradle => {
+        return new AuthService(cradle.dal, fastify.log);
       }).singleton(),
     });
 

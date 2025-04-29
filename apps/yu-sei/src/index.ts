@@ -51,6 +51,28 @@ const main = async () => {
     }
     console.log('Finished scheduleRetileJapanInfo...');
   });
+
+  // 台灣時間每天 4:00 執行 YuyuPriceTask
+  scheduleJob('scheduleYuyuPrice', '1 0 18 * * *', async () => {
+    console.log('Running scheduleYuyuPrice...');
+
+    try {
+      await taskService.yuyuPriceTask();
+    } catch (error) {
+      await lineService.sendMsg(`Yuyu Price Crawler Error: ${error}`);
+    }
+  });
+
+  // 台灣時間週日 16:00 執行 PriceInfoArchiveTask
+  scheduleJob('schedulePriceInfoArchive', '1 0 9 * * 0', async () => {
+    console.log('Running schedulePriceInfoArchive...');
+
+    try {
+      await taskService.priceInfoArchiveTask();
+    } catch (error) {
+      await lineService.sendMsg(`Price Info Archive Error: ${error}`);
+    }
+  });
 };
 
 main();

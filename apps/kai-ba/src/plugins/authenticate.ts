@@ -16,8 +16,14 @@ export default fp(
         const SIX_HOURS_IN_SECONDS = 6 * 60 * 60;
 
         if (expiresIn < SIX_HOURS_IN_SECONDS) {
-          await reply.jwtSign({
+          const token = await reply.jwtSign({
             ...decoded,
+          });
+
+          reply.setCookie('sid', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
           });
         }
 

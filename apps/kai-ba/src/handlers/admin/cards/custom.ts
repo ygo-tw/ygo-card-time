@@ -1,7 +1,6 @@
 import { RouteHandler } from 'fastify';
 import { GetCardListRequestType, GetCardListResponseType } from '@ygo/schemas';
 import { PageOrLimitError } from '../../../services/errorService/businessError';
-import { CardService } from '../../../services/cardService';
 
 /**
  * @description 取得卡片列表
@@ -25,10 +24,7 @@ export const getCardListHandler: RouteHandler<{
     throw new PageOrLimitError();
   }
 
-  const cardService = new CardService(
-    request.diContainer.resolve('dal'),
-    request.log
-  );
+  const cardService = request.diContainer.resolve('cardService');
 
   const cardListCount = await cardService.getCardListCount(filter);
   if (cardListCount === 0) {

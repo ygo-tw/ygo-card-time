@@ -1,7 +1,7 @@
 import axios from 'axios';
 import iconv from 'iconv-lite';
 import { CheerioCrawler } from './cheerioService';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 
 // Mock axios and iconv-lite
 jest.mock('axios');

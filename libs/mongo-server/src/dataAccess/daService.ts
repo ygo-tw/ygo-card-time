@@ -9,6 +9,8 @@ import mongoose, {
   InsertManyOptions,
   AggregateOptions,
   CreateOptions,
+  AnyBulkWriteOperation,
+  MongooseBulkWriteOptions,
 } from 'mongoose';
 import { ModelNames } from '@ygo/schemas';
 import { ModelRegistry } from './modelRegistry';
@@ -18,37 +20,39 @@ export class DataAccessService {
   private registry: ModelRegistry;
   private uri: string;
   private isInit: boolean = false;
+  private logger: any;
 
-  constructor(uri: string) {
+  constructor(uri: string, logger?: any) {
     this.uri = uri;
     this.registry = ModelRegistry.getInstance();
+    this.logger = logger || console;
   }
 
   private async init() {
     try {
-      console.log('Initializing MongoDB...');
+      this.logger.log('Initializing MongoDB...');
       await mongoose.connect(this.uri);
       this.isInit = true;
-      console.log('MongoDB connected successfully.');
+      this.logger.log('MongoDB connected successfully.');
     } catch (err) {
-      console.error('MongoDB connection error:', err);
+      this.logger.error('MongoDB connection error:', err);
       throw err;
     }
   }
 
-  private async ensureInitialized() {
+  public async ensureInitialized() {
     if (!this.isInit) {
       await this.init();
     }
   }
 
   /**
-   * Insert a document into the specified model.
-   * @param modelName collection name
-   * @param filter filter query
-   * @param projection projection query
-   * @param options query options
-   * @returns query result
+   * 查找
+   * @param modelName model name
+   * @param filter filter
+   * @param projection projection
+   * @param options options
+   * @returns
    */
   public async find<T>(
     modelName: ModelNames,
@@ -59,13 +63,38 @@ export class DataAccessService {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
     try {
-      const result = await model
-        .find(filter, projection, options)
-        .lean()
-        .exec();
-      return result as unknown as T[];
+      const results = await model.find(filter, projection, options).lean();
+      return results as T[];
     } catch (error) {
-      console.error(`Error finding documents in model ${modelName}:`, error);
+      this.logger.error(
+        `Error finding documents in model ${modelName}:`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * 查找單筆
+   * @param modelName model name
+   * @param filter filter
+   * @param projection projection
+   * @param options options
+   * @returns
+   */
+  public async findOne<T>(
+    modelName: ModelNames,
+    filter: FilterQuery<T> = {},
+    projection: ProjectionType<T> = {},
+    options: QueryOptions = {}
+  ): Promise<T | null> {
+    await this.ensureInitialized();
+    const model = this.registry.getModel(modelName);
+    try {
+      const result = await model.findOne(filter, projection, options).lean();
+      return result as T | null;
+    } catch (error) {
+      this.logger.error(`Error finding document in model ${modelName}:`, error);
       throw error;
     }
   }
@@ -83,22 +112,44 @@ export class DataAccessService {
     filter: FilterQuery<T>,
     update: UpdateQuery<T>,
     options: QueryOptions = {}
-  ): Promise<T> {
+  ): Promise<T | null> {
     await this.ensureInitialized();
     const model = this.registry.getModel(modelName);
     try {
       const result = (await model
         .findOneAndUpdate(filter, update, { new: true, ...options })
+        .lean()
         .exec()) as unknown as T | null;
-      if (!result) {
-        throw new Error(
-          `No document found for filter: ${JSON.stringify(filter)}`
-        );
-      }
       return result;
     } catch (error) {
-      console.error(
+      this.logger.error(
         `Error finding and updating document in model ${modelName}:`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Performs multiple write operations with a single command.
+   * @param modelName The model/collection name
+   * @param operations Array of write operations to perform
+   * @param options Options for the bulk write operation
+   * @returns Result of the bulk write operation
+   */
+  public async bulkWrite(
+    modelName: ModelNames,
+    operations: AnyBulkWriteOperation[],
+    options: MongooseBulkWriteOptions = {}
+  ): Promise<mongoose.mongo.BulkWriteResult> {
+    await this.ensureInitialized();
+    const model = this.registry.getModel(modelName);
+    try {
+      const result = await model.bulkWrite(operations as any, options);
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error performing bulk write operations in model ${modelName}:`,
         error
       );
       throw error;
@@ -124,7 +175,7 @@ export class DataAccessService {
     try {
       return model.aggregate(pipeline, options).exec() as Promise<T[]>;
     } catch (error) {
-      console.error(
+      this.logger.error(
         `Error aggregating documents in model ${modelName}:`,
         error
       );
@@ -150,7 +201,10 @@ export class DataAccessService {
       const result = await model.create([doc], options);
       return result[0]?._id as unknown as ObjectId;
     } catch (error) {
-      console.error(`Error creating document in model ${modelName}:`, error);
+      this.logger.error(
+        `Error creating document in model ${modelName}:`,
+        error
+      );
       throw error;
     }
   }
@@ -174,7 +228,7 @@ export class DataAccessService {
       const result = await model.insertMany(docs, options);
       return result as unknown as T[];
     } catch (error) {
-      console.error(
+      this.logger.error(
         `Error inserting multiple documents in model ${modelName}:`,
         error
       );
@@ -205,7 +259,10 @@ export class DataAccessService {
         );
       }
     } catch (error) {
-      console.error(`Error deleting document in model ${modelName}:`, error);
+      this.logger.error(
+        `Error deleting document in model ${modelName}:`,
+        error
+      );
       throw error;
     }
   }
