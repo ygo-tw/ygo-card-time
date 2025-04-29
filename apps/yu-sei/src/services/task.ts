@@ -7,7 +7,7 @@ import { CardsDataType, DataAccessEnum } from '@ygo/schemas';
 import { CheerioCrawler } from '@ygo/crawler';
 import { YgoJpInfo } from './ygoJpInfo';
 import { YuyuPriceService } from './yuyu';
-
+import { PriceInfoArchiveService } from './priceInfoArchive';
 type FinalRutenInfoType = {
   updateFailedId: string[];
   noPriceId: string[];
@@ -55,6 +55,34 @@ export class TaskService {
       `Yuyu_Price_${new Date().toDateString()}.json`,
       async (logger: CustomLogger) => this.yuyuTask(logger)
     );
+  }
+
+  public async priceInfoArchiveTask() {
+    await task(
+      'Price Info Archive',
+      'priceInfoArchive',
+      `Price_Info_Archive_${new Date().toDateString()}.json`,
+      async (logger: CustomLogger) => this.priceArchiveTask(logger)
+    );
+  }
+
+  private async priceArchiveTask(logger: CustomLogger) {
+    const priceInfoArchiveService = new PriceInfoArchiveService(
+      this.daService,
+      logger
+    );
+    const failTasks: string[] = [];
+    let html = '';
+    try {
+      await priceInfoArchiveService.archivePriceInfo();
+      html = `
+      <p>'Updated Data Price Info Archive Successful !'</p>
+      `;
+    } catch (error) {
+      failTasks.push('archivePriceInfo');
+      html = `<h1>Price Info Archive Error</h1><p>${error}</p>`;
+    }
+    return { html, finalInfo: {}, failTasks };
   }
 
   private async yuyuTask(logger: CustomLogger) {
