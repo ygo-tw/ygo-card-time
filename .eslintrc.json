@@ -31,6 +31,12 @@
         "no-undef": "off"
         // 可以根據需要添加更多規則
       }
+    },
+    {
+      "files": ["**/*.test.ts"], // 指定所有測試文件
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
     }
   ]
 }
