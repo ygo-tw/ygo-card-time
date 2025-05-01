@@ -1,0 +1,196 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# TypeScript 編碼風格指南
+
+## 文件組織
+
+### 目錄結構
+- 每個應用（app）應有明確的目錄結構，遵循關注點分離原則
+- 主要目錄：
+  - `src/services/`: 業務邏輯層
+  - `src/routes/`: 路由定義（針對 API）
+  - `src/handlers/`: 處理請求的處理器
+  - `src/utils/`: 通用工具函數
+  - `src/schema/`: 資料模型定義
+  - `src/plugins/`: 插件（用於擴展功能）
+
+### 命名規範
+- 文件名稱使用小駝峰命名法（camelCase）
+- 測試文件命名為 `*.test.ts`
+- 服務類使用 `*Service` 命名
+- 文件名應清晰表達其包含的內容
+
+## 類（Class）定義
+
+### 服務類結構
+- 使用 TypeScript 類來組織相關功能
+- 成員變數聲明在類頂部
+- 私有成員使用 `private` 修飾符
+- 公共 API 使用 `public` 修飾符（可選，但推薦顯式標明）
+- 類方法應按照公共 API 在前，私有方法在後的順序排列
+
+```typescript
+export class ExampleService {
+  private somePrivateVar: SomeType;
+  
+  constructor(dependencyOne: DependencyType, private readonly logger: Logger) {
+    this.somePrivateVar = new SomeType();
+  }
+  
+  /**
+   * 公共方法描述
+   * @param param 參數描述
+   * @returns 返回值描述
+   */
+  public async doSomething(param: ParamType): Promise<ResultType> {
+    // 實現...
+  }
+  
+  private helperMethod(): void {
+    // 實現...
+  }
+}
+```
+
+## 代碼風格
+
+### 導入（Imports）
+- 按以下順序組織導入：
+  1. 第三方庫導入
+  2. 相對路徑導入
+  3. 類型導入
+- 分組之間用空行分隔
+
+```typescript
+import { join } from 'path';
+import { FastifyPluginAsync } from 'fastify';
+import AutoLoad from '@fastify/autoload';
+
+import { localModule } from './localModule';
+import { anotherModule } from '../anotherModule';
+
+import { SomeType, AnotherType } from './types';
+```
+
+### 註釋
+- 使用 JSDoc 風格的註釋
+- 所有公共 API 都應有註釋
+- 註釋應使用繁體中文
+- 在複雜的邏輯前添加註釋說明
+
+```typescript
+/**
+ * 函數描述
+ * @param param1 參數1描述
+ * @param param2 參數2描述
+ * @returns 返回值描述
+ */
+```
+
+### 錯誤處理
+- 使用 try/catch 捕獲可能的異常
+- 在 catch 區塊中進行適當的錯誤處理
+- 盡量使用具體的錯誤類型，而不是通用 Error
+
+```typescript
+try {
+  await someAsyncOperation();
+} catch (error) {
+  this.logger.error(`操作失敗: ${error.message}`);
+  throw new SpecificError('錯誤信息');
+}
+```
+
+### 異步編程
+- 優先使用 async/await 而不是 Promise 鏈
+- 在返回 Promise 的函數中使用 async 關鍵字
+- 適當處理 Promise 的錯誤
+
+## 測試
+
+### 測試組織
+- 測試文件結構應與被測試文件結構相對應
+- 使用 Jest 測試框架
+- 測試應覆蓋所有公共 API
+
+### 測試模式
+- 遵循「三正一反」測試原則：三個正向測試和一個反向測試
+- 使用 it.each 處理類似的測試案例
+- 使用 AAA (Arrange-Act-Assert) 模式組織測試代碼
+- 使用 mock 隔離依賴
+
+```typescript
+describe('SomeService', () => {
+  it.each([
+    ['scenario1', input1, expected1],
+    ['scenario2', input2, expected2],
+    ['scenario3', input3, expected3],
+  ])('Given %s, when action, then result', (_, input, expected) => {
+    // Arrange
+    const service = new SomeService();
+    
+    // Act
+    const result = service.method(input);
+    
+    // Assert
+    expect(result).toBe(expected);
+  });
+  
+  it('Given invalid input, when action, then should throw', () => {
+    // Arrange & Act & Assert
+    expect(() => service.method(invalidInput)).toThrow();
+  });
+});
+```
+
+## TypeScript 特性
+
+### 類型定義
+- 總是為函數參數和返回值提供類型註解
+- 使用接口（interface）定義數據結構
+- 使用類型別名（type）定義複雜類型
+- 避免使用 `any` 類型，除非絕對必要
+
+### 類成員
+- 使用訪問修飾符（public、private、protected）
+- 對依賴注入的參數使用 `private readonly`
+- 盡可能使用不可變數據（使用 const、readonly）
+
+```typescript
+export class ExampleService {
+  constructor(
+    private readonly dependencyOne: DependencyType,
+    private readonly logger: LoggerType
+  ) {}
+}
+```
+
+### Null 和 Undefined
+- 使用可選參數或聯合類型處理可能為 null 或 undefined 的值
+- 使用空值合併運算符（??）和可選鏈（?.）處理空值
+
+```typescript
+function process(value?: string): string {
+  return value?.trim() ?? 'default';
+}
+```
+
+## 最佳實踐
+
+### 依賴注入
+- 使用構造函數依賴注入
+- 避免全局狀態和單例
+- 外部依賴應透過接口或類型而非具體實現傳入
+
+### 錯誤處理
+- 創建和使用特定的錯誤類
+- 包含足夠的上下文信息
+- 在適當的抽象層處理錯誤
+
+### 日誌記錄
+- 在適當的地方記錄日誌
+- 使用不同的日誌級別（info、warn、error）
+- 包含足夠的信息用於診斷問題
