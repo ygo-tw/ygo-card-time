@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登入測試頁面</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .container {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-right: 10px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #response,
+      #authResult,
+      #debugResult {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+        min-height: 100px;
+      }
+      .error {
+        color: red;
+      }
+      .success {
+        color: green;
+      }
+      .button-group {
+        margin-top: 15px;
+        display: flex;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>登入測試</h2>
+      <div class="form-group">
+        <label for="serverUrl">伺服器網址:</label>
+        <input type="text" id="serverUrl" value="http://localhost:3002" />
+      </div>
+      <div class="form-group">
+        <label for="account">帳號:</label>
+        <input type="text" id="account" placeholder="請輸入帳號" />
+      </div>
+      <div class="form-group">
+        <label for="password">密碼:</label>
+        <input type="password" id="password" placeholder="請輸入密碼" />
+      </div>
+      <button id="loginBtn">登入</button>
+
+      <h3>回應結果:</h3>
+      <pre id="response"></pre>
+
+      <h3>Cookie 狀態:</h3>
+      <div id="cookieStatus"></div>
+
+      <div class="button-group">
+        <button onclick="checkAuth()">檢查身份驗證</button>
+        <button onclick="debugRequest()">調試請求</button>
+      </div>
+
+      <h3>身份驗證結果:</h3>
+      <pre id="authResult"></pre>
+
+      <h3>請求調試:</h3>
+      <pre id="debugResult"></pre>
+    </div>
+
+    <script>
+      document
+        .getElementById('loginBtn')
+        .addEventListener('click', async () => {
+          const serverUrl = document.getElementById('serverUrl').value;
+          const account = document.getElementById('account').value;
+          const password = document.getElementById('password').value;
+          const responseElement = document.getElementById('response');
+          const cookieStatus = document.getElementById('cookieStatus');
+
+          if (!account || !password) {
+            responseElement.innerHTML =
+              '<span class="error">請輸入帳號和密碼</span>';
+            return;
+          }
+
+          try {
+            responseElement.innerHTML = '正在發送請求...';
+
+            const response = await fetch(`${serverUrl}/auth/login`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ account, password }),
+              credentials: 'include', // 重要：允許發送 cookies
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+              responseElement.innerHTML = `<span class="success">登入成功!</span><br>${JSON.stringify(result, null, 2)}`;
+            } else {
+              responseElement.innerHTML = `<span class="error">登入失敗: ${response.status} ${response.statusText}</span><br>${JSON.stringify(result, null, 2)}`;
+            }
+
+            // 顯示 cookie 狀態
+            setTimeout(() => {
+              cookieStatus.innerHTML = document.cookie
+                ? `<span class="success">Cookie 已設置: ${document.cookie}</span>`
+                : `<span class="error">沒有檢測到 Cookie</span>`;
+            }, 500);
+          } catch (error) {
+            responseElement.innerHTML = `<span class="error">請求錯誤: ${error.message}</span>`;
+            cookieStatus.innerHTML =
+              '<span class="error">無法檢查 Cookie 狀態</span>';
+          }
+        });
+
+      // 檢查身份驗證狀態
+      async function checkAuth() {
+        try {
+          const serverUrl = document.getElementById('serverUrl').value;
+          const authResult = document.getElementById('authResult');
+
+          authResult.innerHTML = '正在檢查認證狀態...';
+
+          const response = await fetch(`${serverUrl}/check-auth`, {
+            method: 'GET',
+            credentials: 'include', // 重要：包含 cookies
+          });
+
+          const result = await response.json();
+          authResult.innerHTML = JSON.stringify(result, null, 2);
+        } catch (error) {
+          document.getElementById('authResult').innerHTML =
+            `<span class="error">認證檢查失敗: ${error.message}</span>`;
+        }
+      }
+
+      // 調試請求信息
+      async function debugRequest() {
+        try {
+          const serverUrl = document.getElementById('serverUrl').value;
+          const debugResult = document.getElementById('debugResult');
+
+          debugResult.innerHTML = '正在獲取請求信息...';
+
+          const response = await fetch(`${serverUrl}/debug-request`, {
+            method: 'GET',
+            credentials: 'include', // 重要：包含 cookies
+          });
+
+          const result = await response.json();
+          debugResult.innerHTML = JSON.stringify(result, null, 2);
+        } catch (error) {
+          document.getElementById('debugResult').innerHTML =
+            `<span class="error">調試請求失敗: ${error.message}</span>`;
+        }
+      }
+    </script>
+  </body>
+</html>
