@@ -25,7 +25,8 @@
   ],
   "exclude": [
     "node_modules", // 排除的目錄
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "**/*.test.ts"
   ],
   "references": [
     {
