@@ -45,7 +45,8 @@ export const usefulValueObjectMetaSchema = {
         time: {
           title: '取得時間',
           type: 'string',
-          pattern: '^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$',
+          pattern:
+            '^\\d{4}-\\d{2}-\\d{2}(T| \\d{2}:\\d{2}:\\d{2}(.\\d{1,3}Z?)?)$',
         },
         price_lowest: { title: '最低價格', type: ['number', 'null'] },
         price_avg: { title: '平均價格', type: ['number', 'null'] },
