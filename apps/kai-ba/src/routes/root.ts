@@ -1,49 +1,16 @@
 import { FastifyPluginAsync } from 'fastify';
-
+import { AuthForbiddenError } from '../services/errorService/businessError/authError/index';
 const root: FastifyPluginAsync = async (fastify): Promise<void> => {
+  // 健康檢查
   fastify.get('/_hc', function () {
     return {
       msg: 'ok',
     };
   });
 
-  // 在 root.ts 中添加一個新路由
-  fastify.get(
-    '/check-auth',
-    {
-      preHandler: fastify.authenticate, // 使用你的 authenticate 中間件
-    },
-    async function (request, reply) {
-      try {
-        // 如果能夠走到這裡，表示 JWT 驗證通過
-        // 返回用戶信息
-        return {
-          authenticated: true,
-          user: request.user,
-        };
-      } catch (error) {
-        reply.status(401).send({
-          authenticated: false,
-          error: 'Token 無效或未提供',
-        });
-      }
-    }
-  );
-
-  // 再添加一個不需要認證的路由，用於檢查請求頭和 cookies
-  fastify.get('/debug-request', async function (request) {
-    return {
-      cookies: request.cookies, // 查看所有 cookies
-      headers: request.headers, // 查看所有請求頭
-      hasAuthHeader: !!request.headers.authorization, // 檢查 Authorization 頭
-      jwt: request.headers.authorization
-        ? request.headers.authorization.replace('Bearer ', '')
-        : 'No JWT found in Authorization header',
-    };
-  });
-
+  // 獲取 Redis 統計信息
   fastify.get('/redis-stats', {
-    preHandler: fastify.authenticate, // 使用你的 authenticate 中間件
+    preHandler: fastify.authenticate,
     schema: {
       summary: 'Redis 統計信息',
       description: '獲取 Redis 伺服器統計信息，包括命中率',
@@ -64,7 +31,7 @@ const root: FastifyPluginAsync = async (fastify): Promise<void> => {
     },
     handler: async (request, reply) => {
       if (!request.userInfo?.role?.includes('member')) {
-        return reply.code(403).send({ error: '無權限' });
+        throw new AuthForbiddenError(request.userInfo?.account ?? '');
       }
       // 取得 Redis 統計信息
       const redisInfo = request.diContainer.resolve('cache').getRedisInfo();

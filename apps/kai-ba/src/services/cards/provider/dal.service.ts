@@ -23,12 +23,13 @@ export class CardDalService {
   public async findCardList(
     filter: Record<string, any>,
     pagination: { page: number; limit: number },
-    options: QueryOptions = {}
+    options: QueryOptions = {},
+    needEffect: boolean = false
   ): Promise<{ data: CardsDataType[]; total: number }> {
     const cardList = await this.dal.find<CardsDataType>(
       DataAccessEnum.CARDS,
       filter,
-      { price_info: 0, price_yuyu: 0, __v: 0, effect: 0 },
+      { price_info: 0, price_yuyu: 0, __v: 0, effect: needEffect ? 0 : 1 },
       {
         skip: (pagination.page - 1) * pagination.limit,
         limit: pagination.limit,

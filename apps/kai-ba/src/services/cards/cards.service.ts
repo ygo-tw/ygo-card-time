@@ -47,6 +47,7 @@ export class CardService {
   public async getCardList(
     filter: GetCardListRequestType,
     pageInfo: PageInfoRequestType,
+    needEffect: boolean = false,
     options: QueryOptions = {}
   ): Promise<{ data: CardsDataType[]; total: number }> {
     try {
@@ -99,7 +100,10 @@ export class CardService {
           limit
         );
 
-        const cardList = await this.redis.getCardListByCache(pagedCardIdList);
+        const cardList = await this.redis.getCardListByCache(
+          pagedCardIdList,
+          needEffect
+        );
 
         if (cardList.length > 0) {
           this.logger.info(`getCardList cardList by cache`);
@@ -139,8 +143,8 @@ export class CardService {
                 $project: {
                   price_info: 0,
                   price_yuyu: 0,
-                  effect: 0,
                   __v: 0,
+                  effect: needEffect ? 0 : 1,
                 },
               },
               { $skip: (page - 1) * limit },
@@ -165,7 +169,8 @@ export class CardService {
               page,
               limit,
             },
-            options
+            options,
+            needEffect
           );
 
           return {

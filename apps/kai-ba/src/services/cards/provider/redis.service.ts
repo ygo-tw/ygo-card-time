@@ -15,7 +15,8 @@ export class CardRedisProviderService {
    * @returns 卡片信息列表
    */
   public async getCardListByCache(
-    cardIdList: CardKeyPair[]
+    cardIdList: CardKeyPair[],
+    needEffect: boolean = false
   ): Promise<CardsDataType[]> {
     if (!cardIdList || cardIdList.length === 0) {
       return [];
@@ -23,9 +24,19 @@ export class CardRedisProviderService {
 
     // 將 _id 列表轉換為單元素陣列，以符合 mget 接口
     const keysList = cardIdList.map(id => [id]);
-    const cardList = await this.cache.mget<CardsDataType>(keysList);
+    const cardList = (await this.cache.mget<CardsDataType>(keysList))
+      .filter(card => card?.data)
+      .map(card => card!.data)
+      .map(card => {
+        if (!needEffect) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { effect: _, ...rest } = card;
+          return rest;
+        }
+        return card;
+      });
 
-    return cardList.filter(card => card?.data).map(card => card!.data);
+    return cardList;
   }
 
   /**

@@ -2,6 +2,7 @@ import {
   NotFoundError,
   UnauthorizedError,
   ClientError,
+  ForbiddenError,
 } from '../../httpStatus.service';
 
 export class UserNotFoundError extends NotFoundError {
@@ -19,5 +20,11 @@ export class PasswordNotValidError extends UnauthorizedError {
 export class LoginError extends ClientError {
   constructor(account: string) {
     super(`Login failed / account: ${account}`);
+  }
+}
+
+export class AuthForbiddenError extends ForbiddenError {
+  constructor(account: string) {
+    super(`Auth forbidden / account: ${account}`);
   }
 }

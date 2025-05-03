@@ -19,6 +19,12 @@ export class UnauthorizedError extends HttpStatusError {
   }
 }
 
+export class ForbiddenError extends HttpStatusError {
+  constructor(clientMsg: string) {
+    super(403, '', `${clientMsg} / Forbidden`);
+  }
+}
+
 export class NotFoundError extends HttpStatusError {
   constructor(clientMsg: string) {
     super(404, '', `${clientMsg} / Resource not found`);
