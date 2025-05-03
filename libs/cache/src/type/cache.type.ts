@@ -89,3 +89,9 @@ export type CacheInfo = {
 };
 
 export type CacheData<T> = CacheInfo & { data: T };
+
+export type CacheItem<T> = {
+  keys: (string | number)[];
+  value: T;
+  ttlSeconds?: number;
+};

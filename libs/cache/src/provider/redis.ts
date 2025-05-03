@@ -215,4 +215,183 @@ export class RedisProvider {
 
     return setCacheResult.expirationInfo;
   }
+
+  /**
+   * 執行集合交集運算
+   * @param keys 要進行交集的集合鍵列表
+   * @returns 交集結果的成員數組
+   */
+  public async sinter(...keys: string[]): Promise<string[]> {
+    if (!keys || keys.length === 0) {
+      throw new Error('Unable to perform SINTER. Error: keys are missing.');
+    }
+
+    try {
+      return await this.readClient.sinter(keys);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Unable to perform SINTER. Error: ${error.message}`);
+      }
+      throw new Error('Unable to perform SINTER. Error: unknown error');
+    }
+  }
+
+  /**
+   * 添加成員到集合
+   * @param key 集合鍵
+   * @param members 要添加的成員
+   * @returns 添加的成員數量
+   */
+  public async sadd(key: string, ...members: string[]): Promise<number> {
+    if (!key) {
+      throw new Error('Unable to perform SADD. Error: key is missing.');
+    }
+    if (!members || members.length === 0) {
+      throw new Error('Unable to perform SADD. Error: members are missing.');
+    }
+
+    try {
+      return await this.writeClient.sadd(key, members);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Unable to perform SADD. Error: ${error.message}`);
+      }
+      throw new Error('Unable to perform SADD. Error: unknown error');
+    }
+  }
+
+  /**
+   * 從集合中移除成員
+   * @param key 集合鍵
+   * @param members 要移除的成員
+   * @returns 移除的成員數量
+   */
+  public async srem(key: string, ...members: string[]): Promise<number> {
+    if (!key) {
+      throw new Error('Unable to perform SREM. Error: key is missing.');
+    }
+    if (!members || members.length === 0) {
+      throw new Error('Unable to perform SREM. Error: members are missing.');
+    }
+
+    try {
+      return await this.writeClient.srem(key, members);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Unable to perform SREM. Error: ${error.message}`);
+      }
+      throw new Error('Unable to perform SREM. Error: unknown error');
+    }
+  }
+
+  /**
+   * 獲取集合成員數量
+   * @param key 集合鍵
+   * @returns 集合成員數量
+   */
+  public async scard(key: string): Promise<number> {
+    if (!key) {
+      throw new Error('Unable to perform SCARD. Error: key is missing.');
+    }
+
+    try {
+      return await this.readClient.scard(key);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Unable to perform SCARD. Error: ${error.message}`);
+      }
+      throw new Error('Unable to perform SCARD. Error: unknown error');
+    }
+  }
+
+  /**
+   * 批次獲取多個鍵的值
+   * @param keys 要獲取的鍵列表
+   * @returns 對應值的列表，順序與鍵列表一致
+   */
+  public async mget<T>(
+    keys: string[]
+  ): Promise<Array<ProviderCacheData<T> | null>> {
+    if (!keys || keys.length === 0) {
+      throw new Error('Unable to perform MGET. Error: keys are missing.');
+    }
+
+    try {
+      const values = await this.readClient.mget(keys);
+      return values.map(value =>
+        !value ? null : safeJsonParser<ProviderCacheData<T>>(value)
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Unable to perform MGET. Error: ${error.message}`);
+      }
+      throw new Error('Unable to perform MGET. Error: unknown error');
+    }
+  }
+
+  /**
+   * 使用 pipeline 批次設置多個鍵值對
+   * @param items 鍵值對數組 [{key, value, ttlSeconds}]
+   * @returns 操作結果
+   */
+  public async pipelineSet<T>(
+    items: Array<{
+      key: string;
+      value: T;
+      ttlSeconds: number;
+    }>
+  ): Promise<boolean> {
+    if (!items || items.length === 0) {
+      throw new Error(
+        'Unable to perform pipeline SET. Error: items are missing.'
+      );
+    }
+
+    try {
+      const pipeline = this.writeClient.pipeline();
+
+      for (const item of items) {
+        const { key, value, ttlSeconds } = item;
+
+        if (!key || !value || !ttlSeconds) {
+          continue;
+        }
+
+        const buffer = Math.min(1800, ttlSeconds * 0.2);
+        const providerTtlSeconds = Math.max(
+          ttlSeconds + buffer,
+          this.redisDefaultTTL
+        );
+
+        const providerExpirationDate = new Date(
+          Date.now() + providerTtlSeconds * 1000
+        ).toISOString();
+
+        const dataExpirationDate = new Date(
+          Date.now() + ttlSeconds * 1000
+        ).toISOString();
+
+        const cacheData = {
+          expirationInfo: {
+            providerExpirationDate,
+            dataExpirationDate,
+          },
+          data: value,
+        };
+
+        pipeline.set(key, safeStringify(cacheData as CacheValue));
+        pipeline.expire(key, providerTtlSeconds);
+      }
+
+      await pipeline.exec();
+      return true;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(
+          `Unable to perform pipeline SET. Error: ${error.message}`
+        );
+      }
+      throw new Error('Unable to perform pipeline SET. Error: unknown error');
+    }
+  }
 }
