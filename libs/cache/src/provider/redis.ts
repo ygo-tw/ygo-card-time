@@ -394,4 +394,45 @@ export class RedisProvider {
       throw new Error('Unable to perform pipeline SET. Error: unknown error');
     }
   }
+
+  /**
+   * 獲取 Redis 伺服器信息
+   * @returns Redis 伺服器信息，包含命中率統計
+   */
+  public async getInfo(): Promise<Record<string, any>> {
+    try {
+      const info = await this.readClient.info();
+
+      // 解析關鍵統計數據
+      const lines = info.split('\r\n');
+      const stats: Record<string, any> = {};
+
+      // 提取需要的信息
+      for (const line of lines) {
+        // 跳過註釋和空行
+        if (line.startsWith('#') || !line.trim()) continue;
+
+        const [key, value] = line.split(':');
+        if (key && value !== undefined) {
+          stats[key] = value;
+        }
+      }
+
+      // 計算命中率
+      if (stats.keyspace_hits && stats.keyspace_misses) {
+        const hits = parseInt(stats.keyspace_hits, 10);
+        const misses = parseInt(stats.keyspace_misses, 10);
+        const total = hits + misses;
+        stats.hit_rate =
+          total > 0 ? ((hits / total) * 100).toFixed(2) + '%' : '0%';
+      }
+
+      return stats;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Unable to get Redis info. Error: ${error.message}`);
+      }
+      throw new Error('Unable to get Redis info. Error: unknown error');
+    }
+  }
 }

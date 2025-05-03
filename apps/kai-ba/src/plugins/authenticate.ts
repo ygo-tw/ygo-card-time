@@ -25,7 +25,7 @@ export default fp(
           });
         }
 
-        request.user = decoded;
+        request.userInfo = decoded;
         return decoded;
       }
     );

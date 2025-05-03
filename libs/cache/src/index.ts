@@ -560,4 +560,21 @@ export class DataCacheService {
       return false;
     }
   }
+
+  /**
+   * 獲取 Redis 伺服器信息和統計數據
+   * @returns Redis 伺服器信息，包含命中率統計
+   */
+  public async getRedisInfo(): Promise<Record<string, any> | null> {
+    if (!this.redis || !this.isRedisEnable) {
+      return null;
+    }
+
+    try {
+      return await this.redis.getInfo();
+    } catch (error) {
+      this.logger.error(`Get Redis info failed: ${JSON.stringify(error)}`);
+      return null;
+    }
+  }
 }
