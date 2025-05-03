@@ -1,7 +1,5 @@
-import { RouteHandler } from 'fastify';
+import { onResponseHookHandler, RouteHandler } from 'fastify';
 import { GetCardListRequestType, GetCardListResponseType } from '@ygo/schemas';
-import { PageOrLimitError } from '../../../services/errorService/businessError';
-import { CardService } from '../../../services/cardService';
 
 /**
  * @description 取得卡片列表
@@ -18,88 +16,37 @@ export const getCardListHandler: RouteHandler<{
   Body: GetCardListRequestType;
   Reply: GetCardListResponseType;
 }> = async (request, reply) => {
-  const { page, limit } = request.query;
-  const { filter } = request.body;
+  const cardService = request.diContainer.resolve('cardService');
 
-  if (!page || !limit) {
-    throw new PageOrLimitError();
-  }
-
-  const cache = request.diContainer.resolve('cache');
-  const cacheKey = cache.generateCacheKeyArray([
-    'getCardList',
-    { ...filter, page, limit },
-  ]);
-
-  const cardService = new CardService(
-    request.diContainer.resolve('dal'),
-    request.log
-  );
-
-  const getCardListCount = async () => {
-    const result = await cardService.getCardListCount(filter);
-
-    cache.set({
-      keys: [...cacheKey, 'count'],
-      value: result,
-      useMemory: true,
-      useRedis: true,
-      memoryTTLSeconds: 5,
-      redisTTLSeconds: 86400,
-    });
-
-    return result;
-  };
-
-  const cardListCount = (
-    await cache.get({
-      keys: [...cacheKey, 'count'],
-      source: getCardListCount,
-      useMemory: true,
-      useRedis: true,
-      memoryTTLSeconds: 5,
-      redisTTLSeconds: 86400,
-    })
-  ).data;
-
-  if (cardListCount === 0) {
-    return reply.status(200).send({
-      total: cardListCount,
-      list: [],
-    });
-  }
-
-  const getCardList = async () => {
-    const result = await cardService.getCardList(filter, {
-      page,
-      limit,
-    });
-
-    cache.set({
-      keys: [...cacheKey, 'result'],
-      value: result,
-      useMemory: true,
-      useRedis: true,
-      memoryTTLSeconds: 5,
-      redisTTLSeconds: 86400,
-    });
-
-    return result;
-  };
-
-  const cardList = (
-    await cache.get({
-      keys: cacheKey,
-      source: getCardList,
-      useMemory: true,
-      useRedis: true,
-      memoryTTLSeconds: 5,
-      redisTTLSeconds: 86400,
-    })
-  ).data;
+  const result = await cardService.getCardList(request.body, {
+    page: request.query.page,
+    limit: request.query.limit,
+  });
 
   return reply.status(200).send({
-    total: cardListCount,
-    list: cardList,
+    list: result.data,
+    total: result.total,
   });
+};
+
+export const onGetCardListResponse: onResponseHookHandler = function (
+  request,
+  _,
+  done
+) {
+  // 使用類型斷言來取得正確類型的 request.body
+  const body = request.body as GetCardListRequestType;
+  const cardService = request.diContainer.resolve('cardService');
+
+  // 使用 process.nextTick 而不是 setTimeout
+  process.nextTick(() => {
+    cardService
+      .updateCacheSetKey(body)
+      .then(() => {
+        request.log.info(`更新緩存成功`);
+      })
+      .catch(err => request.log.error(`更新緩存失敗: ${err.message}`));
+  });
+
+  done();
 };

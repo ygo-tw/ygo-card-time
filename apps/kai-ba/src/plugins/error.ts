@@ -1,6 +1,6 @@
 import fp from 'fastify-plugin';
 import { FastifyInstance } from 'fastify';
-import { BaseError } from '../services/errorService/baseErrorService';
+import { BaseError } from '../services/errorService/baseError.service';
 
 export default fp(
   async function (fastify: FastifyInstance) {

@@ -2,7 +2,7 @@ import {
   NotFoundError,
   UnauthorizedError,
   ClientError,
-} from '../../httpStatusService';
+} from '../../httpStatus.service';
 
 export class UserNotFoundError extends NotFoundError {
   constructor(account: string) {
