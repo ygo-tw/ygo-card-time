@@ -9,14 +9,21 @@ export class CardRedisProviderService {
     private readonly logger: FastifyBaseLogger
   ) {}
 
+  /**
+   * 根據卡片ID列表從緩存獲取卡片信息
+   * @param cardIdList 卡片ID列表 (MongoDB ObjectId 字串)
+   * @returns 卡片信息列表
+   */
   public async getCardListByCache(
-    cardKeyList: CardKeyPair[]
+    cardIdList: CardKeyPair[]
   ): Promise<CardsDataType[]> {
-    if (!cardKeyList || cardKeyList.length === 0) {
+    if (!cardIdList || cardIdList.length === 0) {
       return [];
     }
 
-    const cardList = await this.cache.mget<CardsDataType>(cardKeyList);
+    // 將 _id 列表轉換為單元素陣列，以符合 mget 接口
+    const keysList = cardIdList.map(id => [id]);
+    const cardList = await this.cache.mget<CardsDataType>(keysList);
 
     return cardList.filter(card => card?.data).map(card => card!.data);
   }
@@ -45,22 +52,22 @@ export class CardRedisProviderService {
   /**
    * 批量更新多個集合的卡片索引
    * @param setKeys 集合鍵列表
-   * @param cardKeyList 要添加的卡片鍵列表
+   * @param cardIdList 要添加的卡片ID列表
    * @param ttlSeconds 過期時間
    */
   public async bulkUpdateSets(
     setKeys: SetKey[],
-    cardKeyList: CardCompoundKey[],
+    cardIdList: CardCompoundKey[],
     ttlSeconds = 86400
   ): Promise<void> {
-    if (!setKeys.length || !cardKeyList.length) {
+    if (!setKeys.length || !cardIdList.length) {
       return;
     }
 
     try {
       // 對每個集合鍵，添加所有卡片ID
       const promises = setKeys.map(setKey =>
-        this.cache.sadd(setKey, cardKeyList, ttlSeconds)
+        this.cache.sadd(setKey, cardIdList, ttlSeconds)
       );
 
       await Promise.all(promises);
@@ -85,25 +92,30 @@ export class CardRedisProviderService {
   }
 
   /**
-   * 獲取缺失的卡片鍵列表
-   * @param cardKeyList 卡片鍵列表
-   * @returns 缺失的卡片鍵列表
+   * 獲取緩存中缺失的卡片ID列表
+   * @param cardIdList 卡片ID列表
+   * @returns 緩存中缺失的卡片ID列表
    */
-  public async getMissingCardKeyList(
-    cardKeyList: CardKeyPair[]
+  public async getMissingCardIdList(
+    cardIdList: CardKeyPair[]
   ): Promise<CardKeyPair[]> {
-    const existingCardInfos = await this.getCardListByCache(cardKeyList);
+    const existingCardInfos = await this.getCardListByCache(cardIdList);
 
-    const missingCardKeyList = cardKeyList.filter(
+    // 使用索引比較確定哪些卡片不存在
+    const missingCardIdList = cardIdList.filter(
       (_, index) => !existingCardInfos[index]
     );
 
-    return missingCardKeyList;
+    return missingCardIdList;
   }
 
+  /**
+   * 批量設置卡片信息到緩存
+   * @param cardInfoList 卡片信息列表
+   */
   public async bulkSetCardInfo(cardInfoList: CardsDataType[]) {
     const items: CacheItem<CardsDataType>[] = cardInfoList.map(card => ({
-      keys: [card.id, card.number ?? '--'],
+      keys: [card._id.toString()],
       value: card,
     }));
 

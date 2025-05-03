@@ -5,7 +5,6 @@ import {
   CardsDataType,
 } from '@ygo/schemas';
 import { PipelineStage, QueryOptions, AggregateOptions } from 'mongoose';
-import { CardKeyPair } from '../types/index.type';
 
 export class CardDalService {
   constructor(private readonly dal: DataAccessService) {}
@@ -50,43 +49,24 @@ export class CardDalService {
 
   /**
    * 構建集合和禁限卡查詢過濾器
-   * @param cardKeyList 卡片key列表
+   * @param cardIdList 卡片ID列表
    * @param forbiddenType 禁限卡類型
    * @returns 過濾器
    */
   public async buildSetAndForbiddenQueryFilter(
-    cardKeyList?: string[],
+    cardIdList?: string[],
     forbiddenType?: number,
     options: QueryOptions = {}
   ): Promise<PipelineStage> {
     const conditions = [];
-    console.log(`cardKeyList: ${JSON.stringify(cardKeyList)}`);
-    if (cardKeyList && cardKeyList.length > 0) {
+    if (cardIdList && cardIdList.length > 0) {
       conditions.push({
-        $or: cardKeyList.map(key => {
-          const [id, number] = key.split(':');
-          return {
-            id,
-            ...(number !== '--'
-              ? {
-                  number: {
-                    $regex: `^${number}$`,
-                    $options: 'i',
-                  },
-                }
-              : {}),
-          };
-        }),
+        $or: [{ _id: { $in: cardIdList } }],
       });
     }
 
     if (forbiddenType) {
-      const forbiddenCards = await this.dal.find<ForbiddenCardListDataType>(
-        DataAccessEnum.FORBIDDEN_CARD_LIST,
-        { type: forbiddenType },
-        { number: 1, _id: 0 },
-        options
-      );
+      const forbiddenCards = await this.getForbidden(forbiddenType, options);
       if (forbiddenCards.length > 0) {
         conditions.push({
           $or: forbiddenCards.map(card => ({
@@ -102,6 +82,12 @@ export class CardDalService {
     };
   }
 
+  /**
+   * 根據過濾條件獲取卡片資訊列表
+   * @param filter 過濾條件
+   * @param options 查詢選項
+   * @returns 卡片資訊列表
+   */
   public async getCardInfoList(
     filter: Record<string, any>,
     options: QueryOptions = {}
@@ -115,27 +101,91 @@ export class CardDalService {
   }
 
   /**
-   * 根據卡片鍵列表獲取卡片資訊列表
-   * @param cardKeyList 卡片鍵列表
-   * @returns 卡片資訊列表
+   * 根據 _id 列表獲取卡片信息列表
+   * @param idList 卡片 _id 列表
+   * @returns 卡片信息列表
    */
-  public async getCardInfoListByCardKeyList(
-    cardKeyList: CardKeyPair[]
+  public async getCardInfoListByIdList(
+    idList: string[]
   ): Promise<CardsDataType[]> {
-    const pairs = cardKeyList.map(key => {
-      const [id, number] = key;
-      return { id, ...(number !== '--' ? { number } : {}) };
-    });
+    if (!idList.length) return [];
 
     return await this.dal.find<CardsDataType>(
       DataAccessEnum.CARDS,
       {
-        $or: pairs.map(pair => ({
-          id: pair.id,
-          number: pair.number,
-        })),
+        _id: { $in: idList },
       },
       { price_info: 0, price_yuyu: 0, __v: 0 }
+    );
+  }
+
+  /**
+   * 根據禁限卡類型獲取卡片ID列表
+   * @param forbiddenType 禁限卡類型
+   * @param options 查詢選項
+   * @returns 卡片ID列表
+   */
+  public async getForbiddenCardList(
+    forbiddenType: number,
+    options: QueryOptions = {}
+  ): Promise<CardsDataType[]> {
+    const pipeline: PipelineStage[] = [
+      // 先查詢禁限卡
+      {
+        $match: { type: forbiddenType },
+      },
+      // 查找禁限卡列表
+      {
+        $lookup: {
+          from: DataAccessEnum.CARDS,
+          let: { forbiddenNumber: '$number' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $regexMatch: {
+                    input: '$number',
+                    regex: { $concat: ['^', '$$forbiddenNumber'] },
+                    options: 'i',
+                  },
+                },
+              },
+            },
+            {
+              $project: { _id: 1 },
+            },
+          ],
+          as: 'cards',
+        },
+      },
+      // 展開卡片列表
+      { $unwind: '$cards' },
+      // 只保留卡片ID
+      { $replaceRoot: { newRoot: '$cards' } },
+    ];
+
+    return await this.dal.aggregate<CardsDataType>(
+      DataAccessEnum.FORBIDDEN_CARD_LIST,
+      pipeline,
+      options as AggregateOptions
+    );
+  }
+
+  /**
+   * 根據過濾條件獲取禁限卡列表
+   * @param forbiddenType 禁限卡類型
+   * @param options 查詢選項
+   * @returns 禁限卡列表
+   */
+  private async getForbidden(
+    forbiddenType: number,
+    options: QueryOptions = {}
+  ): Promise<ForbiddenCardListDataType[]> {
+    return await this.dal.find<ForbiddenCardListDataType>(
+      DataAccessEnum.FORBIDDEN_CARD_LIST,
+      { type: forbiddenType },
+      { number: 1, _id: 0 },
+      options
     );
   }
 }

@@ -14,7 +14,6 @@ import {
   CardInfoMap,
   SetKeyUpdateCache,
   CardCompoundKey,
-  CardKeyPair,
 } from './types/index.type';
 import {
   CardCacheError,
@@ -79,7 +78,7 @@ export class CardService {
         throw new CardCacheError('estimateResultSize', JSON.stringify(error));
       }
 
-      const cardKeyList: string[] = [];
+      const cardIdList: string[] = [];
 
       const mustUseDbQuery = Object.keys(caculateFilters).length > 0;
 
@@ -87,20 +86,20 @@ export class CardService {
 
       // 純靜態 filter 或 靜態 filter 數量小於2000 且 有動態 filter
       if (!mustUseDbQuery || resultSize < 2000) {
-        cardKeyList.push(
+        cardIdList.push(
           ...(await this.redis.getCardIdsFromIntersection(staticFilterSetKeys))
         );
       }
 
       // 純靜態 filter
-      if (!mustUseDbQuery && !filter.forbidden) {
-        const cardCacheKeyList = this.helper.paginateCardKeyList(
-          cardKeyList,
+      if (!mustUseDbQuery) {
+        const pagedCardIdList = this.helper.paginateCardKeyList(
+          cardIdList,
           page,
           limit
         );
 
-        const cardList = await this.redis.getCardListByCache(cardCacheKeyList);
+        const cardList = await this.redis.getCardListByCache(pagedCardIdList);
 
         if (cardList.length > 0) {
           this.logger.info(`getCardList cardList by cache`);
@@ -116,13 +115,13 @@ export class CardService {
       pipeline = this.helper.buildCaculateDbFilter(
         pipeline,
         filter,
-        cardKeyList.length === 0
+        cardIdList.length === 0
       );
 
-      if (filter.forbidden || cardKeyList.length > 0) {
+      if (filter.forbidden || cardIdList.length > 0) {
         pipeline.push(
           await this.dal.buildSetAndForbiddenQueryFilter(
-            cardKeyList,
+            cardIdList,
             filter.forbidden,
             options
           )
@@ -236,16 +235,14 @@ export class CardService {
    */
   private async updateCardInfoCache(cardInfoMap: CardInfoMap) {
     try {
-      const cardKeyList = Array.from(cardInfoMap.keys()).map(key =>
-        key.split(':')
-      ) as CardKeyPair[];
+      const cardIdList = Array.from(cardInfoMap.keys());
 
-      const missingCardKeyList =
-        await this.redis.getMissingCardKeyList(cardKeyList);
+      const missingCardIdList =
+        await this.redis.getMissingCardIdList(cardIdList);
 
-      if (missingCardKeyList.length > 0) {
+      if (missingCardIdList.length > 0) {
         const missingCardInfoList =
-          await this.dal.getCardInfoListByCardKeyList(missingCardKeyList);
+          await this.dal.getCardInfoListByIdList(missingCardIdList);
         await this.redis.bulkSetCardInfo(missingCardInfoList);
       }
     } catch (error) {
@@ -277,17 +274,20 @@ export class CardService {
 
           const filter = { [featureType]: featureValue };
 
-          const cardList = await this.dal.getCardInfoList(filter);
+          const cardList =
+            featureType === 'forbidden'
+              ? await this.dal.getForbiddenCardList(parseInt(featureValue))
+              : await this.dal.getCardInfoList(filter);
 
           // 儲存卡片資訊並建立鍵集合
-          const cardKeys: CardCompoundKey[] = [];
+          const cardIds: CardCompoundKey[] = [];
           cardList.forEach(card => {
-            const cardKey = `${card.id}:${card.number ?? '--'}`;
-            cardKeys.push(cardKey);
-            cardInfoMap.set(cardKey, card);
+            const cardId = card._id.toString();
+            cardIds.push(cardId);
+            cardInfoMap.set(cardId, card);
           });
 
-          await this.redis.bulkUpdateSets([setKey], cardKeys, 86400 * 7);
+          await this.redis.bulkUpdateSets([setKey], cardIds, 86400 * 7);
           this.updateCacheSetKeys.set(setKey, now);
         } catch (error) {
           this.logger.error(

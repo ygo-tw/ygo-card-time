@@ -61,10 +61,10 @@ describe('CardService', () => {
         { type: '效果怪獸' as const },
         { page: 1, limit: 10 },
         ['set:type:效果怪獸'],
-        ['id1:num1', 'id2:num2'],
+        ['oid_id1', 'oid_id2'],
         [
-          { id: 'id1', name: '卡片1', number: 'num1', _id: 'oid1' },
-          { id: 'id2', name: '卡片2', number: 'num2', _id: 'oid2' },
+          { id: 'id1', name: '卡片1', number: 'num1', _id: 'oid_id1' },
+          { id: 'id2', name: '卡片2', number: 'num2', _id: 'oid_id2' },
         ],
         100,
         true,
@@ -74,7 +74,7 @@ describe('CardService', () => {
         { type: '效果怪獸' as const, name: '龍' },
         { page: 1, limit: 10 },
         ['set:type:效果怪獸'],
-        ['id1:num1', 'id2:num2', 'id3:num3'],
+        ['oid_id1', 'oid_id2', 'oid_id3'],
         [],
         50,
         false,
@@ -96,7 +96,7 @@ describe('CardService', () => {
         filter,
         pageInfo,
         staticFilterSetKeys,
-        cardKeyList,
+        cardIdList,
         cacheResults,
         estimatedSize,
         useCache
@@ -110,14 +110,11 @@ describe('CardService', () => {
           .mockResolvedValue(estimatedSize);
         mockRedisService.getCardIdsFromIntersection = jest
           .fn()
-          .mockResolvedValue(cardKeyList);
+          .mockResolvedValue(cardIdList);
 
-        const mockCardCacheKeyList = cardKeyList.map(
-          key => key.split(':') as [string, string]
-        );
         mockHelperService.paginateCardKeyList = jest
           .fn()
-          .mockReturnValue(mockCardCacheKeyList);
+          .mockReturnValue(cardIdList);
         mockRedisService.getCardListByCache = jest
           .fn()
           .mockResolvedValue(cacheResults);
@@ -136,8 +133,8 @@ describe('CardService', () => {
             .mockReturnValue(mockPipeline);
 
           const mockDbResults = [
-            { id: 'id1', name: '卡片1', number: 'num1', _id: 'oid1' },
-            { id: 'id2', name: '卡片2', number: 'num2', _id: 'oid2' },
+            { id: 'id1', name: '卡片1', number: 'num1', _id: 'oid_id1' },
+            { id: 'id2', name: '卡片2', number: 'num2', _id: 'oid_id2' },
           ];
 
           if ('name' in filter) {
@@ -210,8 +207,8 @@ describe('CardService', () => {
         ['set:type:效果怪獸'],
         ['set:type:效果怪獸'],
         [
-          { id: 'id1', name: '卡片1', number: 'num1', _id: 'oid1' },
-          { id: 'id2', name: '卡片2', number: 'num2', _id: 'oid2' },
+          { id: 'id1', name: '卡片1', number: 'num1', _id: 'oid_id1' },
+          { id: 'id2', name: '卡片2', number: 'num2', _id: 'oid_id2' },
         ],
         [],
       ],
@@ -225,21 +222,18 @@ describe('CardService', () => {
             id: 'id1',
             name: '卡片1',
             number: 'num1',
-            _id: 'oid1',
+            _id: 'oid_id1',
             attribute: '闇',
           },
           {
             id: 'id2',
             name: '卡片2',
             number: 'num2',
-            _id: 'oid2',
+            _id: 'oid_id2',
             attribute: '闇',
           },
         ],
-        [
-          ['id1', 'num1'],
-          ['id2', 'num2'],
-        ],
+        ['oid_id1', 'oid_id2'],
       ],
       [
         '所有過濾條件都不需要更新',
@@ -257,7 +251,7 @@ describe('CardService', () => {
         staticFilterSetKeys,
         needUpdateSetKeyList,
         cardList,
-        missingCardKeyList
+        missingCardIdList
       ) => {
         // Arrange
         mockHelperService.buildStaticFilterSetKeys = jest
@@ -274,12 +268,12 @@ describe('CardService', () => {
           mockRedisService.bulkUpdateSets = jest
             .fn()
             .mockResolvedValue(undefined);
-          mockRedisService.getMissingCardKeyList = jest
+          mockRedisService.getMissingCardIdList = jest
             .fn()
-            .mockResolvedValue(missingCardKeyList);
+            .mockResolvedValue(missingCardIdList);
 
-          if (missingCardKeyList.length > 0) {
-            mockDalService.getCardInfoListByCardKeyList = jest
+          if (missingCardIdList.length > 0) {
+            mockDalService.getCardInfoListByIdList = jest
               .fn()
               .mockResolvedValue(cardList);
             mockRedisService.bulkSetCardInfo = jest
@@ -305,10 +299,8 @@ describe('CardService', () => {
           expect(mockDalService.getCardInfoList).toHaveBeenCalled();
           expect(mockRedisService.bulkUpdateSets).toHaveBeenCalled();
 
-          if (missingCardKeyList.length > 0) {
-            expect(
-              mockDalService.getCardInfoListByCardKeyList
-            ).toHaveBeenCalled();
+          if (missingCardIdList.length > 0) {
+            expect(mockDalService.getCardInfoListByIdList).toHaveBeenCalled();
             expect(mockRedisService.bulkSetCardInfo).toHaveBeenCalled();
           }
         }

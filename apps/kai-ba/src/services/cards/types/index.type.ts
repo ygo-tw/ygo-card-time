@@ -1,14 +1,14 @@
 import { CardsDataType, GetCardListRequestType } from '@ygo/schemas';
 
 /**
- * 卡片複合鍵 (ID:Number 格式)
+ * 卡片鍵 (MongoDB ObjectId 字串格式)
  */
 export type CardCompoundKey = string;
 
 /**
- * 卡片複合鍵拆分為陣列 [ID, Number]
+ * 卡片鍵 (MongoDB ObjectId 字串)
  */
-export type CardKeyPair = [string, string];
+export type CardKeyPair = string;
 
 /**
  * 集合鍵格式

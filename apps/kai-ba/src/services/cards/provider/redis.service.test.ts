@@ -71,10 +71,7 @@ describe('CardRedisProviderService', () => {
     it.each([
       [
         '基本卡片鍵列表',
-        [
-          ['TEST-001', '1234'] as CardKeyPair,
-          ['TEST-002', '5678'] as CardKeyPair,
-        ],
+        ['oid_TEST-001', 'oid_TEST-002'],
         [
           { data: mockCardData('TEST-001', '測試怪獸1', '1234') },
           { data: mockCardData('TEST-002', '測試怪獸2', '5678') },
@@ -86,43 +83,33 @@ describe('CardRedisProviderService', () => {
       ],
       [
         '部分卡片不存在',
-        [
-          ['TEST-001', '1234'] as CardKeyPair,
-          ['TEST-002', '5678'] as CardKeyPair,
-        ],
+        ['oid_TEST-001', 'oid_TEST-002'],
         [{ data: mockCardData('TEST-001', '測試怪獸1', '1234') }, null],
         [mockCardData('TEST-001', '測試怪獸1', '1234')],
       ],
-      [
-        '全部卡片不存在',
-        [
-          ['TEST-001', '1234'] as CardKeyPair,
-          ['TEST-002', '5678'] as CardKeyPair,
-        ],
-        [null, null],
-        [],
-      ],
+      ['全部卡片不存在', ['oid_TEST-001', 'oid_TEST-002'], [null, null], []],
     ])(
       'Given %s, when getCardListByCache is called, then should return correct card list',
-      async (_, cardKeyList, mockResponse, expected) => {
+      async (_, cardIdList, mockResponse, expected) => {
         // Arrange
         mockMget.mockResolvedValue(mockResponse);
+        const keysList = cardIdList.map(id => [id]);
 
         // Act
-        const result = await redisService.getCardListByCache(cardKeyList);
+        const result = await redisService.getCardListByCache(cardIdList);
 
         // Assert
         expect(result).toEqual(expected);
-        expect(mockMget).toHaveBeenCalledWith(cardKeyList);
+        expect(mockMget).toHaveBeenCalledWith(keysList);
       }
     );
 
-    it('Given empty card key list, when getCardListByCache is called, then should return empty list', async () => {
+    it('Given empty card ID list, when getCardListByCache is called, then should return empty list', async () => {
       // Arrange
-      const cardKeyList: CardKeyPair[] = [];
+      const cardIdList: CardKeyPair[] = [];
 
       // Act
-      const result = await redisService.getCardListByCache(cardKeyList);
+      const result = await redisService.getCardListByCache(cardIdList);
 
       // Assert
       expect(result).toEqual([]);
@@ -135,9 +122,9 @@ describe('CardRedisProviderService', () => {
       [
         '基本集合鍵列表',
         ['set:type:效果怪獸', 'set:attribute:闇'],
-        ['id1:num1', 'id2:num2', 'id3:num3'],
+        ['oid_id1', 'oid_id2', 'oid_id3'],
       ],
-      ['單一集合鍵', ['set:race:龍族'], ['id4:num4', 'id5:num5']],
+      ['單一集合鍵', ['set:race:龍族'], ['oid_id4', 'oid_id5']],
       ['空結果', ['set:type:fusion', 'set:attribute:dark'], []],
     ])(
       'Given %s, when getCardIdsFromIntersection is called, then should return correct card IDs',
@@ -189,41 +176,37 @@ describe('CardRedisProviderService', () => {
       [
         '基本集合更新',
         ['set:type:效果怪獸', 'set:attribute:闇'],
-        ['id1:num1', 'id2:num2'],
+        ['oid_id1', 'oid_id2'],
         86400,
       ],
-      ['自定義TTL', ['set:race:龍族'], ['id3:num3', 'id4:num4'], 3600],
+      ['自定義TTL', ['set:race:龍族'], ['oid_id3', 'oid_id4'], 3600],
     ])(
       'Given %s, when bulkUpdateSets is called, then should update sets correctly',
-      async (_, setKeys, cardKeyList, ttlSeconds) => {
+      async (_, setKeys, cardIdList, ttlSeconds) => {
         // Arrange
         mockSadd.mockImplementation(() => Promise.resolve(true));
 
         // Act
-        await redisService.bulkUpdateSets(setKeys, cardKeyList, ttlSeconds);
+        await redisService.bulkUpdateSets(setKeys, cardIdList, ttlSeconds);
 
         // Assert
         expect(mockSadd).toHaveBeenCalledTimes(setKeys.length);
         setKeys.forEach(setKey => {
-          expect(mockSadd).toHaveBeenCalledWith(
-            setKey,
-            cardKeyList,
-            ttlSeconds
-          );
+          expect(mockSadd).toHaveBeenCalledWith(setKey, cardIdList, ttlSeconds);
         });
       }
     );
 
-    it('Given empty set keys or card keys, when bulkUpdateSets is called, then should do nothing', async () => {
+    it('Given empty set keys or card IDs, when bulkUpdateSets is called, then should do nothing', async () => {
       // Arrange
       const emptySetKeys: string[] = [];
-      const emptyCardKeys: string[] = [];
+      const emptyCardIds: string[] = [];
       const validSetKeys = ['set:type:效果怪獸'];
-      const validCardKeys = ['id1:num1'];
+      const validCardIds = ['oid_id1'];
 
       // Act & Assert
-      await redisService.bulkUpdateSets(emptySetKeys, validCardKeys);
-      await redisService.bulkUpdateSets(validSetKeys, emptyCardKeys);
+      await redisService.bulkUpdateSets(emptySetKeys, validCardIds);
+      await redisService.bulkUpdateSets(validSetKeys, emptyCardIds);
 
       expect(mockSadd).not.toHaveBeenCalled();
     });
@@ -231,12 +214,12 @@ describe('CardRedisProviderService', () => {
     it('Given sadd throws error, when bulkUpdateSets is called, then should handle error', async () => {
       // Arrange
       const setKeys = ['set:type:效果怪獸'];
-      const cardKeyList = ['id1:num1'];
+      const cardIdList = ['oid_id1'];
       const error = new Error('Redis error');
       mockSadd.mockRejectedValue(error);
 
       // Act
-      await redisService.bulkUpdateSets(setKeys, cardKeyList);
+      await redisService.bulkUpdateSets(setKeys, cardIdList);
 
       // Assert
       expect(logger.error).toHaveBeenCalledWith(
@@ -287,25 +270,17 @@ describe('CardRedisProviderService', () => {
     });
   });
 
-  describe('getMissingCardKeyList', () => {
+  describe('getMissingCardIdList', () => {
     beforeEach(() => {
       // 重置所有模擬
       jest.clearAllMocks();
     });
 
-    it('Given some missing cards, when getMissingCardKeyList is called, then should return missing card keys', async () => {
+    it('Given some missing cards, when getMissingCardIdList is called, then should return missing card IDs', async () => {
       // Arrange
-      const mockCardList = [
-        ['TEST-001', '1234'] as CardKeyPair,
-        ['TEST-002', '5678'] as CardKeyPair,
-        ['TEST-003', '9012'] as CardKeyPair,
-      ];
+      const cardIdList = ['oid_TEST-001', 'oid_TEST-002', 'oid_TEST-003'];
 
-      // 模擬 getCardListByCache 的行為：第二個卡片不存在
-      // 注意：實際實現中，cache.mget 返回 [card1, null, card3] 後，
-      // getCardListByCache 會將其過濾為 [card1, card3]，
-      // 最終在 getMissingCardKeyList 中比較索引時，TEST-003 被誤認為缺失
-      // 這不是理想行為，但我們需要讓測試符合實際實現
+      // 模擬兩張卡片存在，一張不存在
       jest
         .spyOn(redisService, 'getCardListByCache')
         .mockResolvedValue([
@@ -314,22 +289,17 @@ describe('CardRedisProviderService', () => {
         ] as CardsDataType[]);
 
       // Act
-      const result = await redisService.getMissingCardKeyList(mockCardList);
+      const result = await redisService.getMissingCardIdList(cardIdList);
 
       // Assert
       expect(result).toHaveLength(1);
-      expect(result[0]).toEqual(['TEST-003', '9012']); // 第三個卡片被識別為缺失
-      expect(redisService.getCardListByCache).toHaveBeenCalledWith(
-        mockCardList
-      );
+      expect(result[0]).toEqual('oid_TEST-003'); // 第三個卡片被識別為缺失
+      expect(redisService.getCardListByCache).toHaveBeenCalledWith(cardIdList);
     });
 
-    it('Given all cards exist, when getMissingCardKeyList is called, then should return empty list', async () => {
+    it('Given all cards exist, when getMissingCardIdList is called, then should return empty list', async () => {
       // Arrange
-      const mockCardList = [
-        ['TEST-001', '1234'] as CardKeyPair,
-        ['TEST-002', '5678'] as CardKeyPair,
-      ];
+      const cardIdList = ['oid_TEST-001', 'oid_TEST-002'];
 
       // 模擬所有卡片都存在
       jest
@@ -340,33 +310,26 @@ describe('CardRedisProviderService', () => {
         ] as CardsDataType[]);
 
       // Act
-      const result = await redisService.getMissingCardKeyList(mockCardList);
+      const result = await redisService.getMissingCardIdList(cardIdList);
 
       // Assert
       expect(result).toHaveLength(0);
-      expect(redisService.getCardListByCache).toHaveBeenCalledWith(
-        mockCardList
-      );
+      expect(redisService.getCardListByCache).toHaveBeenCalledWith(cardIdList);
     });
 
-    it('Given all cards missing, when getMissingCardKeyList is called, then should return all card keys', async () => {
+    it('Given all cards missing, when getMissingCardIdList is called, then should return all card IDs', async () => {
       // Arrange
-      const mockCardList = [
-        ['TEST-001', '1234'] as CardKeyPair,
-        ['TEST-002', '5678'] as CardKeyPair,
-      ];
+      const cardIdList = ['oid_TEST-001', 'oid_TEST-002'];
 
       // 模擬所有卡片都不存在
       jest.spyOn(redisService, 'getCardListByCache').mockResolvedValue([]);
 
       // Act
-      const result = await redisService.getMissingCardKeyList(mockCardList);
+      const result = await redisService.getMissingCardIdList(cardIdList);
 
       // Assert
-      expect(result).toEqual(mockCardList);
-      expect(redisService.getCardListByCache).toHaveBeenCalledWith(
-        mockCardList
-      );
+      expect(result).toEqual(cardIdList);
+      expect(redisService.getCardListByCache).toHaveBeenCalledWith(cardIdList);
     });
   });
 
@@ -386,7 +349,7 @@ describe('CardRedisProviderService', () => {
       // Assert
       expect(mockMset).toHaveBeenCalledWith(
         cardInfoList.map(card => ({
-          keys: [card.id, card.number ?? '--'],
+          keys: [card._id.toString()],
           value: card,
         }))
       );

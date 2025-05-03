@@ -121,18 +121,18 @@ export class CardsHelperService {
   }
 
   /**
-   * 對卡片鍵列表進行排序、分頁並轉換為二維陣列
-   * @param cardKeyList 格式為 "id:number" 的卡片鍵列表
+   * 對卡片ID列表進行分頁
+   * @param cardIdList 卡片ID列表 (MongoDB ObjectId 字串)
    * @param page 頁數，從1開始
    * @param limit 每頁筆數
-   * @returns 分頁後的卡片鍵陣列
+   * @returns 分頁後的卡片ID列表
    */
   public paginateCardKeyList(
-    cardKeyList: CardCompoundKey[],
+    cardIdList: CardCompoundKey[],
     page: number = 1,
     limit: number = 20
   ): CardKeyPair[] {
-    if (!cardKeyList || cardKeyList.length === 0) {
+    if (!cardIdList || cardIdList.length === 0) {
       return [];
     }
 
@@ -140,39 +140,12 @@ export class CardsHelperService {
     const safePage = Math.max(1, page);
     const safeLimit = Math.max(1, Math.min(limit, 100)); // 限制最大為100筆
 
-    // 計算總數
-    const total = cardKeyList.length;
-
-    // 排序
-    const sortedList = [...cardKeyList].sort((a, b) => {
-      const [aId, aNumber] = a.split(':');
-      const [bId, bNumber] = b.split(':');
-
-      // 特殊處理 '--' 的情況
-      if (aNumber === '--' && bNumber === '--') return aId.localeCompare(bId);
-      if (aNumber === '--') return -1; // 將 '--' 排在前面
-      if (bNumber === '--') return 1;
-
-      // 先比較number
-      const numberCompare = aNumber.localeCompare(bNumber);
-      if (numberCompare !== 0) {
-        return numberCompare;
-      }
-
-      // number相同時比較id
-      return aId.localeCompare(bId);
-    });
-
-    // 分頁處理
+    // 計算分頁
     const startIndex = (safePage - 1) * safeLimit;
-    const endIndex = Math.min(startIndex + safeLimit, total);
+    const endIndex = Math.min(startIndex + safeLimit, cardIdList.length);
 
-    // 擷取分頁片段並轉換為二維陣列
-    const pagedKeys = sortedList
-      .slice(startIndex, endIndex)
-      .map(key => key.split(':')) as CardKeyPair[];
-
-    return pagedKeys;
+    // 返回分頁後的ID列表
+    return cardIdList.slice(startIndex, endIndex);
   }
 
   /**
