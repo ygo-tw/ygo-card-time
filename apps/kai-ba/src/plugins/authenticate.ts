@@ -9,8 +9,6 @@ export default fp(
       async function (request: FastifyRequest, reply: FastifyReply) {
         const decoded = await request.jwtVerify<JWTPayload>();
 
-        console.log('decoded', decoded);
-
         // 檢查是否需要更新 token（距離過期少於 6 小時）
         const expiresIn = decoded.exp! - Math.floor(Date.now() / 1000);
         const SIX_HOURS_IN_SECONDS = 6 * 60 * 60;
