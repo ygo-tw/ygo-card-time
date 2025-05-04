@@ -1,6 +1,9 @@
 import { FromSchema } from 'json-schema-to-ts';
-import { usefulValueObjectMetaSchema } from '../value-object/meta.const';
-import { usefulValueObjectCardMetaSchema } from '../value-object/card-meta.const';
+import {
+  usefulValueObjectMetaSchema,
+  usefulValueObjectCardMetaSchema,
+  usefulValueObjectEnumMetaSchema,
+} from '../value-object';
 import { usefulDatabaseCardsDataSchema } from './cards-data.const';
 import { RemoveIndex } from '../../utility.types';
 
@@ -10,6 +13,7 @@ type Type = FromSchema<
     references: [
       typeof usefulValueObjectMetaSchema,
       typeof usefulValueObjectCardMetaSchema,
+      typeof usefulValueObjectEnumMetaSchema,
     ];
     keepDefaultedPropertiesOptional: true;
   }

@@ -10,7 +10,7 @@ export const exampleGetCardList: GetCardListRequestType = {
   id: 'DUNE-JP000',
   type: '二重怪獸',
   attribute: '光',
-  rarity: ['普鑽'],
+  rarity: '普鑽',
   star: '等級10',
   race: '惡魔族',
   product_information_type: 'DUNE',
