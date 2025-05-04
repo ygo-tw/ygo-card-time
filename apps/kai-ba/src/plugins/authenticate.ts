@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { JWTPayload } from '../Interface/auth.type';
+import { AuthForbiddenError } from '../services/error/business';
 
 export default fp(
   async fastify => {
@@ -29,6 +30,20 @@ export default fp(
         return decoded;
       }
     );
+
+    fastify.decorate('authrizeRoles', function (roles: string[]) {
+      return async function (request: FastifyRequest, reply: FastifyReply) {
+        await fastify.authenticate(request, reply);
+
+        const userRole = request.userInfo?.role || [];
+
+        const hasRequiredRole = roles.some(role => userRole.includes(role));
+
+        if (!hasRequiredRole) {
+          throw new AuthForbiddenError(request.userInfo?.account ?? '');
+        }
+      };
+    });
   },
   {
     name: 'authenticate',

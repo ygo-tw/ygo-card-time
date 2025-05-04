@@ -5,7 +5,7 @@ import { FastifyBaseLogger } from 'fastify';
 import { CardRedisProviderService } from './provider/redis.service';
 import { CardsHelperService } from './helper/index.service';
 import { CardDalService } from './provider/dal.service';
-import { CardValidationError } from '../errorService/businessError/cardError';
+import { CardValidationError } from '../error/business';
 import { PipelineStage } from 'mongoose';
 import { GetCardListRequestType, PageInfoRequestType } from '@ygo/schemas';
 

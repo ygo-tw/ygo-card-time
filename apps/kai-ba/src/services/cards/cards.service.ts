@@ -19,7 +19,7 @@ import {
   CardCacheError,
   CardQueryError,
   CardValidationError,
-} from '../errorService/businessError/cardError';
+} from '../error/business';
 
 export class CardService {
   private readonly redis: CardRedisProviderService;

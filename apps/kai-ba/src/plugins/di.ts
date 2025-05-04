@@ -25,8 +25,8 @@ export default fp(
 
       cache: asFunction(() => {
         return new DataCacheService(fastify.log, redisClients, {
-          ENABLE_CACHE: true,
-          ENABLE_REDIS_CACHE: true,
+          ENABLE_CACHE: process.env.ENABLE_CACHE === 'true',
+          ENABLE_REDIS_CACHE: process.env.ENABLE_REDIS_CACHE === 'true',
           ENABLE_MEMORY_CACHE: process.env.ENABLE_MEMORY_CACHE === 'true',
           CACHE_PREFIX: process.env.KAI_BA_CACHE_PREFIX ?? 'kAI_BA',
           REDIS_DEFAULT_TTL_SECONDS: 86400,

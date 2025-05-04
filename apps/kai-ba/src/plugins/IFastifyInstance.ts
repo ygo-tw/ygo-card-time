@@ -14,5 +14,8 @@ declare module 'fastify' {
       request: FastifyRequest,
       reply: FastifyReply
     ) => Promise<JWTPayload>;
+    authorizeRoles: (
+      roles: string[]
+    ) => (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
 }
