@@ -8,7 +8,10 @@ export const CardsMongoSchema = new Schema<CardsDataType>(
     def: { type: Number, min: 0, max: 20000, default: null },
     price_info: [
       {
-        time: { type: String, match: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ },
+        time: {
+          type: String,
+          match: /^\d{4}-\d{2}-\d{2}(T| )\d{2}:\d{2}:\d{2}(.\d{1,3}Z?)?$/,
+        },
         price_lowest: { type: Number, required: false },
         price_avg: { type: Number, required: false },
         price: { type: Number, required: false },
@@ -18,7 +21,10 @@ export const CardsMongoSchema = new Schema<CardsDataType>(
     ],
     price_yuyu: [
       {
-        time: { type: String, match: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ },
+        time: {
+          type: String,
+          match: /^\d{4}-\d{2}-\d{2}(T| )\d{2}:\d{2}:\d{2}(.\d{1,3}Z?)?$/,
+        },
         price_lowest: { type: Number, required: false },
         price_avg: { type: Number, required: false },
         price: { type: Number, required: false },

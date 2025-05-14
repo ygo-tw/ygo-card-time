@@ -1,7 +1,7 @@
 {
   "editor.fontSize": 15,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "workbench.iconTheme": "vscode-icons",
+  "workbench.iconTheme": "material-icon-theme",
   "editor.fontFamily": "'Fira Code', 'Source Code Pro', Consolas, 'Microsoft JhengHei'",
   "explorer.confirmDelete": false,
   "prettier.singleQuote": true,

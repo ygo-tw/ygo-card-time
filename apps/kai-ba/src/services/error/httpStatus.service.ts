@@ -1,5 +1,5 @@
 // errors/HttpStatusError.ts
-import { BaseError } from './baseErrorService';
+import { BaseError } from './baseError.service';
 
 export class HttpStatusError extends BaseError {
   constructor(status: number, logMsg: string = '', clientMsg: string = '') {
@@ -16,6 +16,12 @@ export class ClientError extends HttpStatusError {
 export class UnauthorizedError extends HttpStatusError {
   constructor(clientMsg: string) {
     super(401, '', `${clientMsg} / Unauthorized`);
+  }
+}
+
+export class ForbiddenError extends HttpStatusError {
+  constructor(clientMsg: string) {
+    super(403, '', `${clientMsg} / Forbidden`);
   }
 }
 

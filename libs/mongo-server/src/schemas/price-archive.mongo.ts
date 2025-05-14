@@ -15,7 +15,10 @@ export const PriceArchiveSchema = new Schema(
     },
     price_data: [
       {
-        time: { type: String, match: /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ },
+        time: {
+          type: String,
+          match: /^\d{4}-\d{2}-\d{2}(T| )\d{2}:\d{2}:\d{2}(.\d{1,3}Z?)?$/,
+        },
         price_lowest: { type: Number, required: false },
         price_avg: { type: Number, required: false },
         price: { type: Number, required: false },

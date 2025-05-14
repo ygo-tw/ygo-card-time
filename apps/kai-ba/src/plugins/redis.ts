@@ -22,6 +22,18 @@ export default fp<FastifyRedisPluginOptions>(
       .register(fastifyRedis, getOptions(readConnectionString, 'read'))
       .register(fastifyRedis, getOptions(writeConnectionString, 'write'));
 
+    fastify.addHook('onReady', async () => {
+      try {
+        await fastify.redis.write.ping();
+        fastify.log.info('Redis write connection successful');
+
+        await fastify.redis.read.ping();
+        fastify.log.info('Redis read connection successful');
+      } catch (err) {
+        fastify.log.error(`Redis connection failed: ${JSON.stringify(err)}`);
+      }
+    });
+
     fastify.log.trace('plugins/redis: done');
   },
   {

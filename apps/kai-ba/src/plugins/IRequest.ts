@@ -2,8 +2,8 @@ import { DataAccessService } from '@ygo/mongo-server';
 import { UserInfo } from '../Interface/auth.type';
 import { AwilixContainer } from 'awilix';
 import { DataCacheService } from '@ygo/cache';
-import { CardService } from '../services/cardService';
-import { AuthService } from '../services/authService';
+import { CardService } from '../services/cards/cards.service';
+import { AuthService } from '../services/auth/auth.service';
 declare module 'awilix' {
   interface AwilixContainer {
     resolve<K extends keyof ContainerServices>(name: K): ContainerServices[K];

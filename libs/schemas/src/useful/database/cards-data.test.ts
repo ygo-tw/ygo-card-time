@@ -5,6 +5,7 @@ import { usefulDatabaseCardsDataSchema as schema } from './cards-data.const';
 import {
   usefulValueObjectMetaSchema,
   usefulValueObjectCardMetaSchema,
+  usefulValueObjectEnumMetaSchema,
 } from '../value-object';
 
 const ajv = new Ajv({
@@ -16,8 +17,10 @@ const ajv = new Ajv({
 
 addFormats(ajv);
 
+ajv.addSchema(usefulValueObjectEnumMetaSchema);
 ajv.addSchema(usefulValueObjectMetaSchema);
 ajv.addSchema(usefulValueObjectCardMetaSchema);
+
 test('schema 定義正確', () => {
   const validate = ajv.compile(schema);
   expect(validate.errors).toBeNull();

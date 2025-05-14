@@ -5,10 +5,7 @@ import {
   DataAccessEnum,
   PermissionDataType,
 } from '@ygo/schemas';
-import {
-  UserNotFoundError,
-  PasswordNotValidError,
-} from '../errorService/businessError/authError';
+import { UserNotFoundError, PasswordNotValidError } from '../error/business';
 import bcrypt from 'bcrypt';
 import { UserInfo } from '../../Interface/auth.type';
 export class AuthService {

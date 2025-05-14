@@ -1,4 +1,4 @@
-import { ClientError, ServerError } from '../httpStatusService';
+import { ClientError, ServerError } from '../httpStatus.service';
 
 export class PageOrLimitError extends ClientError {
   constructor(clientMsg?: string) {

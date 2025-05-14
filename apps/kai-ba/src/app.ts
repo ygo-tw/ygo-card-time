@@ -23,7 +23,10 @@ export interface AppOptions
   extends FastifyServerOptions,
     Partial<AutoloadPluginOptions> {}
 // Pass --options via CLI arguments in command to enable these options.
-const options: AppOptions = {};
+const options: AppOptions = {
+  connectionTimeout: 30000,
+  requestTimeout: 30000,
+};
 
 const app: FastifyPluginAsync<AppOptions> = async (
   fastify,

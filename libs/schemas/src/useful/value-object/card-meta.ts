@@ -1,6 +1,6 @@
 import { FromSchema } from 'json-schema-to-ts';
 import { usefulValueObjectCardMetaSchema } from './card-meta.const';
-
+import { usefulValueObjectEnumMetaSchema } from './enum-meta.const';
 export type CardMetaIdType = FromSchema<
   typeof usefulValueObjectCardMetaSchema.$defs.id,
   {
@@ -11,6 +11,7 @@ export type CardMetaIdType = FromSchema<
 export type CardMetaAttributeType = FromSchema<
   typeof usefulValueObjectCardMetaSchema.$defs.attribute,
   {
+    references: [typeof usefulValueObjectEnumMetaSchema];
     keepDefaultedPropertiesOptional: true;
   }
 >;
@@ -32,6 +33,7 @@ export type CardMetaProductInformationType = FromSchema<
 export type CardMetaRaceType = FromSchema<
   typeof usefulValueObjectCardMetaSchema.$defs.race,
   {
+    references: [typeof usefulValueObjectEnumMetaSchema];
     keepDefaultedPropertiesOptional: true;
   }
 >;
@@ -39,6 +41,7 @@ export type CardMetaRaceType = FromSchema<
 export type CardMetaRarityType = FromSchema<
   typeof usefulValueObjectCardMetaSchema.$defs.rarity,
   {
+    references: [typeof usefulValueObjectEnumMetaSchema];
     keepDefaultedPropertiesOptional: true;
   }
 >;
@@ -46,6 +49,7 @@ export type CardMetaRarityType = FromSchema<
 export type CardMetaStarType = FromSchema<
   typeof usefulValueObjectCardMetaSchema.$defs.star,
   {
+    references: [typeof usefulValueObjectEnumMetaSchema];
     keepDefaultedPropertiesOptional: true;
   }
 >;
@@ -53,6 +57,7 @@ export type CardMetaStarType = FromSchema<
 export type CardMetaTypeType = FromSchema<
   typeof usefulValueObjectCardMetaSchema.$defs.type,
   {
+    references: [typeof usefulValueObjectEnumMetaSchema];
     keepDefaultedPropertiesOptional: true;
   }
 >;

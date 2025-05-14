@@ -6,7 +6,7 @@ import {
   ConflictError,
   ServerError,
   NotImplementedError,
-} from './httpStatusService';
+} from './httpStatus.service';
 
 describe('HttpStatusError', () => {
   it('should create an instance with valid status and messages', () => {

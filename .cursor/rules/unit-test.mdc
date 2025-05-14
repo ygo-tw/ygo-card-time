@@ -1,0 +1,65 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# 單元測試規則
+
+## 測試結構
+- 每個功能都需要撰寫「三正一反」的測試案例：三個正向測試和一個反向測試
+- 使用 `it.each` 方式注入測試資料，以簡化重複的測試項目（包括正向和反向測試）
+- 測試代碼需清楚標註 Arrange, Act, Assert 三個區塊
+- 集中處理 teardown 邏輯，避免分散在各測試項目中
+- 測試類別時，優先測試 public 方法，除非 private 方法含有需要獨立驗證的關鍵計算邏輯
+- 請盡量拉高測試的 `覆蓋率` 與 `Branch` 這兩個數值
+
+## 測試描述
+- 測試描述使用英文，並遵循 Given-When-Then 格式：
+  - Given：描述測試的前提條件
+  - When：描述測試的操作或行為
+  - Then：描述預期的結果
+
+## AI 協助要求
+- AI 協助撰寫測試時，除了提供測試代碼外，需用中文簡要說明每個測試項目的目的和測試內容
+- AI 在做測試檢查時，除了測試跑不過之外，也需注意 typescript 的問題跟 linted 的相關問題
+- 修復測試時，請盡量避免保留未被引用的參數或 plugin ，若有則將其移除
+
+## 範例
+```javascript
+describe('calculateTotal function', () => {
+  // 正向測試
+  it.each([
+    [10, 2, 12], // 基本加法
+    [5, 5, 10],  // 相同數值
+    [0, 5, 5]    // 零值處理
+  ])('Given values %i and %i, when added, then should return %i', (a, b, expected) => {
+    // Arrange
+    const values = { a, b };
+    
+    // Act
+    const result = calculateTotal(values.a, values.b);
+    
+    // Assert
+    expect(result).toBe(expected);
+  });
+  
+  // 反向測試
+  it.each([
+    ['not a number', 5, 'Invalid input'],
+    [10, null, 'Invalid input'],
+    [undefined, 5, 'Invalid input'],
+  ])('Given invalid input %s and %s, when calculation attempted, then should throw error with message %s', 
+  (a, b, errorMessage) => {
+    // Arrange
+
+    // Act & Assert
+    expect(() => calculateTotal(a, b)).toThrow(errorMessage);
+  });
+  
+  // 集中處理 teardown
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+});
+```
+```

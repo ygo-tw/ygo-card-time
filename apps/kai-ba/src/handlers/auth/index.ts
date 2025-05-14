@@ -1,5 +1,5 @@
 import { RouteHandler } from 'fastify';
-import { LoginError } from '../../services/errorService/businessError/authError';
+import { LoginError } from '../../services/error/business';
 import { UserInfo } from '../../Interface/auth.type';
 export const loginHandler: RouteHandler<{
   Body: { account: string; password: string };

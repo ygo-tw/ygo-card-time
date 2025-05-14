@@ -2,6 +2,7 @@ import { FastifyBaseLogger } from 'fastify';
 import {
   CacheData,
   CacheExpirationInfo,
+  CacheItem,
   CacheSettings,
   GetCacheParams,
   RedisClients,
@@ -405,5 +406,175 @@ export class DataCacheService {
     if (enableRedis && !refresh) result.hitFromRedis = false;
 
     return result;
+  }
+
+  /**
+   * 執行集合交集運算
+   * @param keys 要進行交集的集合鍵列表
+   * @returns 交集結果的成員數組
+   */
+  public async sinter(...keys: string[]): Promise<string[]> {
+    if (!this.redis || !this.isRedisEnable) {
+      return [];
+    }
+
+    try {
+      return await this.redis.sinter(...keys);
+    } catch (error) {
+      this.logger.error(`SINTER operation failed: ${JSON.stringify(error)}`);
+      return [];
+    }
+  }
+
+  /**
+   * 添加成員到集合
+   * @param key 集合鍵
+   * @param members 要添加的成員
+   * @param ttlSeconds 集合過期時間（秒）
+   * @returns 添加的成員數量
+   */
+  public async sadd(
+    key: string,
+    members: string[],
+    ttlSeconds = this.cacheSettings.REDIS_DEFAULT_TTL_SECONDS
+  ): Promise<number> {
+    if (!this.redis || !this.isRedisEnable) {
+      return 0;
+    }
+
+    try {
+      const result = await this.redis.sadd(key, ...members);
+      await this.redis.changeProviderTtl(key, ttlSeconds);
+      return result;
+    } catch (error) {
+      this.logger.error(`SADD operation failed: ${JSON.stringify(error)}`);
+      return 0;
+    }
+  }
+
+  /**
+   * 從集合中移除成員
+   * @param key 集合鍵
+   * @param members 要移除的成員
+   * @returns 移除的成員數量
+   */
+  public async srem(key: string, members: string[]): Promise<number> {
+    if (!this.redis || !this.isRedisEnable) {
+      return 0;
+    }
+
+    try {
+      return await this.redis.srem(key, ...members);
+    } catch (error) {
+      this.logger.error(`SREM operation failed: ${JSON.stringify(error)}`);
+      return 0;
+    }
+  }
+
+  /**
+   * 獲取集合的成員數量
+   * @param key 集合鍵
+   * @returns 集合中的成員數量
+   */
+  public async scard(key: string): Promise<number> {
+    if (!this.redis || !this.isRedisEnable) {
+      return 0;
+    }
+
+    try {
+      return await this.redis.scard(key);
+    } catch (error) {
+      this.logger.error(`SCARD operation failed: ${JSON.stringify(error)}`);
+      return 0;
+    }
+  }
+
+  /**
+   * 批次獲取多個鍵的值
+   * @param keysList 多組鍵數組列表
+   * @param source 當鍵不存在時的資料來源函數
+   * @returns 對應值的列表
+   */
+  public async mget<T>(
+    keysList: Array<string[]>
+  ): Promise<Array<CacheData<T> | null>> {
+    if (!this.redis || !this.isRedisEnable) {
+      return [];
+    }
+
+    try {
+      // 將多組鍵轉換為Redis鍵
+      const redisKeys = keysList.map(keys =>
+        getCacheKey(keys, this.cacheSettings)
+      );
+
+      const results = await this.redis.mget<T>(redisKeys);
+
+      // 如果所有值都未命中且有提供資料來源
+      if (results.every(r => r === null)) {
+        return [];
+      }
+
+      return results.map(result =>
+        result
+          ? {
+              expirationInfo: {
+                redisProviderExpirationDate:
+                  result.expirationInfo.providerExpirationDate,
+                redisDataExpirationDate:
+                  result.expirationInfo.dataExpirationDate,
+              },
+              enableRedis: true,
+              hitFromRedis: true,
+              data: result.data,
+            }
+          : null
+      );
+    } catch (error) {
+      this.logger.error(`MGET operation failed: ${JSON.stringify(error)}`);
+      return [];
+    }
+  }
+
+  /**
+   * 批次設置多個鍵值對
+   * @param items 要設置的項目列表
+   * @returns 操作是否成功
+   */
+  public async mset<T>(items: Array<CacheItem<T>>): Promise<boolean> {
+    if (!this.redis || !this.isRedisEnable) {
+      return false;
+    }
+
+    try {
+      const redisItems = items.map(item => ({
+        key: getCacheKey(item.keys, this.cacheSettings),
+        value: item.value,
+        ttlSeconds:
+          item.ttlSeconds || this.cacheSettings.REDIS_DEFAULT_TTL_SECONDS,
+      }));
+
+      return await this.redis.pipelineSet(redisItems);
+    } catch (error) {
+      this.logger.error(`MSET operation failed: ${JSON.stringify(error)}`);
+      return false;
+    }
+  }
+
+  /**
+   * 獲取 Redis 伺服器信息和統計數據
+   * @returns Redis 伺服器信息，包含命中率統計
+   */
+  public async getRedisInfo(): Promise<Record<string, any> | null> {
+    if (!this.redis || !this.isRedisEnable) {
+      return null;
+    }
+
+    try {
+      return await this.redis.getInfo();
+    } catch (error) {
+      this.logger.error(`Get Redis info failed: ${JSON.stringify(error)}`);
+      return null;
+    }
   }
 }

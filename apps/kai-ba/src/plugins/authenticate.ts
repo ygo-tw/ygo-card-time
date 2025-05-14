@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { JWTPayload } from '../Interface/auth.type';
+import { AuthForbiddenError } from '../services/error/business';
 
 export default fp(
   async fastify => {
@@ -8,8 +9,6 @@ export default fp(
       'authenticate',
       async function (request: FastifyRequest, reply: FastifyReply) {
         const decoded = await request.jwtVerify<JWTPayload>();
-
-        console.log('decoded', decoded);
 
         // 檢查是否需要更新 token（距離過期少於 6 小時）
         const expiresIn = decoded.exp! - Math.floor(Date.now() / 1000);
@@ -27,10 +26,24 @@ export default fp(
           });
         }
 
-        request.user = decoded;
+        request.userInfo = decoded;
         return decoded;
       }
     );
+
+    fastify.decorate('authrizeRoles', function (roles: string[]) {
+      return async function (request: FastifyRequest, reply: FastifyReply) {
+        await fastify.authenticate(request, reply);
+
+        const userRole = request.userInfo?.role || [];
+
+        const hasRequiredRole = roles.some(role => userRole.includes(role));
+
+        if (!hasRequiredRole) {
+          throw new AuthForbiddenError(request.userInfo?.account ?? '');
+        }
+      };
+    });
   },
   {
     name: 'authenticate',
