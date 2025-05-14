@@ -1,6 +1,5 @@
-import { RouteHandler } from 'fastify';
+import { onResponseHookHandler, RouteHandler } from 'fastify';
 import { GetCardListRequestType, GetCardListResponseType } from '@ygo/schemas';
-import { PageOrLimitError } from '../../../services/errorService/businessError';
 
 /**
  * @description 取得卡片列表
@@ -17,30 +16,41 @@ export const getCardListHandler: RouteHandler<{
   Body: GetCardListRequestType;
   Reply: GetCardListResponseType;
 }> = async (request, reply) => {
-  const { page, limit } = request.query;
-  const { filter } = request.body;
-
-  if (!page || !limit) {
-    throw new PageOrLimitError();
-  }
-
   const cardService = request.diContainer.resolve('cardService');
 
-  const cardListCount = await cardService.getCardListCount(filter);
-  if (cardListCount === 0) {
-    return reply.status(200).send({
-      total: cardListCount,
-      list: [],
-    });
-  }
-
-  const cardList = await cardService.getCardList(filter, {
-    page,
-    limit,
-  });
+  const result = await cardService.getCardList(
+    request.body,
+    {
+      page: request.query.page,
+      limit: request.query.limit,
+    },
+    true
+  );
 
   return reply.status(200).send({
-    total: cardListCount,
-    list: cardList,
+    list: result.data,
+    total: result.total,
   });
+};
+
+export const onGetCardListResponse: onResponseHookHandler = function (
+  request,
+  _,
+  done
+) {
+  // 使用類型斷言來取得正確類型的 request.body
+  const body = request.body as GetCardListRequestType;
+  const cardService = request.diContainer.resolve('cardService');
+
+  // 使用 process.nextTick 而不是 setTimeout
+  process.nextTick(() => {
+    cardService
+      .updateCacheSetKey(body)
+      .then(() => {
+        request.log.info(`更新緩存成功`);
+      })
+      .catch(err => request.log.error(`更新緩存失敗: ${err.message}`));
+  });
+
+  done();
 };
