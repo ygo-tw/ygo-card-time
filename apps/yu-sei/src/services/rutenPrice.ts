@@ -224,7 +224,8 @@ export class RutenService {
     let searchURL = `http://rtapi.ruten.com.tw/api/search/v3/index.php/core/prod?q=${searchName}${keyWords}&type=direct&sort=prc%2Fac&offset=1&limit=100`;
 
     const targets = (
-      (await axios.get(searchURL)).data as RutenShipListResponse
+      (await axios.get(searchURL, { timeout: 60000 }))
+        .data as RutenShipListResponse
     ).Rows.map(el => el.Id);
 
     if (!targets.length) {
@@ -242,7 +243,7 @@ export class RutenService {
 
     let prices: RutenPriceDetailResponse[] = [];
     try {
-      prices = (await axios.get(searchURL)).data;
+      prices = (await axios.get(searchURL, { timeout: 60000 })).data;
     } catch (error) {
       this.logger.warn(
         number,
