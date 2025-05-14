@@ -41,6 +41,7 @@ export class CardService {
    * 獲取卡片列表
    * @param filter 過濾條件
    * @param pageInfo 分頁信息
+   * @param needEffect 是否需要效果
    * @param options 查詢選項
    * @returns 卡片列表和總數
    */
