@@ -17,7 +17,6 @@ export const getCardListHandler: RouteHandler<{
   Reply: GetCardListResponseType;
 }> = async (request, reply) => {
   const cardService = request.diContainer.resolve('cardService');
-
   const result = await cardService.getCardList(
     request.body,
     {
@@ -38,18 +37,13 @@ export const onGetCardListResponse: onResponseHookHandler = function (
   _,
   done
 ) {
-  // 使用類型斷言來取得正確類型的 request.body
   const body = request.body as GetCardListRequestType;
   const cardService = request.diContainer.resolve('cardService');
 
-  // 使用 process.nextTick 而不是 setTimeout
   process.nextTick(() => {
-    cardService
-      .updateCacheSetKey(body)
-      .then(() => {
-        request.log.info(`更新緩存成功`);
-      })
-      .catch(err => request.log.error(`更新緩存失敗: ${err.message}`));
+    cardService.updateCacheSetKey(body).then(() => {
+      request.log.info(`更新緩存結束`);
+    });
   });
 
   done();

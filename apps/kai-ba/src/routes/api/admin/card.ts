@@ -1,6 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
-import { getCardListSchema } from '../../schema/blog/cards';
-import * as custom from '../../handlers/admin/cards/custom';
+import { getCardListSchema } from '../../../schema/blog/cards';
+import * as custom from '../../../handlers/admin/cards/custom';
 import { GetCardListRequestType, GetCardListResponseType } from '@ygo/schemas';
 const cards: FastifyPluginAsync = async (fastify): Promise<void> => {
   fastify.post<{

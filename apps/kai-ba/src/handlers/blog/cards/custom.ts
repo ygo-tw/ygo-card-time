@@ -34,7 +34,6 @@ export const onGetCardListResponse: onResponseHookHandler = function (
   _,
   done
 ) {
-  // 使用類型斷言來取得正確類型的 request.body
   const body = request.body as GetCardListRequestType;
   const cardService = request.diContainer.resolve('cardService');
 

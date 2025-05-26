@@ -19,6 +19,9 @@ export class CardsHelperService {
    * @returns 集合鍵
    */
   public buildStaticFilterSetKeys(filter: StaticFilterParams): SetKey[] {
+    if (Object.keys(filter).length === 0) {
+      return ['set:empty:empty'];
+    }
     // 定義欄位處理配置
     const fieldConfigs: SetKeyFieldConfig[] = [
       { field: 'number', prefix: 'set:number:' },

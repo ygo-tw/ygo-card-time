@@ -31,7 +31,7 @@ export default fp(
       }
     );
 
-    fastify.decorate('authrizeRoles', function (roles: string[]) {
+    fastify.decorate('authorizeRoles', function (roles: string[]) {
       return async function (request: FastifyRequest, reply: FastifyReply) {
         await fastify.authenticate(request, reply);
 
