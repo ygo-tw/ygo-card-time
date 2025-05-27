@@ -7,7 +7,7 @@ export const usefulApiRequestGetCardListSchema = {
   title: 'get-card-list_schema',
   description: 'YGO Card Time get card list request schema',
   type: 'object',
-  additionalProperties: false,
+  additionalProperties: true,
   properties: {
     number: {
       $ref: 'https://card.time.com/schema/useful/value-object/meta#/$defs/number',

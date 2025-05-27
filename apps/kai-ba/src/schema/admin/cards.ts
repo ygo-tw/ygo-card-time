@@ -1,10 +1,10 @@
 import { generalSchemaResponse } from '../general';
 
 export const getCardListSchema = {
-  $id: 'getCardList-blog',
-  operationId: 'getCardList-blog',
-  title: 'Get card list(blog)',
-  description: '取得卡片列表 / Get card list(blog)',
+  $id: 'getCardList-admin',
+  operationId: 'getCardList-admin',
+  title: 'Get card list(admin)',
+  description: '取得卡片列表 / Get card list(admin)',
   tags: ['card'],
   summary: '取得卡片列表',
   additionalProperties: true,
@@ -21,6 +21,7 @@ export const getCardListSchema = {
       },
     ],
   },
+
   response: {
     ...generalSchemaResponse,
     200: {

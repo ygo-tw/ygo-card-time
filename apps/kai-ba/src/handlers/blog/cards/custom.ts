@@ -1,26 +1,18 @@
 import { onResponseHookHandler, RouteHandler } from 'fastify';
 import { GetCardListRequestType, GetCardListResponseType } from '@ygo/schemas';
 
-/**
- * @description 取得卡片列表
- * @param {number} page - 頁碼
- * @param {number} limit - 每頁筆數
- * @param {GetCardListRequestType} filter - 過濾條件
- * @returns {GetCardListResponseType} 卡片列表
- */
 export const getCardListHandler: RouteHandler<{
   Querystring: {
     page: number;
     limit: number;
-  };
-  Body: GetCardListRequestType;
+  } & GetCardListRequestType;
   Reply: GetCardListResponseType;
 }> = async (request, reply) => {
   const cardService = request.diContainer.resolve('cardService');
-
-  const result = await cardService.getCardList(request.body, {
-    page: request.query.page,
-    limit: request.query.limit,
+  const { page, limit, ...filter } = request.query;
+  const result = await cardService.getCardList(filter, {
+    page,
+    limit,
   });
 
   return reply.status(200).send({
@@ -34,13 +26,17 @@ export const onGetCardListResponse: onResponseHookHandler = function (
   _,
   done
 ) {
-  const body = request.body as GetCardListRequestType;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { page, limit, ...filter } = request.query as {
+    page: number;
+    limit: number;
+  } & GetCardListRequestType;
   const cardService = request.diContainer.resolve('cardService');
 
   // 使用 process.nextTick 而不是 setTimeout
   process.nextTick(() => {
     cardService
-      .updateCacheSetKey(body)
+      .updateCacheSetKey(filter)
       .then(() => {
         request.log.info(`更新緩存成功`);
       })

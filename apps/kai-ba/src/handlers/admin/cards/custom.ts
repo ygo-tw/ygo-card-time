@@ -12,16 +12,16 @@ export const getCardListHandler: RouteHandler<{
   Querystring: {
     page: number;
     limit: number;
-  };
-  Body: GetCardListRequestType;
+  } & GetCardListRequestType;
   Reply: GetCardListResponseType;
 }> = async (request, reply) => {
   const cardService = request.diContainer.resolve('cardService');
+  const { page, limit, ...filter } = request.query;
   const result = await cardService.getCardList(
-    request.body,
+    filter,
     {
-      page: request.query.page,
-      limit: request.query.limit,
+      page,
+      limit,
     },
     true
   );
@@ -37,11 +37,15 @@ export const onGetCardListResponse: onResponseHookHandler = function (
   _,
   done
 ) {
-  const body = request.body as GetCardListRequestType;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { page, limit, ...filter } = request.query as {
+    page: number;
+    limit: number;
+  } & GetCardListRequestType;
   const cardService = request.diContainer.resolve('cardService');
 
   process.nextTick(() => {
-    cardService.updateCacheSetKey(body).then(() => {
+    cardService.updateCacheSetKey(filter).then(() => {
       request.log.info(`更新緩存結束`);
     });
   });
