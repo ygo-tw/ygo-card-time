@@ -24,7 +24,7 @@ export class CardDalService {
     filter: Record<string, any>,
     pagination: { page: number; limit: number },
     options: QueryOptions = {},
-    needEffect: boolean = false
+    needEffect: boolean = true
   ): Promise<{ data: CardsDataType[]; total: number }> {
     const cardList = await this.dal.find<CardsDataType>(
       DataAccessEnum.CARDS,

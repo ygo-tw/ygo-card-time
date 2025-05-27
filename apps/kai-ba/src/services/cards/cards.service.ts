@@ -99,7 +99,6 @@ export class CardService {
           page,
           limit
         );
-
         const cardList = await this.redis.getCardListByCache(
           pagedCardIdList,
           needEffect
@@ -169,12 +168,18 @@ export class CardService {
               page,
               limit,
             },
-            options,
-            needEffect
+            options
           );
 
           return {
-            data: cardList,
+            data: cardList.map(card => {
+              if (!needEffect) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { effect: _, ...rest } = card;
+                return rest;
+              }
+              return card;
+            }),
             total: total || 0,
           };
         } catch (error) {
