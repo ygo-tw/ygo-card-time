@@ -2,6 +2,9 @@
   "files": [],
   "references": [
     {
+      "path": "apps/atom"
+    },
+    {
       "path": "apps/yu-sei"
     },
     {
