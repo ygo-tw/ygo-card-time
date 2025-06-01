@@ -64,7 +64,7 @@
     vertical-align: middle;
   }
 
-  /** 內文 L (桌機版專用) **/
+  /** 內文 L (桌機版) **/
   .custom-body-l {
     font-size: 20px;
     font-weight: 500;
@@ -100,7 +100,7 @@
     vertical-align: middle;
   }
 
-  /** 按鈕文字 M (桌機版專用) **/
+  /** 按鈕文字 M (桌機版) **/
   .custom-button-m {
     font-size: 18px;
     font-weight: 500;
@@ -109,7 +109,7 @@
     vertical-align: middle;
   }
 
-  /** 標籤文字 L (桌機版專用) **/
+  /** 標籤文字 L (桌機版) **/
   .custom-label-l {
     font-size: 16px;
     font-weight: 500;
@@ -192,6 +192,14 @@
       letter-spacing: 0.04em;
       vertical-align: middle;
     }
+    /** 內文 L **/
+    .custom-body-l {
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 26.1px;
+      letter-spacing: 0.04em;
+      vertical-align: middle;
+    }
     /** 內文 S **/
     .custom-body-s {
       font-size: 16px;
@@ -206,6 +214,22 @@
       font-weight: 500;
       line-height: 21.6px;
       letter-spacing: 0.04em;
+      vertical-align: middle;
+    }
+    /** 按鈕文字 M **/
+    .custom-button-m {
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 19.2px;
+      letter-spacing: 0.04em;
+      vertical-align: middle;
+    }
+    /** 標籤文字 L **/
+    .custom-label-l {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20.3px;
+      letter-spacing: normal;
       vertical-align: middle;
     }
     /** 標籤文字 M **/
