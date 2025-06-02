@@ -110,6 +110,9 @@ export class AuthService {
 
   /**
    * 刷新 Access Token
+   * @param reply 回應
+   * @param refreshToken 刷新 token
+   * @returns 使用者資訊
    */
   public async refreshAccessToken(
     reply: FastifyReply,
@@ -171,14 +174,9 @@ export class AuthService {
   }
 
   /**
-   * 產生 refresh token
-   */
-  private generateRefreshToken(): string {
-    return randomBytes(32).toString('hex');
-  }
-
-  /**
    * 登出
+   * @param request 請求
+   * @param reply 回應
    */
   public async logout(
     request: FastifyRequest,
@@ -198,7 +196,7 @@ export class AuthService {
       const updatedCount = await this.dal.findAndUpdate<RefreshTokenDataType>(
         DataAccessEnum.REFRESH_TOKEN,
         { token: refreshToken, isRevoked: false },
-        { isRevoked: true }
+        { $set: { isRevoked: true } }
       );
 
       if (!updatedCount) {
@@ -239,5 +237,85 @@ export class AuthService {
 
     // 4. 記錄日誌
     this.logger.info('authService/logout: user logged out successfully');
+  }
+
+  /**
+   * 強制登出指定用戶的所有會話
+   * @param userId 要強制登出的用戶 ID
+   * @param currentRequest 當前請求（可選，如果是強制登出自己則提供）
+   * @param currentReply 當前回應（可選，如果是強制登出自己則提供）
+   */
+  public async forceLogout(
+    userId: string,
+    currentRequest?: FastifyRequest,
+    currentReply?: FastifyReply
+  ): Promise<void> {
+    try {
+      // 1. 撤銷該用戶所有的 refresh token
+      const revokedCount = await this.dal.updateMany(
+        DataAccessEnum.REFRESH_TOKEN,
+        { userId, isRevoked: false },
+        { $set: { isRevoked: true } }
+      );
+
+      this.logger.info(
+        `forceLogout: revoked ${revokedCount} refresh tokens for user: ${userId}`
+      );
+
+      // 2. 查找該用戶所有未撤銷的 refresh token 來取得相關的 access token
+      // 但由於我們無法直接取得所有 access token，這部分需要其他策略
+
+      // 3. 如果是當前用戶且提供了 request/reply，則處理當前的 access token 和 cookie
+      if (currentRequest && currentReply) {
+        // 將當前的 access token 加入黑名單
+        const accessToken = currentRequest.cookies.accessToken;
+        if (accessToken) {
+          try {
+            const decoded = await currentRequest.jwtVerify<JWTPayload>();
+            if (decoded && decoded.exp) {
+              const now = Math.floor(Date.now() / 1000);
+              const ttl = decoded.exp - now;
+
+              if (ttl > 0) {
+                await this.cache.set({
+                  keys: ['JWT', 'BLACKLIST', accessToken],
+                  value: '1',
+                  useMemory: true,
+                  useRedis: true,
+                  memoryTTLSeconds: ttl,
+                  redisTTLSeconds: ttl,
+                });
+              }
+            }
+          } catch (error) {
+            this.logger.warn(
+              'forceLogout: failed to blacklist current access token',
+              error
+            );
+          }
+        }
+
+        // 清除當前的 cookie
+        currentReply.clearCookie('accessToken');
+        currentReply.clearCookie('refreshToken');
+      }
+
+      this.logger.info(
+        `forceLogout: successfully forced logout for user: ${userId}`
+      );
+    } catch (error) {
+      this.logger.error(
+        `forceLogout: failed to force logout user ${userId}:`,
+        error
+      );
+      throw new Error(`強制登出失敗: ${JSON.stringify(error)}`);
+    }
+  }
+
+  /**
+   * 產生 refresh token
+   */
+  private generateRefreshToken(): string {
+    return randomBytes(32).toString('hex');
   }
 }
