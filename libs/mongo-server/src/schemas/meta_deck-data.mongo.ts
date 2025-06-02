@@ -52,6 +52,7 @@ export const MetaDeckMongoSchema = new Schema<MetaDeckDataByDateType>(
   },
   {
     collection: DataAccessEnum.META_DECK,
+    versionKey: false,
     toJSON: { getters: true },
     toObject: { getters: true },
   }

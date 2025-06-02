@@ -34,5 +34,8 @@ export const PriceArchiveSchema = new Schema(
     id: false,
     minimize: false,
     timestamps: false,
+    versionKey: false,
+    toJSON: { getters: true },
+    toObject: { getters: true },
   }
 );

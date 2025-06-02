@@ -79,6 +79,7 @@ export const DecksMongoSchema = new Schema<DecksDataByDateType>(
   },
   {
     collection: DataAccessEnum.DECKS,
+    versionKey: false,
     toJSON: { getters: true },
     toObject: { getters: true },
   }

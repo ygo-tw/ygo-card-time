@@ -13,5 +13,8 @@ export const ForbiddenCardListMongoSchema =
     },
     {
       collection: DataAccessEnum.FORBIDDEN_CARD_LIST,
+      versionKey: false,
+      toJSON: { getters: true },
+      toObject: { getters: true },
     }
   );

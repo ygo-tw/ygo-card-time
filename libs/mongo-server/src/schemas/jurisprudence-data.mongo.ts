@@ -76,5 +76,10 @@ export const JurisprudenceMongoSchema = new Schema<JurisprudenceDataType>(
       description: 'Question and answers',
     },
   },
-  { collection: DataAccessEnum.JURISPRUDENCE }
+  {
+    collection: DataAccessEnum.JURISPRUDENCE,
+    versionKey: false,
+    toJSON: { getters: true },
+    toObject: { getters: true },
+  }
 );
