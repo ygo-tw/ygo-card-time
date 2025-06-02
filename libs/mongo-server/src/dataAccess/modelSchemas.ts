@@ -11,6 +11,7 @@ import {
   ProductInformationMongoSchema,
   ProductInformationTypeMongoSchema,
   PriceArchiveSchema,
+  RefreshTokenMongoSchema,
 } from '../schemas';
 
 export const modelSchemas: ModelSchema = {
@@ -46,5 +47,8 @@ export const modelSchemas: ModelSchema = {
   },
   price_archive: {
     originSchema: PriceArchiveSchema,
+  },
+  refresh_token: {
+    originSchema: RefreshTokenMongoSchema,
   },
 };

@@ -18,7 +18,8 @@ export type ModelNames =
   | 'series_story'
   | 'tag'
   | 'useful_card_introduction'
-  | 'price_archive';
+  | 'price_archive'
+  | 'refresh_token';
 
 export type SchemaObject = {
   hasGetterSetter?: Schema;

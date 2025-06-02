@@ -11,7 +11,15 @@ jest.mock('mongoose', () => {
     Schema: class MockSchema {
       // 模擬 Schema 類別
       constructor(schema: any) {
-        return schema;
+        // 不要返回 schema，要返回 this (Schema 實例)
+        Object.assign(this, schema);
+      }
+
+      // 添加 index 方法
+      index(_indexSpec?: any, _options?: any) {
+        // 在測試環境中，我們不需要實際建立索引，只需要避免錯誤
+        console.log('index', _indexSpec, _options);
+        return this;
       }
     },
   };
