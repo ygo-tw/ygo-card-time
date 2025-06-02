@@ -1,33 +1,59 @@
 import fp from 'fastify-plugin';
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { JWTPayload } from '../Interface/auth.type';
-import { AuthForbiddenError } from '../services/error/business';
+import {
+  AuthForbiddenError,
+  AuthError,
+  AUTH_ERROR_MESSAGES,
+} from '../services/error/business';
 
 export default fp(
   async fastify => {
     fastify.decorate(
       'authenticate',
       async function (request: FastifyRequest, reply: FastifyReply) {
-        const decoded = await request.jwtVerify<JWTPayload>();
-
-        // 檢查是否需要更新 token（距離過期少於 6 小時）
-        const expiresIn = decoded.exp! - Math.floor(Date.now() / 1000);
-        const SIX_HOURS_IN_SECONDS = 6 * 60 * 60;
-
-        if (expiresIn < SIX_HOURS_IN_SECONDS) {
-          const token = await reply.jwtSign({
-            ...decoded,
-          });
-
-          reply.setCookie('sid', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-          });
+        const accessToken = request.cookies.accessToken;
+        if (accessToken) {
+          const isBlacklisted = await fastify.redis.exists(
+            `jwt_blacklist:${accessToken}`
+          );
+          if (isBlacklisted) {
+            throw new AuthError(AUTH_ERROR_MESSAGES.TOKEN_REVOKED);
+          }
         }
 
-        request.userInfo = decoded;
-        return decoded;
+        try {
+          //JWT 驗證（會在 token 無效/過期/不存在時拋錯）
+          const decoded = await request.jwtVerify<JWTPayload>();
+          request.userInfo = decoded;
+          return decoded;
+        } catch (jwtError) {
+          const signedRefreshToken = request.cookies.refreshToken;
+          let refreshToken: string | undefined;
+
+          if (signedRefreshToken) {
+            const unsigned = request.unsignCookie(signedRefreshToken);
+            refreshToken = unsigned.valid ? unsigned.value : undefined;
+          }
+
+          if (!refreshToken) {
+            clearAuthCookies(
+              reply,
+              AUTH_ERROR_MESSAGES.AUTHENTICATION_REQUIRED
+            );
+          } else {
+            try {
+              const userInfo = await fastify.authService.refreshAccessToken(
+                reply,
+                refreshToken
+              );
+              request.userInfo = userInfo;
+              return userInfo;
+            } catch (refreshError) {
+              clearAuthCookies(reply, AUTH_ERROR_MESSAGES.SESSION_EXPIRED);
+            }
+          }
+        }
       }
     );
 
@@ -50,3 +76,15 @@ export default fp(
     dependencies: ['jwt'],
   }
 );
+
+/**
+ * 清除認證相關 cookie 並拋出錯誤
+ * @param reply FastifyReply
+ * @param errorMessage 錯誤訊息
+ */
+function clearAuthCookies(reply: FastifyReply, errorMessage: string): never {
+  reply.clearCookie('accessToken');
+  reply.clearCookie('refreshToken');
+
+  throw new AuthError(errorMessage);
+}
