@@ -12,17 +12,16 @@ export const getCardListHandler: RouteHandler<{
   Querystring: {
     page: number;
     limit: number;
-  };
-  Body: GetCardListRequestType;
+  } & GetCardListRequestType;
   Reply: GetCardListResponseType;
 }> = async (request, reply) => {
   const cardService = request.diContainer.resolve('cardService');
-
+  const { page, limit, ...filter } = request.query;
   const result = await cardService.getCardList(
-    request.body,
+    filter,
     {
-      page: request.query.page,
-      limit: request.query.limit,
+      page,
+      limit,
     },
     true
   );
@@ -38,18 +37,17 @@ export const onGetCardListResponse: onResponseHookHandler = function (
   _,
   done
 ) {
-  // 使用類型斷言來取得正確類型的 request.body
-  const body = request.body as GetCardListRequestType;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { page, limit, ...filter } = request.query as {
+    page: number;
+    limit: number;
+  } & GetCardListRequestType;
   const cardService = request.diContainer.resolve('cardService');
 
-  // 使用 process.nextTick 而不是 setTimeout
   process.nextTick(() => {
-    cardService
-      .updateCacheSetKey(body)
-      .then(() => {
-        request.log.info(`更新緩存成功`);
-      })
-      .catch(err => request.log.error(`更新緩存失敗: ${err.message}`));
+    cardService.updateCacheSetKey(filter).then(() => {
+      request.log.info(`更新緩存結束`);
+    });
   });
 
   done();

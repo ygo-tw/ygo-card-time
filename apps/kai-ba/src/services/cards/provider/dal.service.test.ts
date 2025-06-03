@@ -81,7 +81,7 @@ describe('CardDalService', () => {
       expect(mockFind).toHaveBeenCalledWith(
         DataAccessEnum.CARDS,
         filter,
-        { price_info: 0, price_yuyu: 0, __v: 0, effect: 1 },
+        { price_info: 0, price_yuyu: 0, __v: 0, effect: 0 },
         {
           skip: (pagination.page - 1) * pagination.limit,
           limit: pagination.limit,

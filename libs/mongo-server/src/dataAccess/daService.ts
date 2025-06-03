@@ -365,4 +365,32 @@ export class DataAccessService {
       session.endSession();
     }
   }
+
+  /**
+   * Update multiple documents in the specified model.
+   * @param modelName Collection name
+   * @param filter Filter query
+   * @param update Update query
+   * @param options Update options
+   * @returns Number of updated documents
+   */
+  public async updateMany<T>(
+    modelName: ModelNames,
+    filter: FilterQuery<T>,
+    update: UpdateQuery<T>,
+    options: mongo.UpdateOptions = {}
+  ): Promise<number> {
+    await this.ensureInitialized();
+    const model = this.registry.getModel(modelName);
+    try {
+      const result = await model.updateMany(filter, update, options);
+      return result.modifiedCount;
+    } catch (error) {
+      this.logger.error(
+        `Error updating multiple documents in model ${modelName}:`,
+        error
+      );
+      throw error;
+    }
+  }
 }

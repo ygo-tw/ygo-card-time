@@ -17,3 +17,13 @@ export const loginHandler: RouteHandler<{
 
   return reply.status(200).send({ message: 'success', user: userInfo });
 };
+
+export const logoutHandler: RouteHandler<{
+  Reply: { success: boolean };
+}> = async (request, reply) => {
+  const authService = request.diContainer.resolve('authService');
+
+  await authService.logout(request, reply);
+
+  return reply.status(200).send({ success: true });
+};

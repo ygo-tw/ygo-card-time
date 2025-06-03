@@ -5,5 +5,10 @@ export const TagMongoSchema = new Schema<TagDataType>(
   {
     tag: { type: String, required: true, maxLength: 50 },
   },
-  { collection: DataAccessEnum.TAG }
+  {
+    collection: DataAccessEnum.TAG,
+    versionKey: false,
+    toJSON: { getters: true },
+    toObject: { getters: true },
+  }
 );

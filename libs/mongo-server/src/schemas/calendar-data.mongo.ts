@@ -42,6 +42,7 @@ export const CalendarMongoSchema = new Schema<CalendarDataByDateType>(
   },
   {
     collection: DataAccessEnum.CALENDAR,
+    versionKey: false,
     toJSON: { getters: true },
     toObject: { getters: true },
   }

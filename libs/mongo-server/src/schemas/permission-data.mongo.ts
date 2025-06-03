@@ -32,5 +32,10 @@ export const PermissionMongoSchema = new Schema<PermissionDataType>(
       max: 5,
     },
   },
-  { collection: DataAccessEnum.PERMISSION }
+  {
+    collection: DataAccessEnum.PERMISSION,
+    versionKey: false,
+    toJSON: { getters: true },
+    toObject: { getters: true },
+  }
 );

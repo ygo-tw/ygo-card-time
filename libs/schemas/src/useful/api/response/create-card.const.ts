@@ -1,0 +1,15 @@
+/* eslint-disable */
+
+//! auto generated from json schema
+export const usefulApiResponseCreateCardSchema = {
+  $id: 'https://card.time.com/schema/useful/api/response/create-card',
+  $schema: 'https://json-schema.org/draft/2020-12/schema',
+  title: 'create-card_schema',
+  description: 'YGO Card Time create card response schema',
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    message: { type: 'string', description: 'create card response message' },
+  },
+  required: ['message'],
+} as const;

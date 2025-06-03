@@ -38,9 +38,11 @@ export default fp(
       }).singleton(),
 
       authService: asFunction(cradle => {
-        return new AuthService(cradle.dal, fastify.log);
+        return new AuthService(cradle.dal, cradle.cache, fastify.log);
       }).singleton(),
     });
+
+    fastify.decorate('authService', container.resolve('authService'));
 
     fastify.decorateRequest('diContainer', {
       getter: () => container.createScope(),

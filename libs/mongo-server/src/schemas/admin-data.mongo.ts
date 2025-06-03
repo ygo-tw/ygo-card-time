@@ -58,6 +58,7 @@ export const AdminMongoSchema = new Schema<AdminnDataByDateType>(
   },
   {
     collection: DataAccessEnum.ADMIN,
+    versionKey: false,
     toJSON: { getters: true },
     toObject: { getters: true },
   }

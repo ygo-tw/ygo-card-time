@@ -73,5 +73,8 @@ export const CardsMongoSchema = new Schema<CardsDataType>(
     collection: DataAccessEnum.CARDS,
     id: false,
     minimize: false,
+    versionKey: false,
+    toJSON: { getters: true },
+    toObject: { getters: true },
   }
 );

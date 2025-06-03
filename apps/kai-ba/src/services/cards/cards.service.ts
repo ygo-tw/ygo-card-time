@@ -53,7 +53,7 @@ export class CardService {
   ): Promise<{ data: CardsDataType[]; total: number }> {
     try {
       const { page, limit } = pageInfo;
-
+      this.logger.info(`getCardList page: ${page}, limit: ${limit}`);
       // 驗證分頁參數
       if (!page || page < 1 || !limit || limit < 1) {
         throw new CardValidationError('分頁參數無效');
@@ -92,7 +92,6 @@ export class CardService {
           ...(await this.redis.getCardIdsFromIntersection(staticFilterSetKeys))
         );
       }
-
       // 純靜態 filter
       if (!mustUseDbQuery) {
         const pagedCardIdList = this.helper.paginateCardKeyList(
@@ -100,7 +99,6 @@ export class CardService {
           page,
           limit
         );
-
         const cardList = await this.redis.getCardListByCache(
           pagedCardIdList,
           needEffect
@@ -170,12 +168,18 @@ export class CardService {
               page,
               limit,
             },
-            options,
-            needEffect
+            options
           );
 
           return {
-            data: cardList,
+            data: cardList.map(card => {
+              if (!needEffect) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { effect: _, ...rest } = card;
+                return rest;
+              }
+              return card;
+            }),
             total: total || 0,
           };
         } catch (error) {
@@ -198,10 +202,6 @@ export class CardService {
     filter: GetCardListRequestType
   ): Promise<void> {
     try {
-      if (Object.keys(filter).length === 0) {
-        return;
-      }
-
       const staticFilterSetKeyList =
         this.helper.buildStaticFilterSetKeys(filter);
 
@@ -278,7 +278,8 @@ export class CardService {
             continue;
           }
 
-          const filter = { [featureType]: featureValue };
+          const filter =
+            featureType !== 'empty' ? { [featureType]: featureValue } : {};
 
           const cardList =
             featureType === 'forbidden'

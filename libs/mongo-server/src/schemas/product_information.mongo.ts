@@ -64,6 +64,7 @@ export const ProductInformationMongoSchema =
     },
     {
       collection: DataAccessEnum.PRODUCT_INFORMATION,
+      versionKey: false,
       toJSON: { getters: true },
       toObject: { getters: true },
     }

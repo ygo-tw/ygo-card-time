@@ -27,7 +27,7 @@ describe('CardsHelperService', () => {
         },
         ['set:rarity:普卡,亮面'],
       ],
-      ['空過濾條件', {}, []],
+      ['空過濾條件', {}, ['set:empty:empty']],
     ])(
       'Given %s, when buildStaticFilterSetKeys is called, then should return correct set keys',
       (_, filter, expected) => {

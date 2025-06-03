@@ -306,21 +306,5 @@ describe('CardService', () => {
         }
       }
     );
-
-    it('Given empty filter, when updateCacheSetKey is called, then should do nothing', async () => {
-      // Arrange
-      const emptyFilter = {};
-
-      // Act
-      await cardService.updateCacheSetKey(
-        emptyFilter as GetCardListRequestType
-      );
-
-      // Assert
-      expect(mockHelperService.buildStaticFilterSetKeys).not.toHaveBeenCalled();
-      expect(
-        mockHelperService.getSetKeyListNeedingUpdate
-      ).not.toHaveBeenCalled();
-    });
   });
 });

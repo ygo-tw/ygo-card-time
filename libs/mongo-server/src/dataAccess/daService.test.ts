@@ -11,7 +11,15 @@ jest.mock('mongoose', () => {
     Schema: class MockSchema {
       // 模擬 Schema 類別
       constructor(schema: any) {
-        return schema;
+        // 不要返回 schema，要返回 this (Schema 實例)
+        Object.assign(this, schema);
+      }
+
+      // 添加 index 方法
+      index(_indexSpec?: any, _options?: any) {
+        // 在測試環境中，我們不需要實際建立索引，只需要避免錯誤
+        console.log('index', _indexSpec, _options);
+        return this;
       }
     },
   };
@@ -53,6 +61,11 @@ describe('DataAccessService', () => {
           { _id: new mongoose.Types.ObjectId('1234567890abcdef12345678') },
         ]),
       lean: jest.fn().mockReturnThis(), // 添加全局 lean 方法
+      updateMany: jest.fn().mockResolvedValue({
+        modifiedCount: 0,
+        matchedCount: 0,
+        acknowledged: true,
+      }),
     };
 
     (ModelRegistry.getInstance as jest.Mock).mockImplementation(() => {
@@ -486,6 +499,146 @@ describe('DataAccessService', () => {
       await expect(
         service.findDocumentCount(modelName, filter, options)
       ).rejects.toThrow('Count error');
+    });
+  });
+
+  describe('updateMany', () => {
+    const modelName = 'admin' as unknown as ModelNames;
+
+    beforeEach(() => {
+      mockModel.updateMany = jest.fn().mockResolvedValue({
+        modifiedCount: 2,
+        matchedCount: 2,
+        acknowledged: true,
+      });
+    });
+
+    it('should ensure the database is initialized', async () => {
+      const spyInit = jest
+        .spyOn(service as any, 'init')
+        .mockResolvedValue(undefined);
+
+      await service.updateMany(
+        modelName,
+        { name: 'test' },
+        { $set: { status: 'updated' } }
+      );
+
+      expect(spyInit).toHaveBeenCalled();
+    });
+
+    it.each([
+      [
+        'basic update',
+        { name: 'test' },
+        { $set: { status: 'updated' } },
+        {},
+        2,
+      ],
+      [
+        'update with options',
+        { type: 'user' },
+        { $set: { isActive: false } },
+        { upsert: false },
+        3,
+      ],
+      [
+        'no matches found',
+        { nonExistent: 'field' },
+        { $set: { status: 'updated' } },
+        {},
+        0,
+      ],
+    ])(
+      'Given %s, when updateMany called, then should return correct count',
+      async (scenario, filter, update, options, expectedCount) => {
+        // Arrange
+        mockModel.updateMany.mockResolvedValue({
+          modifiedCount: expectedCount,
+          matchedCount: expectedCount,
+          acknowledged: true,
+        });
+
+        // Act
+        const result = await service.updateMany(
+          modelName,
+          filter,
+          update,
+          options
+        );
+
+        // Assert
+        expect(mockModel.updateMany).toHaveBeenCalledWith(
+          filter,
+          update,
+          options
+        );
+        expect(result).toBe(expectedCount);
+      }
+    );
+
+    it('Given database error, when updateMany called, then should throw error', async () => {
+      // Arrange
+      const error = new Error('Update error');
+      mockModel.updateMany.mockRejectedValue(error);
+
+      // Act & Assert
+      await expect(
+        service.updateMany(
+          modelName,
+          { name: 'test' },
+          { $set: { status: 'updated' } }
+        )
+      ).rejects.toThrow('Update error');
+
+      expect(mockModel.updateMany).toHaveBeenCalledWith(
+        { name: 'test' },
+        { $set: { status: 'updated' } },
+        {}
+      );
+    });
+
+    it('Given complex update query, when updateMany called, then should handle correctly', async () => {
+      // Arrange
+      const complexFilter = {
+        $and: [
+          { status: 'active' },
+          { lastLogin: { $lt: new Date('2024-01-01') } },
+        ],
+      };
+      const complexUpdate = {
+        $set: {
+          status: 'inactive',
+          updatedAt: new Date(),
+        },
+        $inc: { loginCount: 1 },
+      };
+      const options = {
+        upsert: false,
+        writeConcern: { w: 1 },
+      };
+
+      mockModel.updateMany.mockResolvedValue({
+        modifiedCount: 5,
+        matchedCount: 5,
+        acknowledged: true,
+      });
+
+      // Act
+      const result = await service.updateMany(
+        modelName,
+        complexFilter,
+        complexUpdate,
+        options
+      );
+
+      // Assert
+      expect(mockModel.updateMany).toHaveBeenCalledWith(
+        complexFilter,
+        complexUpdate,
+        options
+      );
+      expect(result).toBe(5);
     });
   });
 });

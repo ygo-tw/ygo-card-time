@@ -39,6 +39,7 @@ export const BannerMongoSchema = new Schema<BannerDataByDateType>(
   },
   {
     collection: DataAccessEnum.BANNER,
+    versionKey: false,
     toJSON: { getters: true },
     toObject: { getters: true },
   }

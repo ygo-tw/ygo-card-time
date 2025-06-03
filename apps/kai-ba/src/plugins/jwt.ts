@@ -16,7 +16,7 @@ export default fp(
         authorizationTokenInvalid: '無效的授權',
       },
       cookie: {
-        cookieName: 'sid',
+        cookieName: 'accessToken',
         signed: true,
       },
     });

@@ -27,6 +27,7 @@ export const usefulValueObjectEnumMetaSchema = {
         '金鑽',
         '銀鑽',
         '藍鑽',
+        '方鑽',
         'KC紋',
         '古文鑽',
         '決鬥傳說-金亮',

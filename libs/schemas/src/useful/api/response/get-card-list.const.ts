@@ -18,6 +18,7 @@ export const usefulApiResponseGetCardListSchema = {
       description: '查詢結果清單',
       items: {
         $ref: 'https://card.time.com/schema/useful/database/cards-data',
+        properties: { rarity: { type: 'array', items: { type: 'string' } } },
       },
     },
   },

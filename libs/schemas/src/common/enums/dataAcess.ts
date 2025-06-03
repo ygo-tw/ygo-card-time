@@ -18,4 +18,5 @@ export enum DataAccessEnum {
   TAG = 'tag',
   USEFUL_CARD_INTRODUCTION = 'useful_card_introduction',
   PRICE_ARCHIVE = 'price_archive',
+  REFRESH_TOKEN = 'refresh_token',
 }
