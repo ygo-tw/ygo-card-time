@@ -3731,7 +3731,7 @@
   version "1.0.0"
   dependencies:
     "@types/node" "^20.12.11"
-    "@ygo/schemas" "file:../../../Library/Caches/Yarn/v6/npm-@ygo-mongo-server-1.0.0-8cfbdde5-2e08-47cf-a25e-809a1f08e3d5-1748603095203/node_modules/@ygo/schemas"
+    "@ygo/schemas" "file:../../../Library/Caches/Yarn/v6/npm-@ygo-mongo-server-1.0.0-ddc9d2c3-99ce-4701-8a9e-25027539b404-1751072355208/node_modules/@ygo/schemas"
     mongoose "^8.3.4"
     typescript "^5.4.5"
 
@@ -6845,6 +6845,11 @@ graphemer@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/graphemer/-/graphemer-1.4.0.tgz#fb2f1d55e0e3a1849aeffc90c4fa0dd53a0e66c6"
   integrity sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==
+
+gsap@^3.12.5:
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/gsap/-/gsap-3.13.0.tgz#597d4e019a2bb487785387d91296adebf92db9dd"
+  integrity sha512-QL7MJ2WMjm1PHWsoFrAQH/J8wUeqZvMtHO58qdekHpCfhvhSL4gSiz6vJf5EeMP0LOn3ZCprL2ki/gjED8ghVw==
 
 gtoken@^7.0.0:
   version "7.1.0"

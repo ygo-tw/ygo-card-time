@@ -1,6 +1,12 @@
 <template>
-  <div class="pt-[60px]">
-    <Banner />
+  <div>
+    <IndexCardTime />
+    <IndexBanner />
+    <StarBackground class="pb-[500px]">
+      <div class="p-[3vw]">
+        <IndexTitle title="上位卡表" />
+      </div>
+    </StarBackground>
   </div>
 </template>
 
