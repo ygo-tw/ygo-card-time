@@ -1,6 +1,7 @@
 <template>
   <header
-    class="flex justify-between items-center fixed top-0 left-0 w-full z-30 h-[60px] text-white bg-primary px-[20px]"
+    class="header-wrapper"
+    :class="{ 'header-wrapper-scroll': isScrolledDown }"
   >
     <button @click="showDrawer">
       <i class="pi pi-bars text-[1.5rem]"></i>
@@ -66,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import type { MenuItem } from '~/models/menuItem';
 
 defineOptions({
@@ -180,6 +181,27 @@ watch(isShowDrawer, newValue => {
     initializeExpandedMenus();
   }
 });
+
+// header 背景樣式隨滾動改變
+const isScrolledDown = ref(false);
+const handleScroll = () => {
+  isScrolledDown.value = window.scrollY > 0;
+};
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
+});
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.header-wrapper-scroll {
+  @apply bg-primary/30;
+  -webkit-backdrop-filter: blur(1.56vw);
+  backdrop-filter: blur(1.56vw);
+}
+.header-wrapper {
+  @apply flex justify-between items-center fixed top-0 left-0 w-full z-40 h-[60px] text-white px-[20px] duration-300;
+}
+</style>

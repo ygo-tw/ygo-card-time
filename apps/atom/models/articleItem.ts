@@ -3,10 +3,14 @@
  */
 export interface ArticleItem {
   _id?: string;
+  type?: number;
   title: string;
-  subtitle?: string;
-  date: string;
-  photo_pc: string;
-  photo_mobile: string;
-  url?: string;
+  publish_date: string;
+  photo: string;
+  content: string;
+  status: number;
+  to_top: boolean;
+  admin_name: string;
+  admin_id: string;
+  tag: string[];
 }

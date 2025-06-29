@@ -43,7 +43,7 @@
       class="absolute inset-0 z-20 flex flex-col items-center justify-center"
     >
       <div
-        class="absolute w-full left-0 md:left-[40px] text-center md:text-left text-white p-4"
+        class="absolute left-0 md:left-[40px] text-center md:text-left text-white p-4"
       >
         <transition name="textFade">
           <h2
@@ -130,7 +130,7 @@ const bannerList = ref<BannerItem[]>([
     title: '限制卡表更新',
     subtitle: '2025年1月新制限制卡表公開',
     date: '2025-01-10',
-    photo_pc: 'https://picsum.photos/id/3/700/300',
+    photo_pc: 'https://picsum.photos/id/200/700/300',
     photo_mobile: 'https://picsum.photos/id/2/400/300',
     url: 'https://v3.tailwindcss.com/docs/installation',
   },
@@ -138,7 +138,7 @@ const bannerList = ref<BannerItem[]>([
     title: '線上大賽開始',
     subtitle: '卡壇盃遊戲王大賽報名中',
     date: '2025-01-05',
-    photo_pc: 'https://picsum.photos/id/2/700/300',
+    photo_pc: 'https://picsum.photos/id/100/700/300',
     photo_mobile: 'https://picsum.photos/id/3/400/300',
     url: '',
   },
