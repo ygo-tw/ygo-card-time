@@ -8,7 +8,7 @@
           <h2>遊戲王論壇</h2>
         </div>
         <div class="gradient-text">
-          <h3>YGO CARDTIME</h3>
+          <h3>YGO CARD TIME</h3>
         </div>
       </div>
 
