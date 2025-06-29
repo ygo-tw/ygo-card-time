@@ -2,7 +2,7 @@
   <div>
     <IndexCardTime />
     <IndexBanner />
-    <StarBackground class="pb-[500px]">
+    <StarBackground class="pb-[200px]">
       <!-- 系列介紹 -->
       <div class="p-[5vw]">
         <IndexTitle title="系列介紹" />

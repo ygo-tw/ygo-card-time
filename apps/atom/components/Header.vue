@@ -197,7 +197,7 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .header-wrapper-scroll {
-  @apply bg-primary/30;
+  @apply bg-primary/50;
   -webkit-backdrop-filter: blur(1.56vw);
   backdrop-filter: blur(1.56vw);
 }
