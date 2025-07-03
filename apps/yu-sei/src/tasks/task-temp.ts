@@ -29,7 +29,7 @@ export const task = async (
   let html = '';
   const now = dayjs().format('YYYY-MM-DD');
 
-  const isLineMsgOk = await lineService.sendMsg(`${taskName} Start`);
+  // const isLineMsgOk = await lineService.sendMsg(`${taskName} Start`);
 
   const {
     html: taskHtml,
@@ -40,10 +40,10 @@ export const task = async (
   html += taskHtml;
   failTasks.push(...taskFailTasks);
 
-  if (!isLineMsgOk) {
-    failTasks.push('lineMsg');
-    html += `<h1> Line Msg Error</h1>`;
-  }
+  // if (!isLineMsgOk) {
+  //   failTasks.push('lineMsg');
+  //   html += `<h1> Line Msg Error</h1>`;
+  // }
 
   if (failTasks.length > 0) {
     html += `<h1> Fail Tasks</h1><p>${failTasks.join(', ')}</p>`;
