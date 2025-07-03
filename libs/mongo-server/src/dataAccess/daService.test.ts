@@ -551,7 +551,7 @@ describe('DataAccessService', () => {
       ],
     ])(
       'Given %s, when updateMany called, then should return correct count',
-      async (scenario, filter, update, options, expectedCount) => {
+      async (_, filter, update, options, expectedCount) => {
         // Arrange
         mockModel.updateMany.mockResolvedValue({
           modifiedCount: expectedCount,
