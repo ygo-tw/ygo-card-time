@@ -89,7 +89,7 @@ const menuList: MenuItem[] = [
     route: '/meta_deck',
   },
   {
-    name: '卡表介紹',
+    name: '系列介紹',
     route: '/product_information',
     children: [
       {
