@@ -1,6 +1,7 @@
 import { defineNuxtConfig } from 'nuxt/config';
 import { resolve } from 'path';
 import Aura from '@primeuix/themes/aura';
+import svgLoader from 'vite-svg-loader';
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
@@ -10,6 +11,10 @@ export default defineNuxtConfig({
   devServer: {
     host: '0.0.0.0',
     port: 3000,
+  },
+
+  vite: {
+    plugins: [svgLoader()],
   },
 
   // Head 配置 - 全域 meta 標籤和 SEO 設定

@@ -68,6 +68,6 @@ defineOptions({
 }
 
 h4 {
-  @apply text-[#f3f3f3] custom-title-l py-[20px];
+  @apply text-main-white custom-title-l py-[20px];
 }
 </style>
