@@ -1,15 +1,15 @@
 <template>
   <article class="article-card-wrapper">
-    <div class="img" :style="`background-image: url(${article.photo})`"></div>
+    <div class="img-wrapper">
+      <div class="img" :style="`background-image: url(${article.photo})`"></div>
+    </div>
 
     <div class="content">
-      <div class="title">{{ article.title }}</div>
-      <div class="article-info">
-        <div>{{ `作者：${article.admin_name}` }}</div>
-        <div>
-          {{ `日期：${formatDateString(article.publish_date)}` }}
-        </div>
+      <div class="date">
+        {{ formatDateString(article.publish_date) }}
       </div>
+      <div class="title">{{ article.title }}</div>
+      <div class="author">{{ `作者：${article.admin_name}` }}</div>
       <div class="tags">
         <span v-for="tag in article.tag" :key="tag" class="tag"
           ># {{ tag }}</span
@@ -34,20 +34,34 @@ defineOptions({
 
 <style lang="scss" scoped>
 .article-card-wrapper {
-  @apply bg-white overflow-hidden;
+  @apply bg-white overflow-hidden cursor-pointer;
   border-radius: 10px;
   background-image: linear-gradient(to top, #ffffff 70%, black);
-  & .img {
-    @apply w-full bg-no-repeat bg-cover bg-center;
-    height: 201.48px;
-    background-color: #e1e1e1;
+
+  &:hover {
+    & .img-wrapper {
+      & .img {
+        backface-visibility: hidden;
+        transform: translateZ(0) scale(1.05);
+        transform-origin: center;
+      }
+    }
+  }
+  & .img-wrapper {
+    @apply w-full h-[201.48px] overflow-hidden;
+    & .img {
+      @apply w-full h-full bg-no-repeat bg-cover bg-center duration-200;
+      background-color: #e1e1e1;
+      transform: translateZ(0) scale(1, 1);
+    }
   }
   & .content {
-    padding: 10px 15px;
+    @apply p-[10px_15px] flex flex-col gap-[10px];
+    & .date {
+      @apply custom-body-s text-accent-700;
+    }
     & .title {
-      @apply font-bold;
-      color: #333333;
-      font-size: 20px;
+      @apply custom-title-s text-primary;
       height: 62px;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -55,13 +69,10 @@ defineOptions({
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
     }
-    & .article-info {
-      color: #636363;
-      font-size: 18px;
-      margin: 10px 0 0 0;
+    & .author {
+      @apply text-primary-600 custom-body-m;
     }
     & .tags {
-      margin-top: 10px;
       & .tag {
         @apply custom-label-m bg-primary-200 px-2 py-1 rounded-[6px] mr-2 mb-1 inline-block;
       }

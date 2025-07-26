@@ -5,7 +5,7 @@
     <img class="bg-3" src="~/assets/img/bg/p-header-3.png" alt="背景裝飾" />
 
     <Breadcrumb :items="props.breadcrumbItems" />
-    <h1 class="custom-title-l text-white">{{ props.title }}</h1>
+    <h1 class="custom-title-l text-main-white">{{ props.title }}</h1>
   </div>
 </template>
 
@@ -15,7 +15,6 @@ import type { BreadcrumbItem } from '~/models/breadcrumb';
 
 const props = defineProps<{
   breadcrumbItems: BreadcrumbItem[];
-  id: string;
   title: string;
 }>();
 </script>

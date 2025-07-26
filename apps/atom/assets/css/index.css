@@ -27,6 +27,7 @@
   /** css reset */
   html,
   body {
+    @apply bg-primary-950;
     font-family: 'Noto Sans TC', sans-serif;
     margin: 0;
     padding: 0;

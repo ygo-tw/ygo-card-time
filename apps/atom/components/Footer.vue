@@ -12,6 +12,6 @@ defineOptions({
 
 <style lang="scss" scoped>
 .footer-wrapper {
-  @apply custom-body-s w-full text-center text-white py-3 bg-primary;
+  @apply custom-body-s w-full text-center text-main-white py-3 bg-primary;
 }
 </style>

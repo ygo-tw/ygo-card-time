@@ -15,7 +15,7 @@
           <IconHome
             width="24"
             height="24"
-            :fill="props.textColor || '#ffffff'"
+            :fill="props.textColor || '#ebebeb'"
           />
         </NuxtLink>
       </li>
@@ -49,7 +49,7 @@ const props = defineProps<{
 
 <style lang="scss" scoped>
 .breadcrumb-wrapper {
-  @apply z-10 w-full text-white;
+  @apply z-10 w-full text-[#ebebeb];
 
   .breadcrumb-list {
     @apply flex w-full gap-1;
