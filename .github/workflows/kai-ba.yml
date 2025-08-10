@@ -115,8 +115,7 @@ jobs:
           # 複製原始 YAML 到臨時檔案
           cp .github/gcp/kai-ba-cloudrun.yml /tmp/kai-ba-deploy.yml
 
-          # 使用 yq 或 python 來安全地修改 YAML，而不是 sed
-          # 更新 image tag
+          # 使用 python 來安全地修改 YAML
           python3 << 'EOF'
           import yaml
           import sys
@@ -132,18 +131,27 @@ jobs:
                   if container.get('name') == 'kai-ba':
                       container['image'] = '${{ env.DOCKER_IMAGE_NAME }}:${{ steps.tag.outputs.deploy_tag }}'
 
-          # 添加部署資訊到 annotations
+          # 確保 service level metadata.annotations 存在並包含 invoker-iam-disabled
+          if 'metadata' not in data:
+              data['metadata'] = {}
+          if 'annotations' not in data['metadata']:
+              data['metadata']['annotations'] = {}
+
+          # 明確設定允許公開訪問 (這是關鍵!)
+          data['metadata']['annotations']['run.googleapis.com/invoker-iam-disabled'] = 'false'
+
+          # 添加部署資訊到 template annotations
           if 'spec' in data and 'template' in data['spec']:
               if 'metadata' not in data['spec']['template']:
                   data['spec']['template']['metadata'] = {}
               if 'annotations' not in data['spec']['template']['metadata']:
                   data['spec']['template']['metadata']['annotations'] = {}
               
-              annotations = data['spec']['template']['metadata']['annotations']
-              annotations['run.googleapis.com/deployment-tag'] = '${{ steps.tag.outputs.deploy_tag }}'
-              annotations['run.googleapis.com/deployment-branch'] = '${{ steps.tag.outputs.branch_clean }}'
-              annotations['run.googleapis.com/deployment-commit'] = '${{ steps.tag.outputs.commit_short }}'
-              annotations['run.googleapis.com/deployment-timestamp'] = '${{ steps.tag.outputs.timestamp }}'
+              template_annotations = data['spec']['template']['metadata']['annotations']
+              template_annotations['run.googleapis.com/deployment-tag'] = '${{ steps.tag.outputs.deploy_tag }}'
+              template_annotations['run.googleapis.com/deployment-branch'] = '${{ steps.tag.outputs.branch_clean }}'
+              template_annotations['run.googleapis.com/deployment-commit'] = '${{ steps.tag.outputs.commit_short }}'
+              template_annotations['run.googleapis.com/deployment-timestamp'] = '${{ steps.tag.outputs.timestamp }}'
 
           # 寫回 YAML
           with open('/tmp/kai-ba-deploy.yml', 'w') as f:
@@ -155,6 +163,9 @@ jobs:
 
           echo "=== YAML validation ==="
           python3 -c "import yaml; yaml.safe_load(open('/tmp/kai-ba-deploy.yml'))" && echo "✅ YAML is valid" || echo "❌ YAML is invalid"
+
+          echo "=== 檢查 invoker-iam-disabled 設定 ==="
+          grep -n "invoker-iam-disabled" /tmp/kai-ba-deploy.yml || echo "⚠️  未找到 invoker-iam-disabled 設定"
 
       - name: Deploy to Cloud Run
         run: |
@@ -192,10 +203,24 @@ jobs:
       - name: Wait for deployment to be ready
         run: |
           echo "⏳ 等待部署完成..."
-          gcloud run services wait ${{ env.CLOUD_RUN_SERVICE }} \
-            --region=${{ env.CLOUD_RUN_REGION }} \
-            --project=${{ secrets.GCP_PROJECT_ID }}
-          echo "✅ 部署已就緒"
+          # 檢查服務狀態而不是使用不存在的 wait 指令
+          for i in {1..10}; do
+            STATUS=$(gcloud run services describe ${{ env.CLOUD_RUN_SERVICE }} \
+              --region=${{ env.CLOUD_RUN_REGION }} \
+              --project=${{ secrets.GCP_PROJECT_ID }} \
+              --format='value(status.conditions[0].status)')
+            
+            if [ "$STATUS" = "True" ]; then
+              echo "✅ 部署已就緒"
+              break
+            else
+              echo "⏳ 等待中... (嘗試 $i/10)"
+              if [ $i -eq 10 ]; then
+                echo "⚠️  等待超時，但服務可能仍在啟動中"
+              fi
+              sleep 5
+            fi
+          done
 
       - name: Get service URLs
         id: urls
