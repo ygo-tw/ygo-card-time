@@ -1,0 +1,59 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 建置產物
+dist/
+build/
+*.tsbuildinfo
+
+# 環境變數檔案（機密資訊）
+.env*
+!.env.example
+
+# 日誌檔案
+logs/
+*.log
+
+# 測試相關
+coverage/
+.nyc_output/
+test-results/
+
+# 開發工具
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# 文件檔案
+README.md
+*.md
+docs/
+
+# 作業系統檔案
+.DS_Store
+Thumbs.db
+
+# 暫存檔案
+tmp/
+temp/
+
+# Yarn
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*

@@ -6,3 +6,4 @@ log/**/*
 coverage
 **/tsconfig.tsbuildinfo
 .qodo
+.env.*
