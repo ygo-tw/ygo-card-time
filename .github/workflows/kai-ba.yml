@@ -137,8 +137,9 @@ jobs:
           if 'annotations' not in data['metadata']:
               data['metadata']['annotations'] = {}
 
-          # 明確設定允許公開訪問 (這是關鍵!)
-          data['metadata']['annotations']['run.googleapis.com/invoker-iam-disabled'] = 'false'
+          # 明確設定允許公開訪問 - 正確的值應該是 'true'
+          data['metadata']['annotations']['run.googleapis.com/invoker-iam-disabled'] = 'true'
+          print("=== 設定 invoker-iam-disabled: 'true' (允許公開訪問) ===")
 
           # 添加部署資訊到 template annotations
           if 'spec' in data and 'template' in data['spec']:
