@@ -7,3 +7,4 @@ coverage
 **/tsconfig.tsbuildinfo
 .qodo
 .env.*
+ygo-card-time-gcp.json
