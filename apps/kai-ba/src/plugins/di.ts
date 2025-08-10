@@ -14,19 +14,35 @@ export default fp(
     const dalService = new DataAccessService(mongodbUrl, fastify.log);
     await dalService.ensureInitialized(); // 確保 MongoDB 已連接
 
-    // Redis 客戶端
-    const redisClients: RedisClients = {
-      read: fastify.redis.read,
-      write: fastify.redis.write,
-    };
+    // Redis 客戶端 - 檢查 Redis 是否可用
+    const isRedisEnabled = process.env.ENABLE_REDIS === 'true';
+    let redisClients: RedisClients | null = null;
+
+    if (isRedisEnabled && fastify.redis) {
+      redisClients = {
+        read: fastify.redis.read,
+        write: fastify.redis.write,
+      };
+      fastify.log.info('Redis clients initialized successfully');
+    } else {
+      fastify.log.warn(
+        'Redis is disabled or not available, using cache without Redis'
+      );
+      // 建立空的 Redis 客戶端以避免錯誤
+      redisClients = {
+        read: null as any,
+        write: null as any,
+      };
+    }
 
     container.register({
       dal: asFunction(() => dalService).singleton(),
 
       cache: asFunction(() => {
-        return new DataCacheService(fastify.log, redisClients, {
+        return new DataCacheService(fastify.log, redisClients!, {
           ENABLE_CACHE: process.env.ENABLE_CACHE === 'true',
-          ENABLE_REDIS_CACHE: process.env.ENABLE_REDIS_CACHE === 'true',
+          ENABLE_REDIS_CACHE:
+            isRedisEnabled && process.env.ENABLE_REDIS_CACHE === 'true',
           ENABLE_MEMORY_CACHE: process.env.ENABLE_MEMORY_CACHE === 'true',
           CACHE_PREFIX: process.env.KAI_BA_CACHE_PREFIX ?? 'kAI_BA',
           REDIS_DEFAULT_TTL_SECONDS: 86400,
@@ -48,5 +64,8 @@ export default fp(
       getter: () => container.createScope(),
     });
   },
-  { name: 'di', dependencies: ['redis'] }
+  {
+    name: 'di',
+    dependencies: ['redis'],
+  }
 );
