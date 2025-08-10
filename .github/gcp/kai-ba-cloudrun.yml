@@ -11,6 +11,8 @@ metadata:
     run.googleapis.com/ingress-status: all
     run.googleapis.com/minScale: '0'
     run.googleapis.com/urls: '["https://kai-ba-415813429517.asia-northeast1.run.app"]'
+    # 明確設定允許未經身份驗證的訪問
+    run.googleapis.com/invoker-iam-disabled: 'false'
 spec:
   template:
     metadata:
