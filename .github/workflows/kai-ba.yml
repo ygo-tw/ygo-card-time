@@ -1,0 +1,302 @@
+name: KAI-BA Cloud Run Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'libs/**'
+      - 'apps/kai-ba/**'
+      - 'docker/kai-ba/**'
+      - '.github/workflows/kai-ba.yml'
+      - '.github/gcp/kai-ba-cloudrun.yml'
+
+env:
+  # Docker 設定
+  DOCKER_REGISTRY: docker.io
+  DOCKER_IMAGE_NAME: a9293340/kai-ba
+
+  # Cloud Run 設定
+  CLOUD_RUN_REGION: asia-northeast1
+  CLOUD_RUN_SERVICE: kai-ba
+
+  # 可選：如果想要從 secrets 讀取，可以改為:
+  # CLOUD_RUN_REGION: ${{ secrets.CLOUD_RUN_REGION || 'asia-northeast1' }}
+  # CLOUD_RUN_SERVICE: ${{ secrets.CLOUD_RUN_SERVICE || 'kai-ba' }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate deployment tag with high discriminability
+        id: tag
+        run: |
+          # 生成唯一部署標籤: {branch}-{timestamp}-{commit}
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          # 清理 branch 名稱，移除特殊字元
+          BRANCH_CLEAN=$(echo "${BRANCH_NAME}" | sed 's/[^a-zA-Z0-9-]/-/g' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
+          TIMESTAMP=$(date +"%Y%m%d-%H%M")
+          COMMIT_SHORT="${GITHUB_SHA:0:7}"
+
+          DEPLOY_TAG="${BRANCH_CLEAN}-${TIMESTAMP}-${COMMIT_SHORT}"
+
+          echo "deploy_tag=${DEPLOY_TAG}" >> $GITHUB_OUTPUT
+          echo "branch_clean=${BRANCH_CLEAN}" >> $GITHUB_OUTPUT
+          echo "timestamp=${TIMESTAMP}" >> $GITHUB_OUTPUT
+          echo "commit_short=${COMMIT_SHORT}" >> $GITHUB_OUTPUT
+
+          echo "=== 部署標籤資訊 ==="
+          echo "🌿 Branch: ${BRANCH_NAME} -> ${BRANCH_CLEAN}"
+          echo "⏰ Timestamp: ${TIMESTAMP}"
+          echo "📝 Commit: ${GITHUB_SHA:0:7}"
+          echo "🏷️  Final Tag: ${DEPLOY_TAG}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: a9293340
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/kai-ba/Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.tag.outputs.deploy_tag }}
+            ${{ env.DOCKER_IMAGE_NAME }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+            deployment.tag=${{ steps.tag.outputs.deploy_tag }}
+            deployment.branch=${{ steps.tag.outputs.branch_clean }}
+            deployment.commit=${{ steps.tag.outputs.commit_short }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_TOKEN_JSON }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure gcloud project
+        run: |
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+          gcloud auth configure-docker
+
+      - name: Validate Cloud Run configuration
+        run: |
+          echo "=== 驗證部署配置 ==="
+          echo "🌍 Region: ${{ env.CLOUD_RUN_REGION }}"
+          echo "🚀 Service: ${{ env.CLOUD_RUN_SERVICE }}"
+          echo "🏷️  Deploy Tag: ${{ steps.tag.outputs.deploy_tag }}"
+          echo "🐳 Image: ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.tag.outputs.deploy_tag }}"
+
+          # 檢查服務是否存在
+          if gcloud run services describe ${{ env.CLOUD_RUN_SERVICE }} \
+             --region=${{ env.CLOUD_RUN_REGION }} \
+             --project=${{ secrets.GCP_PROJECT_ID }} >/dev/null 2>&1; then
+            echo "✅ Service exists, will update"
+          else
+            echo "🆕 Service doesn't exist, will create"
+          fi
+
+      - name: Create deployment-specific Cloud Run YAML
+        run: |
+          # 複製原始 YAML 到臨時檔案
+          cp .github/gcp/kai-ba-cloudrun.yml /tmp/kai-ba-deploy.yml
+
+          # 更新 image tag
+          sed -i 's|image: .*|image: ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.tag.outputs.deploy_tag }}|g' /tmp/kai-ba-deploy.yml
+
+          # 在 template.metadata.annotations 中添加部署資訊
+          sed -i '/template:/,/spec:/ {
+            /metadata:/,/spec:/ {
+              /annotations:/a\
+          run.googleapis.com/deployment-tag: "${{ steps.tag.outputs.deploy_tag }}"
+              /annotations:/a\
+          run.googleapis.com/deployment-branch: "${{ steps.tag.outputs.branch_clean }}"
+              /annotations:/a\
+          run.googleapis.com/deployment-commit: "${{ steps.tag.outputs.commit_short }}"
+              /annotations:/a\
+          run.googleapis.com/deployment-timestamp: "${{ steps.tag.outputs.timestamp }}"
+            }
+          }' /tmp/kai-ba-deploy.yml
+
+          echo "=== Generated deployment YAML preview ==="
+          head -50 /tmp/kai-ba-deploy.yml
+
+      - name: Deploy to Cloud Run
+        run: |
+          echo "🚀 部署到 Cloud Run..."
+          gcloud run services replace /tmp/kai-ba-deploy.yml \
+            --region=${{ env.CLOUD_RUN_REGION }} \
+            --project=${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Update traffic to new revision
+        run: |
+          # 取得最新的 revision 名稱
+          LATEST_REVISION=$(gcloud run revisions list \
+            --service=${{ env.CLOUD_RUN_SERVICE }} \
+            --region=${{ env.CLOUD_RUN_REGION }} \
+            --project=${{ secrets.GCP_PROJECT_ID }} \
+            --limit=1 \
+            --format='value(metadata.name)')
+
+          echo "📦 Latest revision: ${LATEST_REVISION}"
+
+          # 將 100% 流量導向新的 revision
+          gcloud run services update-traffic ${{ env.CLOUD_RUN_SERVICE }} \
+            --to-revisions=${LATEST_REVISION}=100 \
+            --region=${{ env.CLOUD_RUN_REGION }} \
+            --project=${{ secrets.GCP_PROJECT_ID }}
+
+          # 為新 revision 設定 tag (用於 URL 路由)
+          gcloud run services update-traffic ${{ env.CLOUD_RUN_SERVICE }} \
+            --set-tags=${{ steps.tag.outputs.deploy_tag }}=${LATEST_REVISION} \
+            --region=${{ env.CLOUD_RUN_REGION }} \
+            --project=${{ secrets.GCP_PROJECT_ID }}
+
+          echo "✅ Traffic updated to revision: ${LATEST_REVISION}"
+
+      - name: Wait for deployment to be ready
+        run: |
+          echo "⏳ 等待部署完成..."
+          gcloud run services wait ${{ env.CLOUD_RUN_SERVICE }} \
+            --region=${{ env.CLOUD_RUN_REGION }} \
+            --project=${{ secrets.GCP_PROJECT_ID }}
+          echo "✅ 部署已就緒"
+
+      - name: Get service URLs
+        id: urls
+        run: |
+          # 主要服務 URL
+          SERVICE_URL=$(gcloud run services describe ${{ env.CLOUD_RUN_SERVICE }} \
+            --region=${{ env.CLOUD_RUN_REGION }} \
+            --project=${{ secrets.GCP_PROJECT_ID }} \
+            --format='value(status.url)')
+
+          # 帶 tag 的 URL (用於測試特定版本)
+          TAGGED_URL=$(echo ${SERVICE_URL} | sed 's|https://|https://${{ steps.tag.outputs.deploy_tag }}---|')
+
+          echo "service_url=${SERVICE_URL}" >> $GITHUB_OUTPUT
+          echo "tagged_url=${TAGGED_URL}" >> $GITHUB_OUTPUT
+
+          echo "🚀 Service deployed successfully!"
+          echo "📍 Service URL: ${SERVICE_URL}"
+          echo "🏷️  Tagged URL: ${TAGGED_URL}"
+
+      - name: Health check
+        run: |
+          echo "🏥 執行健康檢查..."
+
+          # 主要 URL 健康檢查
+          for i in {1..5}; do
+            if curl -f -s "${{ steps.urls.outputs.service_url }}/_hc" >/dev/null; then
+              echo "✅ 主要 URL 健康檢查通過!"
+              break
+            else
+              echo "❌ 健康檢查失敗 (嘗試 $i/5)"
+              if [ $i -eq 5 ]; then
+                echo "🚨 健康檢查在 5 次嘗試後失敗"
+                exit 1
+              fi
+              sleep 10
+            fi
+          done
+
+          # Tagged URL 健康檢查 (可選)
+          echo "🏷️  測試標籤 URL..."
+          if curl -f -s "${{ steps.urls.outputs.tagged_url }}/_hc" >/dev/null; then
+            echo "✅ 標籤 URL 健康檢查通過!"
+          else
+            echo "⚠️  標籤 URL 健康檢查失敗 (DNS 傳播可能需要時間)"
+          fi
+
+      - name: Cleanup temporary files
+        run: |
+          rm -f /tmp/kai-ba-deploy.yml
+          echo "🧹 清理完成"
+
+      - name: Create deployment summary
+        run: |
+          # 取得 revision 資訊
+          LATEST_REVISION=$(gcloud run revisions list \
+            --service=${{ env.CLOUD_RUN_SERVICE }} \
+            --region=${{ env.CLOUD_RUN_REGION }} \
+            --project=${{ secrets.GCP_PROJECT_ID }} \
+            --limit=1 \
+            --format='value(metadata.name)')
+
+          # 取得前一個 revision (用於回滾)
+          PREVIOUS_REVISION=$(gcloud run revisions list \
+            --service=${{ env.CLOUD_RUN_SERVICE }} \
+            --region=${{ env.CLOUD_RUN_REGION }} \
+            --project=${{ secrets.GCP_PROJECT_ID }} \
+            --limit=2 \
+            --format='value(metadata.name)' | tail -n 1)
+
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 KAI-BA Deployment Summary
+
+          **✅ Deployment Status:** Success
+          **🏷️  Deploy Tag:** \`${{ steps.tag.outputs.deploy_tag }}\`
+          **🌿 Branch:** \`${{ steps.tag.outputs.branch_clean }}\`
+          **⏰ Timestamp:** \`${{ steps.tag.outputs.timestamp }}\`
+          **📝 Commit:** \`${{ steps.tag.outputs.commit_short }}\`
+          **🐳 Docker Image:** \`${{ env.DOCKER_IMAGE_NAME }}:${{ steps.tag.outputs.deploy_tag }}\`
+
+          ### 🌐 Service URLs
+          - **Main URL:** [${{ steps.urls.outputs.service_url }}](${{ steps.urls.outputs.service_url }})
+          - **Health Check:** [${{ steps.urls.outputs.service_url }}/_hc](${{ steps.urls.outputs.service_url }}/_hc)
+          - **Tagged URL:** [${{ steps.urls.outputs.tagged_url }}](${{ steps.urls.outputs.tagged_url }})
+
+          ### 📦 Cloud Run Information
+          - **Service:** \`${{ env.CLOUD_RUN_SERVICE }}\`
+          - **Region:** \`${{ env.CLOUD_RUN_REGION }}\`
+          - **Current Revision:** \`${LATEST_REVISION}\`
+          - **Previous Revision:** \`${PREVIOUS_REVISION}\`
+
+          ### 📊 Build Information
+          - **Commit SHA:** \`${GITHUB_SHA:0:8}\`
+          - **Full SHA:** \`${GITHUB_SHA}\`
+          - **Branch:** \`${GITHUB_REF_NAME}\`
+          - **Triggered by:** ${GITHUB_ACTOR}
+          - **Deployed At:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+
+          ### 🎯 Quick Commands
+          \`\`\`bash
+          # 查看服務狀態
+          gcloud run services describe ${{ env.CLOUD_RUN_SERVICE }} --region=${{ env.CLOUD_RUN_REGION }}
+
+          # 回滾到前一版本
+          gcloud run services update-traffic ${{ env.CLOUD_RUN_SERVICE }} \\
+            --to-revisions=\${PREVIOUS_REVISION}=100 \\
+            --region=${{ env.CLOUD_RUN_REGION }}
+
+          # 查看日誌
+          gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=${{ env.CLOUD_RUN_SERVICE }}" --limit=50
+
+          # 查看特定標籤的 revision
+          gcloud run revisions describe \${LATEST_REVISION} --region=${{ env.CLOUD_RUN_REGION }}
+          \`\`\`
+          EOF
+
+      - name: Output deployment information
+        run: |
+          echo "=== 🎉 部署完成 ==="
+          echo "Deploy Tag: ${{ steps.tag.outputs.deploy_tag }}"
+          echo "Service URL: ${{ steps.urls.outputs.service_url }}"
+          echo "Tagged URL: ${{ steps.urls.outputs.tagged_url }}"
