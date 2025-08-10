@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'libs/**'
-      - 'apps/kai-ba/**'
-      - 'docker/kai-ba/**'
-      - '.github/workflows/kai-ba.yml'
-      - '.github/gcp/kai-ba-cloudrun.yml'
+    # 暫時移除 paths 限制，方便測試
+    # paths:
+    #   - 'libs/**'
+    #   - 'apps/kai-ba/**'
+    #   - 'docker/kai-ba/**'
+    #   - '.github/workflows/kai-ba.yml'
+    #   - '.github/gcp/kai-ba-cloudrun.yml'
 
 env:
   # Docker 設定
@@ -19,10 +20,6 @@ env:
   # Cloud Run 設定
   CLOUD_RUN_REGION: asia-northeast1
   CLOUD_RUN_SERVICE: kai-ba
-
-  # 可選：如果想要從 secrets 讀取，可以改為:
-  # CLOUD_RUN_REGION: ${{ secrets.CLOUD_RUN_REGION || 'asia-northeast1' }}
-  # CLOUD_RUN_SERVICE: ${{ secrets.CLOUD_RUN_SERVICE || 'kai-ba' }}
 
 jobs:
   build-and-deploy:
@@ -118,25 +115,46 @@ jobs:
           # 複製原始 YAML 到臨時檔案
           cp .github/gcp/kai-ba-cloudrun.yml /tmp/kai-ba-deploy.yml
 
+          # 使用 yq 或 python 來安全地修改 YAML，而不是 sed
           # 更新 image tag
-          sed -i 's|image: .*|image: ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.tag.outputs.deploy_tag }}|g' /tmp/kai-ba-deploy.yml
+          python3 << 'EOF'
+          import yaml
+          import sys
 
-          # 在 template.metadata.annotations 中添加部署資訊
-          sed -i '/template:/,/spec:/ {
-            /metadata:/,/spec:/ {
-              /annotations:/a\
-          run.googleapis.com/deployment-tag: "${{ steps.tag.outputs.deploy_tag }}"
-              /annotations:/a\
-          run.googleapis.com/deployment-branch: "${{ steps.tag.outputs.branch_clean }}"
-              /annotations:/a\
-          run.googleapis.com/deployment-commit: "${{ steps.tag.outputs.commit_short }}"
-              /annotations:/a\
-          run.googleapis.com/deployment-timestamp: "${{ steps.tag.outputs.timestamp }}"
-            }
-          }' /tmp/kai-ba-deploy.yml
+          # 讀取 YAML
+          with open('/tmp/kai-ba-deploy.yml', 'r') as f:
+              data = yaml.safe_load(f)
+
+          # 更新 image
+          if 'spec' in data and 'template' in data['spec'] and 'spec' in data['spec']['template']:
+              containers = data['spec']['template']['spec'].get('containers', [])
+              for container in containers:
+                  if container.get('name') == 'kai-ba':
+                      container['image'] = '${{ env.DOCKER_IMAGE_NAME }}:${{ steps.tag.outputs.deploy_tag }}'
+
+          # 添加部署資訊到 annotations
+          if 'spec' in data and 'template' in data['spec']:
+              if 'metadata' not in data['spec']['template']:
+                  data['spec']['template']['metadata'] = {}
+              if 'annotations' not in data['spec']['template']['metadata']:
+                  data['spec']['template']['metadata']['annotations'] = {}
+              
+              annotations = data['spec']['template']['metadata']['annotations']
+              annotations['run.googleapis.com/deployment-tag'] = '${{ steps.tag.outputs.deploy_tag }}'
+              annotations['run.googleapis.com/deployment-branch'] = '${{ steps.tag.outputs.branch_clean }}'
+              annotations['run.googleapis.com/deployment-commit'] = '${{ steps.tag.outputs.commit_short }}'
+              annotations['run.googleapis.com/deployment-timestamp'] = '${{ steps.tag.outputs.timestamp }}'
+
+          # 寫回 YAML
+          with open('/tmp/kai-ba-deploy.yml', 'w') as f:
+              yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+          EOF
 
           echo "=== Generated deployment YAML preview ==="
           head -50 /tmp/kai-ba-deploy.yml
+
+          echo "=== YAML validation ==="
+          python3 -c "import yaml; yaml.safe_load(open('/tmp/kai-ba-deploy.yml'))" && echo "✅ YAML is valid" || echo "❌ YAML is invalid"
 
       - name: Deploy to Cloud Run
         run: |
@@ -240,14 +258,6 @@ jobs:
             --limit=1 \
             --format='value(metadata.name)')
 
-          # 取得前一個 revision (用於回滾)
-          PREVIOUS_REVISION=$(gcloud run revisions list \
-            --service=${{ env.CLOUD_RUN_SERVICE }} \
-            --region=${{ env.CLOUD_RUN_REGION }} \
-            --project=${{ secrets.GCP_PROJECT_ID }} \
-            --limit=2 \
-            --format='value(metadata.name)' | tail -n 1)
-
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🚀 KAI-BA Deployment Summary
 
@@ -267,36 +277,10 @@ jobs:
           - **Service:** \`${{ env.CLOUD_RUN_SERVICE }}\`
           - **Region:** \`${{ env.CLOUD_RUN_REGION }}\`
           - **Current Revision:** \`${LATEST_REVISION}\`
-          - **Previous Revision:** \`${PREVIOUS_REVISION}\`
 
           ### 📊 Build Information
           - **Commit SHA:** \`${GITHUB_SHA:0:8}\`
-          - **Full SHA:** \`${GITHUB_SHA}\`
           - **Branch:** \`${GITHUB_REF_NAME}\`
           - **Triggered by:** ${GITHUB_ACTOR}
           - **Deployed At:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
-
-          ### 🎯 Quick Commands
-          \`\`\`bash
-          # 查看服務狀態
-          gcloud run services describe ${{ env.CLOUD_RUN_SERVICE }} --region=${{ env.CLOUD_RUN_REGION }}
-
-          # 回滾到前一版本
-          gcloud run services update-traffic ${{ env.CLOUD_RUN_SERVICE }} \\
-            --to-revisions=\${PREVIOUS_REVISION}=100 \\
-            --region=${{ env.CLOUD_RUN_REGION }}
-
-          # 查看日誌
-          gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=${{ env.CLOUD_RUN_SERVICE }}" --limit=50
-
-          # 查看特定標籤的 revision
-          gcloud run revisions describe \${LATEST_REVISION} --region=${{ env.CLOUD_RUN_REGION }}
-          \`\`\`
           EOF
-
-      - name: Output deployment information
-        run: |
-          echo "=== 🎉 部署完成 ==="
-          echo "Deploy Tag: ${{ steps.tag.outputs.deploy_tag }}"
-          echo "Service URL: ${{ steps.urls.outputs.service_url }}"
-          echo "Tagged URL: ${{ steps.urls.outputs.tagged_url }}"
