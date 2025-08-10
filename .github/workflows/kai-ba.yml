@@ -4,13 +4,12 @@ on:
   push:
     branches:
       - main
-    # 暫時移除 paths 限制，方便測試
-    # paths:
-    #   - 'libs/**'
-    #   - 'apps/kai-ba/**'
-    #   - 'docker/kai-ba/**'
-    #   - '.github/workflows/kai-ba.yml'
-    #   - '.github/gcp/kai-ba-cloudrun.yml'
+    paths:
+      - 'libs/**'
+      - 'apps/kai-ba/**'
+      - 'docker/kai-ba/**'
+      - '.github/workflows/kai-ba.yml'
+      - '.github/gcp/kai-ba-cloudrun.yml'
 
 env:
   # Docker 設定
