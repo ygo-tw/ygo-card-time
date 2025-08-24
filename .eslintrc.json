@@ -23,17 +23,30 @@
   },
   "overrides": [
     {
-      "files": ["ops/**/*.js"], // 指定 ops 目錄下的所有 JS 檔案
+      "files": ["ops/**/*.js", "scripts/**/*.js"],
+      "env": {
+        "node": true,
+        "commonjs": true
+      },
+      "parserOptions": {
+        "ecmaVersion": 2020,
+        "sourceType": "script"
+      },
       "rules": {
-        // 禁用所有規則
+        // 禁用所有 TypeScript 相關規則
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-unused-expressions": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        // 禁用一般 ESLint 規則
         "no-unused-vars": "off",
         "no-console": "off",
-        "no-undef": "off"
-        // 可以根據需要添加更多規則
+        "no-undef": "off",
+        "no-var-requires": "off"
       }
     },
     {
-      "files": ["**/*.test.ts"], // 指定所有測試文件
+      "files": ["**/*.test.ts"],
       "rules": {
         "@typescript-eslint/no-explicit-any": "off"
       }
