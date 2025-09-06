@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const fs = require('fs');
 
-const connectionString =
-  'mongodb+srv://a9293340:574597@cluster0.rnvhhr4.mongodb.net/ygo';
+// TODO: 設定連接字串
+const connectionString = '';
 
 // 簡單的 Card Schema
 const cardSchema = new mongoose.Schema(
