@@ -12,7 +12,9 @@
     "setup": "run-s clean deps build:workspaces",
     "postsetup": "rimraf ./apps/**/node_modules ./libs/**/node_modules",
     "prepare": "node .husky/prepare-husky.js",
-    "redis-run": "cd ./docker/redis && docker compose up -d"
+    "redis-run": "cd ./docker/redis && docker compose up -d",
+    "ntu": "node ./scripts/ntu2json.js",
+    "ntu-db": "node ./scripts/ntu2db.js"
   },
   "workspaces": [
     "libs/schemas/",

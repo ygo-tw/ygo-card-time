@@ -53,7 +53,7 @@ const main = async () => {
   });
 
   // 台灣時間每天 4:00 執行 YuyuPriceTask
-  scheduleJob('scheduleYuyuPrice', '1 0 18 * * *', async () => {
+  scheduleJob('scheduleYuyuPrice', '1 0 18 * * 6', async () => {
     console.log('Running scheduleYuyuPrice...');
 
     try {
