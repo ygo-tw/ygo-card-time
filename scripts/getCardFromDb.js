@@ -36,6 +36,7 @@ async function findCardById(cardId) {
       // 轉換為純 JavaScript 物件
       const cardObj = card.toObject();
       cardObj.id = process.argv[3];
+      delete cardObj._id;
       cardObj.product_information_type = process.argv[3].split('-')[0];
 
       return cardObj;
